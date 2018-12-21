@@ -1,0 +1,16 @@
+{
+    "name": "node-red-contrib-ui-level",
+    "version": "0.1.0",
+    "description": "Level indicator",
+    "main": "ui-level.js",
+    "node-red": {
+        "nodes": {
+            "ui-level": "ui-level.js"
+        }
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "hotNipi <nipnippel@gmail.com>",
+    "license": "MIT"
+}

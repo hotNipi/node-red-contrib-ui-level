@@ -1,0 +1,147 @@
+<!--
+MIT License
+
+Copyright (c) 2019 hotNipi
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+-->
+<script type="text/javascript">
+    RED.nodes.registerType('ui_level',{
+        category: 'dashboard',
+        color: 'rgb( 63, 173, 181)',
+        defaults: {
+            group: {type: 'ui_group', required:true},
+            order: {value: 0},
+            width: {
+                value: 0,
+                validate: function(v) {
+                    var valid = true
+                    var width = v||0;
+                    var currentGroup = $('#node-input-group').val()|| this.group;
+                    var groupNode = RED.nodes.node(currentGroup);
+                    valid = !groupNode || +width <= +groupNode.width;
+                    $("#node-input-size").toggleClass("input-error",!valid);
+                    return valid;
+                }},
+            height: {value: 0},
+            name: {value: ''},
+            colorHi: {value: '#ff8080'},
+            colorWarn: {value: '#99ff99'},
+            colorNormal: {value: '#ffffc0'},
+            colorOff: {value: '#cccccc'},
+            colorText: {value: '#fffaf0'},
+            min: {value: 0, required: true, validate: RED.validators.number()},
+            max: {value: 100, required: true, validate: RED.validators.number()},
+            segWarn: {value: ""},
+            segHigh: {value: ""},
+            unit: {value:'units'},
+            decimals: {value: 0, required: false, validate: RED.validators.number()},
+
+        },
+        inputs:1,
+        outputs:1,
+        icon: "node-red/debug.png",
+        paletteLabel: "level",
+        label: function() {
+            return this.name||"Level";
+        },
+        oneditprepare: function() {
+            $("#node-input-size").elementSizer({
+                width: "#node-input-width",
+                height: "#node-input-height",
+                group: "#node-input-group"
+            });
+            $("#node-input-min").change(function() {
+                $("#seg-min").text($(this).val());
+            });
+            $("#node-input-max").change(function() {
+                $("#seg-max").text($(this).val());
+            });
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="ui_level">
+    <div class="form-row" id="template-row-group">
+        <label for="node-input-group"><i class="fa fa-table"></i> Group</span></label>
+        <input type="text" id="node-input-group">
+    </div>
+    <div class="form-row" id="template-row-size">
+        <label><i class="fa fa-object-group"></i> Size</span></label>
+        <input type="hidden" id="node-input-width">
+        <input type="hidden" id="node-input-height">
+        <button class="editor-button" id="node-input-size"></button>
+    </div>
+    </br>
+    <div class="form-row">
+        <label for="node-input-colorHi"><i class="fa fa-paint-brush"></i> High Color</span></label>
+        <input type="color" id="node-input-colorHi" style="width:80px"/>
+    </div>
+    <div class="form-row">
+        <label for="node-input-colorWarn"><i class="fa fa-paint-brush"></i> Warn Color</span></label>
+        <input type="color" id="node-input-colorWarn" style="width:80px"/>
+    </div>
+    <div class="form-row">
+        <label for="node-input-colorNormal"><i class="fa fa-paint-brush"></i> Normal Color</span></label>
+        <input type="color" id="node-input-colorNormal" style="width:80px"/>
+    </div>
+    <div class="form-row">
+        <label for="node-input-colorNormal"><i class="fa fa-paint-brush"></i> Off Color</span></label>
+        <input type="color" id="node-input-colorOff" style="width:80px"/>
+    </div> 
+    <div class="form-row">
+        <label for="node-input-colorNormal"><i class="fa fa-paint-brush"></i> Text Color</span></label>
+        <input type="color" id="node-input-colorText" style="width:80px"/>
+    </div>      
+    <div class="form-row">
+        <label for="node-input-unit">Unit</label>
+        <span for="node-input-unit">Unit</span>
+        <input type="text" id="node-input-unit" style="width:80px" dir="">
+        <span for="node-input-decimals" style="margin-left:20px;">decimals</span>
+        <input type="text" id="node-input-decimals" style="width:80px" placeholder="0" dir="">
+    </div>
+    <div class="form-row">
+        <label for="node-input-min">Range</label>
+        <span for="node-input-min">min</span>
+        <input type="text" id="node-input-min" style="width:80px" dir="">
+        <span for="node-input-max" style="margin-left:20px;">max</span>
+        <input type="text" id="node-input-max" style="width:80px" dir="">
+    </div>
+    <div class="form-row" id="ui-gauge-segments">
+        <label>Sectors</label>
+        <span id="seg-min" style="display:inline-block; width:40px;">0</span>...
+        <input type="text" id="node-input-segWarn" style="text-align:center; width:87px;" placeholder="optional" dir=""> ...
+        <input type="text" id="node-input-segHigh" style="text-align:center; width:87px;" placeholder="optional" dir=""> ...
+        <span id="seg-max" style="display:inline-block; width:40px; text-align:right">10</span>
+    </div>   
+</br>
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="ui_level">
+    <p>Adds a linear level type widget to the user interface</p>
+    <p>Takes the <code>msg.payload</code> and displays the value at the top of the level graphics.</p>
+    <p>The node's <code>Name</code> is displayed before the value. Let the name field empty to show value only</p>
+    <p>The node's <code>Unit</code> will be displayed at the trailing end of the current value. A unit can be anything, for example: <code>lbs psi F°</code></p>
+    <p>The segments's color is also customizable within the configuration but cannot be set with a msg.</p>
+    <p>The min amd max values are also customizable within the configuration but cannot be set with a msg.</p>
+</script>

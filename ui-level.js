@@ -177,6 +177,7 @@ module.exports = function (RED) {
 						}						
 						msg.colors = newcolors;
 						msg.d = decimals;
+						msg.payload = parseFloat(msg.payload);
 															
 						return { msg: msg };
 					},
@@ -215,7 +216,7 @@ module.exports = function (RED) {
 									$(stripe).stop().animate({'stroke-dashoffset': 0}, 1000).css({'fill': msg.colors[i], 'transition': 'fill .8s'});
 								}
 								var val = document.getElementById("level_value_"+$scope.unique);
-								$({ticker: $scope.lastvalue || 0}).stop().animate({ticker: msg.payload}, {
+								$({ticker: $scope.lastvalue}).stop().animate({ticker: msg.payload}, {
 									duration: 500,
 									easing:'swing',
 									step: function() {										
@@ -223,7 +224,7 @@ module.exports = function (RED) {
 									},
 									complete: function() {
 										$(val).text(msg.payload.toFixed(msg.d.fixed));
-										$scope.lastvalue = msg.payload;										
+										$scope.lastvalue = parseFloat(msg.payload.toFixed(msg.d.fixed));										
 									 }
 								}); 								
 							}							

@@ -1,4 +1,4 @@
 # node-red-contrib-ui-level
 Horizontal version. 
-Not publiched.
+Not published.
 Beta. 

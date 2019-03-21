@@ -45,8 +45,7 @@ SOFTWARE.
             colorHi: {value: '#e60000'},
             colorWarn: {value: '#ff9900'},
             colorNormal: {value: '#00b33c'},
-            colorOff: {value: '#595959'},
-            colorText: {value: '#fffaf0'},
+            colorOff: {value: '#595959'},            
             min: {value: 0, required: true, validate: RED.validators.number()},
             max: {value: 100, required: true, validate: RED.validators.number()},
             segWarn: {value: ""},
@@ -103,16 +102,12 @@ SOFTWARE.
         <input type="color" id="node-input-colorWarn" style="width:80px"/>
     </div>
     <div class="form-row">
-        <label for="node-input-colorNormal"><i class="fa fa-paint-brush"></i> Normal Color</span></label>
+        <label for="node-input-colorNormal"><i class="fa fa-paint-brush"></i> OK Color</span></label>
         <input type="color" id="node-input-colorNormal" style="width:80px"/>
     </div>
     <div class="form-row">
-        <label for="node-input-colorNormal"><i class="fa fa-paint-brush"></i> Off Color</span></label>
+        <label for="node-input-colorOff"><i class="fa fa-paint-brush"></i> Off Color</span></label>
         <input type="color" id="node-input-colorOff" style="width:80px"/>
-    </div> 
-    <div class="form-row">
-        <label for="node-input-colorNormal"><i class="fa fa-paint-brush"></i> Text Color</span></label>
-        <input type="color" id="node-input-colorText" style="width:80px"/>
     </div>      
     <div class="form-row">
         <label for="node-input-unit">Unit</label>

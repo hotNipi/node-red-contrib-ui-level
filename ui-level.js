@@ -25,7 +25,6 @@ SOFTWARE.
 
 module.exports = function (RED) {
 	function HTML(config) {
-		var textcolor = config.colorText || "floralwhite";
 		var html = String.raw`
             <style>
 				.level {
@@ -34,11 +33,11 @@ module.exports = function (RED) {
 					justify-content: center;
 				}
 				.txt {
-					fill: ${textcolor};					
+					fill: ${config.colorText};					
 				}				
 				.small { 
 					font-size: 60%;
-					fill: ${textcolor};	
+					fill: ${config.colorText};	
 				}
             </style>
 			
@@ -92,22 +91,21 @@ module.exports = function (RED) {
 			var done = null;
 			var range = null;
 			var stripecount = null;
+			var site = null;
 
 			if (checkConfig(node, config)) {
-				var group = RED.nodes.getNode(config.group);								
-				if(config.width == 0){ config.width = parseInt(group.config.width*0.5+1.5) || 4};
-				if(config.height == 0) { config.height = 1 } 
-				var offcolor = config.colorOff || "gray";
-				var normalcolor = config.colorNormal || "green";
-				var warncolor = config.colorWarn || "orange";
-				var alertcolor = config.colorHi || "red";
-				var colorvalues = [offcolor,normalcolor,warncolor,alertcolor];
-				var warn = config.max;
-				var high = config.max;
-				var sectorhigh = isNaN(parseInt(config.segHigh)) ? Math.floor(high *.9) : parseInt(config.segHigh);
-				var sectorwarn = isNaN(parseInt(config.segWarn)) ? Math.floor(warn *.7) : parseInt(config.segWarn);
-				var decimals = isNaN(parseInt(config.decimals)) ? {fixed:1,mult:0} : {fixed:parseInt(config.decimals),mult:Math.pow(10,parseInt(config.decimals))};
-
+				var group = RED.nodes.getNode(config.group);
+				
+				site = function(){
+					var confs = config._flow.global.configs									
+					for(var key in confs){
+						if (confs.hasOwnProperty(key)) {							
+							if(confs[key].type === "ui_base"){								
+								return confs[key]
+							}
+						}
+					}
+				}
 				range = function (n,p){
 					var divisor = p.maxin - p.minin;
 					n = n > p.maxin ? p.maxin - 0.01 : n;
@@ -115,26 +113,33 @@ module.exports = function (RED) {
 					n = ((n - p.minin) % divisor + divisor) % divisor + p.minin;
 					n = ((n - p.minin) / (p.maxin - p.minin) * (p.maxout - p.minout)) + p.minout;
 					return Math.round(n);
-				}
-				
-				stripecount = function(){
-					var confs = config._flow.global.configs					
-					var w = 0;
-					for(var key in confs){
-						if (confs.hasOwnProperty(key)) {							
-							if(confs[key].type === "ui_base"){								
-								w = confs[key].site.sizes.sx * config.width
-							}
-						}
-					}					
+				}				
+				stripecount = function(){									
+					var w = siteoptions.site.sizes.sx * config.width;								
 					var c = parseInt((w / 6)) - 1;
 					if(c & 1 !== 1){
 						c --;
 					}
 					return c;				
 				}
-				
-				config.count = stripecount()
+
+				var siteoptions = site()
+
+												
+				if(config.width == 0){ config.width = parseInt(group.config.width*0.5+1.5) || 4};
+				if(config.height == 0) { config.height = 1 } 
+				config.colorText = siteoptions.theme.themeState['widget-textColor'].value;
+				var offcolor = config.colorOff || "gray";
+				var normalcolor = config.colorNormal || "green";
+				var warncolor = config.colorWarn || "orange";
+				var alertcolor = config.colorHi || "red";
+				var colorvalues = [offcolor,normalcolor,warncolor,alertcolor];				
+				var warn = config.max;
+				var high = config.max;
+				var sectorhigh = isNaN(parseInt(config.segHigh)) ? Math.floor(high *.9) : parseInt(config.segHigh);
+				var sectorwarn = isNaN(parseInt(config.segWarn)) ? Math.floor(warn *.7) : parseInt(config.segWarn);
+				var decimals = isNaN(parseInt(config.decimals)) ? {fixed:1,mult:0} : {fixed:parseInt(config.decimals),mult:Math.pow(10,parseInt(config.decimals))};
+				config.count = stripecount();
 				config.stripes = [];						
 				for(var i=0; i < config.count; i++){								
 					config.stripes.push(colorvalues[0])

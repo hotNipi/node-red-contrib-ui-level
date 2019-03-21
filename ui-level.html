@@ -41,10 +41,11 @@ SOFTWARE.
                 }},
             height: {value: 0},
             name: {value: ''},
-            colorHi: {value: '#ff8080'},
-            colorWarn: {value: '#99ff99'},
-            colorNormal: {value: '#ffffc0'},
-            colorOff: {value: '#cccccc'},
+            label:{value: ''},
+            colorHi: {value: '#e60000'},
+            colorWarn: {value: '#ff9900'},
+            colorNormal: {value: '#00b33c'},
+            colorOff: {value: '#595959'},
             colorText: {value: '#fffaf0'},
             min: {value: 0, required: true, validate: RED.validators.number()},
             max: {value: 100, required: true, validate: RED.validators.number()},
@@ -55,7 +56,7 @@ SOFTWARE.
 
         },
         inputs:1,
-        outputs:1,
+        outputs:0,
         icon: "node-red/debug.png",
         paletteLabel: "level",
         label: function() {
@@ -89,6 +90,10 @@ SOFTWARE.
         <button class="editor-button" id="node-input-size"></button>
     </div>
     </br>
+    <div class="form-row">
+        <label for="node-input-label"><i class="icon-tag"></i> Label</label>
+        <input type="text" id="node-input-label" placeholder="Level">
+    </div>
     <div class="form-row">
         <label for="node-input-colorHi"><i class="fa fa-paint-brush"></i> High Color</span></label>
         <input type="color" id="node-input-colorHi" style="width:80px"/>

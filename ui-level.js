@@ -51,7 +51,7 @@ module.exports = function (RED) {
 						height="36%" 
 						ng-attr-style="fill:{{color}}"
 					/>
-					<text id=level_title_{{unique}} class="txt" text-anchor="middle" alignment-baseline="hanging" x="50%" y="0">`+config.name+
+					<text id=level_title_{{unique}} class="txt" text-anchor="middle" alignment-baseline="hanging" x="50%" y="0">`+config.label+
 					` <tspan id=level_value_{{unique}} class="txt" alignment-baseline="hanging" style="font-weight: bold;">
 							{{msg.value}}
 						 </tspan>
@@ -94,7 +94,9 @@ module.exports = function (RED) {
 			var stripecount = null;
 
 			if (checkConfig(node, config)) {
-				
+				var group = RED.nodes.getNode(config.group);								
+				if(config.width == 0){ config.width = parseInt(group.config.width*0.5+1.5) || 4};
+				if(config.height == 0) { config.height = 1 } 
 				var offcolor = config.colorOff || "gray";
 				var normalcolor = config.colorNormal || "green";
 				var warncolor = config.colorWarn || "orange";
@@ -103,7 +105,7 @@ module.exports = function (RED) {
 				var warn = config.max;
 				var high = config.max;
 				var sectorhigh = isNaN(parseInt(config.segHigh)) ? Math.floor(high *.9) : parseInt(config.segHigh);
-				var sectorwarn = isNaN(parseInt(config.segWarn)) ? Math.floor(warn *.9) : parseInt(config.segWarn);
+				var sectorwarn = isNaN(parseInt(config.segWarn)) ? Math.floor(warn *.7) : parseInt(config.segWarn);
 				var decimals = isNaN(parseInt(config.decimals)) ? {fixed:1,mult:0} : {fixed:parseInt(config.decimals),mult:Math.pow(10,parseInt(config.decimals))};
 
 				range = function (n,p){
@@ -120,7 +122,7 @@ module.exports = function (RED) {
 					var w = 0;
 					for(var key in confs){
 						if (confs.hasOwnProperty(key)) {							
-							if(confs[key].type === "ui_base"){
+							if(confs[key].type === "ui_base"){								
 								w = confs[key].site.sizes.sx * config.width
 							}
 						}

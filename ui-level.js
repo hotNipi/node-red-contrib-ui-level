@@ -106,8 +106,6 @@ module.exports = function (RED) {
 				var sectorwarn = isNaN(parseInt(config.segWarn)) ? Math.floor(warn *.9) : parseInt(config.segWarn);
 				var decimals = isNaN(parseInt(config.decimals)) ? {fixed:1,mult:0} : {fixed:parseInt(config.decimals),mult:Math.pow(10,parseInt(config.decimals))};
 
-				console.log(config.segWarn, config.segHigh)
-				
 				range = function (n,p){
 					var divisor = p.maxin - p.minin;
 					n = n > p.maxin ? p.maxin - 0.01 : n;
@@ -191,7 +189,6 @@ module.exports = function (RED) {
 							if (!msg) {								
 								return;
 							}
-							console.log(msg.d)
 							if(msg.size){
 								$scope.size = msg.size						
 								var el = document.getElementById("level_svg_"+$scope.unique)

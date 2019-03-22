@@ -42,7 +42,7 @@ module.exports = function (RED) {
             </style>
 			
 			<div class="level" id="level_{{unique}}">
-				<svg id="level_svg_{{unique}}" width="`+config.exactwidth+`">
+			<svg id="level_svg_{{unique}}" style="width:`+config.exactwidth+`px; height:`+config.exactheight+`px;">
 					<rect id="level_led_{{unique}}_{{$index}}" ng-repeat="color in stripes track by $index" 
 						y=64% 
 						ng-attr-x="{{$index * 6}}px"
@@ -94,8 +94,7 @@ module.exports = function (RED) {
 			var site = null;
 
 			if (checkConfig(node, config)) {
-				var group = RED.nodes.getNode(config.group);
-				
+				var group = RED.nodes.getNode(config.group);				
 				site = function(){
 					var confs = config._flow.global.configs									
 					for(var key in confs){
@@ -106,12 +105,12 @@ module.exports = function (RED) {
 						}
 					}
 				}
-				range = function (n,p){
-					var divisor = p.maxin - p.minin;
-					n = n > p.maxin ? p.maxin - 0.01 : n;
+				range = function (n,p){					
+					var divisor = p.maxin - p.minin;							
+					n = n > p.maxin ? p.maxin - 0.00001 : n;
 					n = n < p.minin ? p.minin : n;
 					n = ((n - p.minin) % divisor + divisor) % divisor + p.minin;
-					n = ((n - p.minin) / (p.maxin - p.minin) * (p.maxout - p.minout)) + p.minout;
+					n = ((n - p.minin) / (p.maxin - p.minin) * (p.maxout - p.minout)) + p.minout;										
 					return Math.round(n);
 				}				
 				stripecount = function(){									
@@ -123,31 +122,38 @@ module.exports = function (RED) {
 					return c;				
 				}
 
-				var siteoptions = site()
-
+				var siteoptions = site();
 												
-				if(config.width == 0){ config.width = parseInt(group.config.width*0.5+1.5) || 4};
-				if(config.height == 0) { config.height = 1 } 
+				if(config.width == 0){ config.width = parseInt(group.config.width) || 6};
+				if(config.height == 0) { config.height = 1 }				
 				config.colorText = siteoptions.theme.themeState['widget-textColor'].value;
 				var offcolor = config.colorOff || "gray";
 				var normalcolor = config.colorNormal || "green";
 				var warncolor = config.colorWarn || "orange";
 				var alertcolor = config.colorHi || "red";
-				var colorvalues = [offcolor,normalcolor,warncolor,alertcolor];				
+				var colorvalues = [offcolor,normalcolor,warncolor,alertcolor];
+				config.count = stripecount();
+				config.min = parseFloat(config.min);
+				config.max = parseFloat(config.max);
+				config.params = {minin:config.min, maxin:config.max+0.00001, minout:1, maxout:config.count}; 				
 				var warn = config.max;
 				var high = config.max;
-				var sectorhigh = isNaN(parseInt(config.segHigh)) ? Math.floor(high *.9) : parseInt(config.segHigh);
-				var sectorwarn = isNaN(parseInt(config.segWarn)) ? Math.floor(warn *.7) : parseInt(config.segWarn);
-				var decimals = isNaN(parseInt(config.decimals)) ? {fixed:1,mult:0} : {fixed:parseInt(config.decimals),mult:Math.pow(10,parseInt(config.decimals))};
-				config.count = stripecount();
+				var sectorhigh = isNaN(parseFloat(config.segHigh)) ? Math.floor(high *.9) : parseFloat(config.segHigh);
+				var sectorwarn = isNaN(parseFloat(config.segWarn)) ? Math.floor(warn *.7) : parseFloat(config.segWarn);
+				high = range(sectorhigh,config.params);
+				warn = range(sectorwarn,config.params);	
+				
+				var decimals = isNaN(parseFloat(config.decimals)) ? {fixed:1,mult:0} : {fixed:parseInt(config.decimals),mult:Math.pow(10,parseInt(config.decimals))};
+				
 				config.stripes = [];						
 				for(var i=0; i < config.count; i++){								
 					config.stripes.push(colorvalues[0])
 				}
-				config.params = {minin:config.min, maxin:config.max+0.01, minout:1, maxout:config.count};
-				config.exactwidth = (config.count * 6) -3;
-				high = range(sectorhigh,config.params);
-				warn = range(sectorwarn,config.params);				
+				
+				config.exactwidth = (config.count * 6) - 3;
+				config.exactheight = parseInt(siteoptions.site.sizes.sy * config.height * 3 / 4);
+				
+							
 				
 				var html = HTML(config);
 				

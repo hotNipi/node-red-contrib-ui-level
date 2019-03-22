@@ -31,9 +31,10 @@ module.exports = function (RED) {
 					display: flex;
 					flex-flow: row;
 					justify-content: center;
+					overflow: hidden;
 				}
 				.txt {
-					fill: ${config.colorText};					
+					fill: ${config.colorText};									
 				}				
 				.small { 
 					font-size: 60%;
@@ -51,7 +52,7 @@ module.exports = function (RED) {
 						style="fill:{{color}}"
 					/>
 					<text id=level_title_{{unique}} class="txt" text-anchor="middle" alignment-baseline="hanging" x="50%" y="0">`+config.label+
-					` <tspan id=level_value_{{unique}} class="txt" alignment-baseline="hanging" style="font-weight: bold;">
+					` <tspan id=level_value_{{unique}} class="txt" alignment-baseline="hanging" style="font-weight: bold">
 							{{msg.value}}
 						 </tspan>
 						 <tspan class="small" alignment-baseline="hanging">
@@ -151,7 +152,7 @@ module.exports = function (RED) {
 				}
 				
 				config.exactwidth = (config.count * 6) - 3;
-				config.exactheight = parseInt(siteoptions.site.sizes.sy * config.height * 3 / 4);
+				config.exactheight = parseInt(siteoptions.site.sizes.sy * config.height * 4 / 6);
 				
 				var html = HTML(config);
 				

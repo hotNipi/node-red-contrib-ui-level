@@ -48,7 +48,7 @@ module.exports = function (RED) {
 						ng-attr-x="{{$index * 6}}px"
 						width="3"
 						height="36%" 
-						ng-attr-style="fill:{{color}}"
+						style="fill:{{color}}"
 					/>
 					<text id=level_title_{{unique}} class="txt" text-anchor="middle" alignment-baseline="hanging" x="50%" y="0">`+config.label+
 					` <tspan id=level_value_{{unique}} class="txt" alignment-baseline="hanging" style="font-weight: bold;">
@@ -153,8 +153,6 @@ module.exports = function (RED) {
 				config.exactwidth = (config.count * 6) - 3;
 				config.exactheight = parseInt(siteoptions.site.sizes.sy * config.height * 3 / 4);
 				
-							
-				
 				var html = HTML(config);
 				
 				done = ui.addWidget({
@@ -183,6 +181,7 @@ module.exports = function (RED) {
 						}						
 						msg.colors = newcolors;
 						msg.d = decimals;
+						msg.animate = config.animations;
 						msg.payload = parseFloat(msg.payload);
 															
 						return { msg: msg };
@@ -203,6 +202,7 @@ module.exports = function (RED) {
 							if (!msg) {								
 								return;
 							}
+							//console.log(msg)
 							if(msg.size){
 								$scope.size = msg.size						
 								var el = document.getElementById("level_svg_"+$scope.unique)
@@ -218,21 +218,35 @@ module.exports = function (RED) {
 								}	
 								var stripe;
 								for(var i= 0;i<msg.colors.length;i++){									
-									stripe = document.getElementById("level_led_"+$scope.unique+"_"+i);																	
-									$(stripe).stop().animate({'stroke-dashoffset': 0}, 1000).css({'fill': msg.colors[i], 'transition': 'fill .8s'});
+									stripe = document.getElementById("level_led_"+$scope.unique+"_"+i);
+									if(stripe){
+										if(msg.animate === true){
+											$(stripe).stop().animate({'stroke-dashoffset': 0}, 1000).css({'fill': msg.colors[i], 'transition': 'fill .8s'});
+										}
+										else{											
+											stripe.style.fill = msg.colors[i]
+										}	
+									}
 								}
 								var val = document.getElementById("level_value_"+$scope.unique);
-								$({ticker: $scope.lastvalue}).stop().animate({ticker: msg.payload}, {
-									duration: 500,
-									easing:'swing',
-									step: function() {										
-										$(val).text((Math.ceil(this.ticker * msg.d.mult)/msg.d.mult).toFixed(msg.d.fixed));
-									},
-									complete: function() {
-										$(val).text(msg.payload.toFixed(msg.d.fixed));
-										$scope.lastvalue = parseFloat(msg.payload.toFixed(msg.d.fixed));										
-									 }
-								}); 								
+								if(msg.animate === true){
+									$({ticker: $scope.lastvalue}).stop().animate({ticker: msg.payload}, {
+										duration: 500,
+										easing:'swing',
+										step: function() {										
+											$(val).text((Math.ceil(this.ticker * msg.d.mult)/msg.d.mult).toFixed(msg.d.fixed));
+										},
+										complete: function() {
+											$(val).text(msg.payload.toFixed(msg.d.fixed));
+											$scope.lastvalue = parseFloat(msg.payload.toFixed(msg.d.fixed));										
+										 }
+									}); 
+								}
+								else{
+									$(val).text(msg.payload.toFixed(msg.d.fixed));
+									$scope.lastvalue = parseFloat(msg.payload.toFixed(msg.d.fixed));
+								}
+																
 							}							
 						});
 					}

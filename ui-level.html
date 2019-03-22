@@ -52,6 +52,7 @@ SOFTWARE.
             segHigh: {value: ""},
             unit: {value:'units'},
             decimals: {value: 0, required: false, validate: RED.validators.number()},
+            animations: {value:true}
 
         },
         inputs:1,
@@ -108,7 +109,8 @@ SOFTWARE.
     <div class="form-row">
         <label for="node-input-colorOff"><i class="fa fa-paint-brush"></i> Off Color</span></label>
         <input type="color" id="node-input-colorOff" style="width:80px"/>
-    </div>      
+    </div>
+</br>      
     <div class="form-row">
         <label for="node-input-unit">Unit</label>
         <span for="node-input-unit">Unit</span>
@@ -129,6 +131,12 @@ SOFTWARE.
         <input type="text" id="node-input-segWarn" style="text-align:center; width:87px;" placeholder="optional" dir=""> ...
         <input type="text" id="node-input-segHigh" style="text-align:center; width:87px;" placeholder="optional" dir=""> ...
         <span id="seg-max" style="display:inline-block; width:40px; text-align:right">10</span>
+    </div>
+</br>
+    <div class="form-row">
+        <label for="node-input-animations"></label>
+        <input type="checkbox" checked id="node-input-animations" style="display:inline-block; width:auto; vertical-align:top;">
+        Animations On/Off.
     </div>   
 </br>
     <div class="form-row">

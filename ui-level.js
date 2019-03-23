@@ -25,46 +25,91 @@ SOFTWARE.
 
 module.exports = function (RED) {
 	function HTML(config) {
-		var html = String.raw`
-            <style>
-				.level {
-					display: flex;
-					flex-flow: row;
-					justify-content: center;
-					overflow: hidden;
-				}
-				.txt {
-					fill: ${config.colorText};									
-				}				
-				.small { 
-					font-size: 60%;
-					fill: ${config.colorText};	
-				}
-            </style>
-			
-			<div class="level" id="level_{{unique}}">
+		
+		var styles = String.raw`
+		<style>
+			.level {
+				display: flex;
+				flex-flow: row;
+				justify-content: center;
+				overflow: hidden;
+			}
+			.txt {
+				fill: ${config.colorText};									
+			}				
+			.small { 
+				font-size: 60%;
+				fill: ${config.colorText};	
+			}
+		</style>`
+		var level_single_h = String.raw`
+		<div class="level" id="level_{{unique}}">
 			<svg id="level_svg_{{unique}}" style="width:`+config.exactwidth+`px; height:`+config.exactheight+`px;">
-					<rect id="level_led_{{unique}}_{{$index}}" ng-repeat="color in stripes track by $index" 
-						y=64% 
-						ng-attr-x="{{$index * 6}}px"
-						width="3"
-						height="36%" 
-						style="fill:{{color}}"
-					/>
-					<text id=level_title_{{unique}} class="txt" text-anchor="middle" alignment-baseline="hanging" x="50%" y="0">`+config.label+
-					` <tspan id=level_value_{{unique}} class="txt" alignment-baseline="hanging" style="font-weight: bold">
-							{{msg.value}}
-						 </tspan>
-						 <tspan class="small" alignment-baseline="hanging">
-						 	`+config.unit+`
-						 </tspan>					
-					</text>
-					<text class="small" text-anchor="start" alignment-baseline="hanging" x="0" y="25%">`+config.min+`</text>	
-					<text id=level_max_{{unique}} class="small" text-anchor="end" alignment-baseline="hanging" x="100%" y="25%">`+config.max+`</text>			
-				</svg>
-				           
-            </div>
-        `;
+				<rect id="level_led_{{unique}}_0_{{$index}}" ng-repeat="color in stripes track by $index" 
+					y=64% 
+					ng-attr-x="{{$index * 6}}px"
+					width="3"
+					height="36%" 
+					style="fill:{{color}}"
+				/>
+				<text id=level_title_{{unique}} class="txt" text-anchor="middle" alignment-baseline="hanging" x="50%" y="0">`+config.label+
+				` <tspan id=level_value_channel_0_{{unique}} class="txt" alignment-baseline="hanging" style="font-weight: bold">
+						{{msg.value}}
+						</tspan>
+						<tspan class="small" alignment-baseline="hanging">
+						`+config.unit+`
+						</tspan>					
+				</text>
+				<text class="small" text-anchor="start" alignment-baseline="hanging" x="0" y="25%">`+config.min+`</text>	
+				<text id=level_max_{{unique}} class="small" text-anchor="end" alignment-baseline="hanging" x="100%" y="25%">`+config.max+`</text>			
+			</svg>				           
+		</div>`
+		var level_pair_h = String.raw`
+		<div class="level" id="level_{{unique}}">
+			<svg id="level_svg_{{unique}}" style="width:`+config.exactwidth+`px; height:`+config.exactheight+`px;">
+				<rect id="level_led_{{unique}}_0_{{$index}}" ng-repeat="color in stripes track by $index" 
+					y=21% 
+					ng-attr-x="{{$index * 6}}px"
+					width="3"
+					height="20%" 
+					style="fill:{{color}}"
+				/>
+				<rect id="level_led_{{unique}}_1_{{$index}}" ng-repeat="color in stripes track by $index" 
+					y=61% 
+					ng-attr-x="{{$index * 6}}px"
+					width="3"
+					height="20%" 
+					style="fill:{{color}}"
+				/>
+				<text id=level_channel_0_{{unique}} class="txt" text-anchor="start" alignment-baseline="hanging" x="0" y="0">`+config.channelA+`
+					<tspan class="small" alignment-baseline="hanging">
+					`+config.unit+`
+					</tspan>
+				</text>
+				<text id=level_value_channel_0_{{unique}} class="txt" alignment-baseline="hanging"
+				text-anchor="end" x="100%" y="0" style="font-weight: bold">
+						{{msg.value}}											
+				</text>
+				
+				<text id=level_channel_1_{{unique}} class="txt" text-anchor="start" alignment-baseline="baseline" x="0" y="100%">`+config.channelB+`
+					<tspan class="small" alignment-baseline="baseline">
+					`+config.unit+`
+					</tspan>
+				</text>
+				<text id=level_value_channel_1_{{unique}} class="txt" alignment-baseline="baseline"
+				text-anchor="end" x="100%" y="100%" style="font-weight: bold">
+						{{msg.value}}											
+				</text>
+
+				<text class="small" text-anchor="start" alignment-baseline="middle" x="0" y="52%">`+config.min+`</text>	
+				<text id=level_max_{{unique}} class="small" text-anchor="end" alignment-baseline="middle" x="100%" y="52%">`+config.max+`</text>
+				
+			</svg>				           
+		</div>`
+		var layout = config.layout === "sh" ? level_single_h : level_pair_h
+		var html = String.raw`
+		${styles}
+		${layout}`
 		return html;
 	};
 
@@ -93,9 +138,9 @@ module.exports = function (RED) {
 			var range = null;
 			var stripecount = null;
 			var site = null;
+			var dimensions = null;
 
-			if (checkConfig(node, config)) {
-				var group = RED.nodes.getNode(config.group);				
+			if (checkConfig(node, config)) {								
 				site = function(){
 					var confs = config._flow.global.configs									
 					for(var key in confs){
@@ -122,17 +167,56 @@ module.exports = function (RED) {
 					}
 					return c;				
 				}
+				dimensions = function(direction){
+					var ret = 0;
+					switch(direction){
+						case "w":{
+							if(layout == "sh"){
+								ret = 6;
+							}
+							if(layout == "ph"){
+								ret = 6;
+							}
+							break;
+						}
+						case "h":{
+							if(layout == "sh"){
+								ret = 1;
+							}
+							
+							if(layout == "ph"){
+								ret = 2;
+							}
+							break;
+						}
+						case "eh":{
+							if(layout == "sh"){
+								ret = 4/6;
+							}
+							
+							if(layout == "ph"){
+								ret = .85;
+							}
+							break;
+						}
+					}
+					return ret;
+				}
 
+
+				var group = RED.nodes.getNode(config.group);
 				var siteoptions = site();
+				var layout = config.layout;
+
 												
-				if(config.width == 0){ config.width = parseInt(group.config.width) || 6};
-				if(config.height == 0) { config.height = 1 }				
+				if(config.width == 0){ config.width = parseInt(group.config.width) || dimensions("w")};
+				if(config.height == 0) {config.height = parseInt(group.config.height) || dimensions("h") }				
 				config.colorText = siteoptions.theme.themeState['widget-textColor'].value;
 				var offcolor = config.colorOff || "gray";
 				var normalcolor = config.colorNormal || "green";
 				var warncolor = config.colorWarn || "orange";
 				var alertcolor = config.colorHi || "red";
-				var colorvalues = [offcolor,normalcolor,warncolor,alertcolor];
+				var opc = [offcolor,normalcolor,warncolor,alertcolor];
 				config.count = stripecount();
 				config.min = parseFloat(config.min);
 				config.max = parseFloat(config.max);
@@ -148,11 +232,11 @@ module.exports = function (RED) {
 				
 				config.stripes = [];						
 				for(var i=0; i < config.count; i++){								
-					config.stripes.push(colorvalues[0])
+					config.stripes.push(opc[0])
 				}
 				
 				config.exactwidth = (config.count * 6) - 3;
-				config.exactheight = parseInt(siteoptions.site.sizes.sy * config.height * 4 / 6);
+				config.exactheight = parseInt(siteoptions.site.sizes.sy * config.height* dimensions("eh")); //* 4 / 6
 				
 				var html = HTML(config);
 				
@@ -170,20 +254,37 @@ module.exports = function (RED) {
 					convertBack: function (value) {						
 						return value;
 					},
+					convert: function (value,old,msg){						
+						if(Array.isArray(value) === true){
+							return msg;
+						}
+						msg.payload = [value,null]
+						return msg;
+					},
 					
-					beforeEmit: function (msg, value) {										
-						var rangedvalue = range(msg.payload, config.params);												
-						msg.size = config.exactwidth;
-						var newcolors = [];
+					beforeEmit: function (msg, value) {	
+						var ranged = [];
+						ranged.push(range(msg.payload[0], config.params));
+						if(msg.payload[1] !== null){
+							ranged.push(range(msg.payload[1], config.params));
+						}												
+						msg.colors = [[],[]];
 						var col;
 						for(var i=0; i < config.count; i++){								
-							col = rangedvalue <= i ? colorvalues[0] : ( i < (warn) ? colorvalues[1] : ( i < (high) ? colorvalues[2] : colorvalues[3]));
-							newcolors.push(col)
-						}						
-						msg.colors = newcolors;
+							col = ranged[0] <= i ? opc[0] : ( i < (warn) ? opc[1] : ( i < (high) ? opc[2] : opc[3]));
+							msg.colors[0].push(col)
+						}
+						if(msg.payload[1] !== null){
+							for(var i=0; i < config.count; i++){								
+								col = ranged[1] <= i ? opc[0] : ( i < (warn) ? opc[1] : ( i < (high) ? opc[2] : opc[3]));
+								msg.colors[1].push(col)
+							}
+						}											
+						
 						msg.d = decimals;
-						msg.animate = config.animations;
-						msg.payload = parseFloat(msg.payload);
+						msg.size = config.exactwidth;
+						msg.animate = config.animations
+					//	msg.payload = parseFloat(msg.payload);
 															
 						return { msg: msg };
 					},
@@ -194,59 +295,92 @@ module.exports = function (RED) {
 						}						
 					},
 					
-					initController: function ($scope) {	
-																					
+					initController: function ($scope) {																		
 						$scope.unique = $scope.$eval('$id')	
-						$scope.lastvalue = 0;										
-						
+						$scope.lastvalue = [0,0]									
 						$scope.$watch('msg', function (msg) {
 							if (!msg) {								
 								return;
 							}
-							//console.log(msg)
+							console.log(msg)
 							if(msg.size){
 								$scope.size = msg.size						
 								var el = document.getElementById("level_svg_"+$scope.unique)
-								el.setAttribute("width",msg.size);
-								el = document.getElementById("level_title_"+$scope.unique)
-								el.setAttribute("x",msg.size/2);
+								if(el){el.setAttribute("width",msg.size);}							
 								el = document.getElementById("level_max_"+$scope.unique)
-								el.setAttribute("x",msg.size);
+								if(el){el.setAttribute("x",msg.size);}
+								el = document.getElementById("level_title_"+$scope.unique)
+								if(el){el.setAttribute("x",msg.size/2);}
+								
 							}						
 							if(msg.colors){
-								if(!$scope.stripes || $scope.stripes.length !== msg.colors.length){								
-									$scope.stripes = msg.colors
+								if(!$scope.stripes || $scope.stripes.length !== msg.colors[0].length){								
+									$scope.stripes = msg.colors[0];
 								}	
 								var stripe;
-								for(var i= 0;i<msg.colors.length;i++){									
-									stripe = document.getElementById("level_led_"+$scope.unique+"_"+i);
-									if(stripe){
-										if(msg.animate === true){
-											$(stripe).stop().animate({'stroke-dashoffset': 0}, 1000).css({'fill': msg.colors[i], 'transition': 'fill .8s'});
+								var len = msg.colors[1].length !== 0 ? 2 : 1;
+								var i;
+								var j;								
+															
+								speed = msg.animations == "reactive" ? .2 : .8;													
+								for(j = 0; j<len; j++){									
+									for(i= 0;i<msg.colors[j].length;i++){									
+										stripe = document.getElementById("level_led_"+$scope.unique+"_"+j+"_"+i);
+										if(stripe){
+											if(msg.animate !== "off"){
+												$(stripe).stop().animate().css({'fill': msg.colors[j][i], 'transition': 'fill '+speed+'s'});
+											}
+											else{											
+												stripe.style.fill = msg.colors[j][i]
+											}	
 										}
-										else{											
-											stripe.style.fill = msg.colors[i]
-										}	
 									}
 								}
-								var val = document.getElementById("level_value_"+$scope.unique);
-								if(msg.animate === true){
-									$({ticker: $scope.lastvalue}).stop().animate({ticker: msg.payload}, {
-										duration: 500,
-										easing:'swing',
-										step: function() {										
-											$(val).text((Math.ceil(this.ticker * msg.d.mult)/msg.d.mult).toFixed(msg.d.fixed));
-										},
-										complete: function() {
-											$(val).text(msg.payload.toFixed(msg.d.fixed));
-											$scope.lastvalue = parseFloat(msg.payload.toFixed(msg.d.fixed));										
-										 }
-									}); 
+								
+								
+								var val0 = document.getElementById("level_value_channel_"+0+"_"+$scope.unique);
+								if(val0){
+									if(msg.animate !== "off"){
+										$({ticker: $scope.lastvalue[0]}).stop().animate({ticker: msg.payload[0]}, {
+											duration: msg.animate == "reactive" ? 100 : 400,
+											easing:'swing',
+											step: function() {										
+												$(val0).text((Math.ceil(this.ticker * msg.d.mult)/msg.d.mult).toFixed(msg.d.fixed));
+											},
+											complete: function() {
+												$(val0).text(msg.payload[0].toFixed(msg.d.fixed));
+												$scope.lastvalue[0] = parseFloat(msg.payload[0].toFixed(msg.d.fixed));										
+											}
+										}); 
+									}
+									else{
+										$(val0).text(msg.payload[0].toFixed(msg.d.fixed));
+										$scope.lastvalue[0] = parseFloat(msg.payload[0].toFixed(msg.d.fixed));
+									}
 								}
-								else{
-									$(val).text(msg.payload.toFixed(msg.d.fixed));
-									$scope.lastvalue = parseFloat(msg.payload.toFixed(msg.d.fixed));
-								}
+								
+								var val1 = document.getElementById("level_value_channel_"+1+"_"+$scope.unique);
+								if(val1){
+									if(msg.animate !== "off"){
+										$({ticker: $scope.lastvalue[1]}).stop().animate({ticker: msg.payload[1]}, {
+											duration: msg.animate == "reactive" ? 100 : 400,
+											easing:'swing',
+											step: function() {										
+												$(val1).text((Math.ceil(this.ticker * msg.d.mult)/msg.d.mult).toFixed(msg.d.fixed));
+											},
+											complete: function() {
+												$(val1).text(msg.payload[1].toFixed(msg.d.fixed));
+												$scope.lastvalue[1] = parseFloat(msg.payload[1].toFixed(msg.d.fixed));										
+											}
+										}); 
+									}
+									else{
+										$(val1).text(msg.payload[1].toFixed(msg.d.fixed));
+										$scope.lastvalue[1] = parseFloat(msg.payload[1].toFixed(msg.d.fixed));
+									}
+								}										
+								
+								 
 																
 							}							
 						});

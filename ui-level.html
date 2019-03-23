@@ -51,8 +51,11 @@ SOFTWARE.
             segWarn: {value: ""},
             segHigh: {value: ""},
             unit: {value:'units'},
+            layout: {value:'sh'},
+            channelA: {value: ""},
+            channelB: {value: ""},
             decimals: {value: 0, required: false, validate: RED.validators.number()},
-            animations: {value:true}
+            animations: {value:"soft"}
 
         },
         inputs:1,
@@ -74,6 +77,24 @@ SOFTWARE.
             $("#node-input-max").change(function() {
                 $("#seg-max").text($(this).val());
             });
+            if (this.layout === undefined) {
+                this.layout = "sh";
+                $("#node-input-layout").val("sh");
+            }
+            if (this.animations === undefined) {
+                this.animations = "soft";
+                $("#node-input-layout").val("soft");
+            }
+            $("#node-input-layout").change(function() {
+                if (($(this).val() === "sh") || ($(this).val() === "sv")) {
+                    $("#node-input-el-label").show();
+                    $("#node-input-el-channels").hide();
+                }
+                else {
+                    $("#node-input-el-label").hide();
+                    $("#node-input-el-channels").show();
+                }
+            });
         }
     });
 </script>
@@ -91,9 +112,26 @@ SOFTWARE.
     </div>
     </br>
     <div class="form-row">
+        <label for="node-input-layout"><i class="fa fa-list"></i> Layout</label>
+        <select id="node-input-layout" style="width:200px !important">
+            <option value="sh">Single Horizontal</option>
+            <option value="ph">Pair Horizontal</option>
+            <option value="sv">Single Vertical</option>
+            <option value="pv">Pair Verical</option>
+        </select>
+    </div>
+    <div class="form-row" id="node-input-el-label">
         <label for="node-input-label"><i class="icon-tag"></i> Label</label>
         <input type="text" id="node-input-label" placeholder="Level">
     </div>
+    <div class="form-row" id="node-input-el-channels">
+        <label for="node-input-channels"><i class="icon-tag"></i> Channels</label>
+        <span for="node-input-channelA">Channel A</span>
+        <input type="text" id="node-input-channelA" style="width:80px" placeholder="A" dir="">
+        <span for="node-input-channelB" style="margin-left:20px;">Channel B</span>
+        <input type="text" id="node-input-channelB" style="width:80px" placeholder="B" dir="">
+    </div>
+</br>
     <div class="form-row">
         <label for="node-input-colorHi"><i class="fa fa-paint-brush"></i> High Color</span></label>
         <input type="color" id="node-input-colorHi" style="width:80px"/>
@@ -112,7 +150,7 @@ SOFTWARE.
     </div>
 </br>      
     <div class="form-row">
-        <label for="node-input-unit">Unit</label>
+        <label for="node-input-unit">Format</label>
         <span for="node-input-unit">Unit</span>
         <input type="text" id="node-input-unit" style="width:80px" dir="">
         <span for="node-input-decimals" style="margin-left:20px;">decimals</span>
@@ -133,11 +171,14 @@ SOFTWARE.
         <span id="seg-max" style="display:inline-block; width:40px; text-align:right">10</span>
     </div>
 </br>
-    <div class="form-row">
-        <label for="node-input-animations"></label>
-        <input type="checkbox" checked id="node-input-animations" style="display:inline-block; width:auto; vertical-align:top;">
-        Animations On/Off.
-    </div>   
+<div class="form-row">
+    <label for="node-input-animations"><i class="fa fa-list"></i> Animations</label>
+    <select id="node-input-animations" style="width:200px !important">
+        <option value="soft">Soft</option>
+        <option value="reactive">Reactive</option>
+        <option value="off">No anmiations</option>
+    </select>
+</div>  
 </br>
     <div class="form-row">
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>

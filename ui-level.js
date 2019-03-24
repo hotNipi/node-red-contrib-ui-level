@@ -68,17 +68,17 @@ module.exports = function (RED) {
 		<div class="level" id="level_{{unique}}">
 			<svg id="level_svg_{{unique}}" style="width:`+config.exactwidth+`px; height:`+config.exactheight+`px;">
 				<rect id="level_led_{{unique}}_0_{{$index}}" ng-repeat="color in stripes track by $index" 
-					y=21% 
+					y=24% 
 					ng-attr-x="{{$index * 6}}px"
 					width="3"
-					height="20%" 
+					height="16%" 
 					style="fill:{{color}}"
 				/>
 				<rect id="level_led_{{unique}}_1_{{$index}}" ng-repeat="color in stripes track by $index" 
-					y=61% 
+					y=63% 
 					ng-attr-x="{{$index * 6}}px"
 					width="3"
-					height="20%" 
+					height="16%" 
 					style="fill:{{color}}"
 				/>
 				<text id=level_channel_0_{{unique}} class="txt" text-anchor="start" alignment-baseline="hanging" x="0" y="0">`+config.channelA+`
@@ -101,8 +101,8 @@ module.exports = function (RED) {
 						{{msg.value}}											
 				</text>
 
-				<text class="small" text-anchor="start" alignment-baseline="middle" x="0" y="52%">`+config.min+`</text>	
-				<text id=level_max_{{unique}} class="small" text-anchor="end" alignment-baseline="middle" x="100%" y="52%">`+config.max+`</text>
+				<text class="small" text-anchor="start" alignment-baseline="middle" x="0" y="53%">`+config.min+`</text>	
+				<text id=level_max_{{unique}} class="small" text-anchor="end" alignment-baseline="middle" x="100%" y="53%">`+config.max+`</text>
 				
 			</svg>				           
 		</div>`
@@ -195,7 +195,7 @@ module.exports = function (RED) {
 							}
 							
 							if(layout == "ph"){
-								ret = .85;
+								ret = .9;
 							}
 							break;
 						}

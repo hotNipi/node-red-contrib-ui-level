@@ -8,6 +8,18 @@
             "ui-level": "ui-level.js"
         }
     },
+    "keywords": [
+        "node-red",
+        "level",
+        "ui-level",
+        "dashboard",
+        "linear gauge",
+        "indicator"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/hotNipi/node-red-contrib-ui-level.git"
+    },
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
     },

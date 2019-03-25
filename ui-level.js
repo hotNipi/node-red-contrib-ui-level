@@ -56,16 +56,16 @@ module.exports = function (RED) {
 					height="36%" 
 					style="fill:{{color}}"
 				/>
-				<text id=level_title_{{unique}} class="txt" text-anchor="middle" alignment-baseline="hanging" x=`+config.exactwidth/2+` y="0">`+config.label+
-				` <tspan id=level_value_channel_0_{{unique}} class="txt" alignment-baseline="hanging" style="font-weight: bold">
+				<text id=level_title_{{unique}} class="txt" text-anchor="middle" dominant-baseline="hanging" x=`+config.exactwidth/2+` y="0">`+config.label+
+				` <tspan id=level_value_channel_0_{{unique}} class="txt" dominant-baseline="hanging" style="font-weight: bold">
 						{{msg.value}}
 						</tspan>
-						<tspan class="small" alignment-baseline="hanging">
+						<tspan class="small" dominant-baseline="hanging">
 						`+config.unit+`
 						</tspan>					
 				</text>
-				<text class="small" text-anchor="start" alignment-baseline="hanging" x="0" y="25%">`+config.min+`</text>	
-				<text id=level_max_{{unique}} class="small" text-anchor="end" alignment-baseline="hanging" ng-attr-x=`+config.lastpos+`px y="25%">`+config.max+`</text>			
+				<text class="small" text-anchor="start" dominant-baseline="hanging" x="0" y="25%">`+config.min+`</text>	
+				<text id=level_max_{{unique}} class="small" text-anchor="end" dominant-baseline="hanging" ng-attr-x=`+config.lastpos+`px y="25%">`+config.max+`</text>			
 			</svg>				           
 		</div>`
 		var level_single_v = String.raw`
@@ -79,20 +79,20 @@ module.exports = function (RED) {
 					style="fill:{{color}}"
 				/>
 				<g id="level_value_group_{{unique}}" transform="translate(${(config.exactwidth/2)+6}, ${(config.exactheight/2)-25})">
-					<text id=level_title_{{unique}} class="txt" text-anchor="middle" alignment-baseline="hanging" y="0">`+config.label+`</text>	
+					<text id=level_title_{{unique}} class="txt" text-anchor="middle" dominant-baseline="hanging" y="0">`+config.label+`</text>	
 					
-					<text id=level_value_channel_0_{{unique}} class="big" alignment-baseline="hanging"
-					text-anchor="middle" y="20px" style="font-weight: bold">
+					<text id=level_value_channel_0_{{unique}} class="big" dominant-baseline="hanging"
+					text-anchor="middle" y="18px" style="font-weight: bold">
 							{{msg.value}}											
 					</text>
-					<text id=level_value_unit_{{unique}} class="small" alignment-baseline="hanging"
+					<text id=level_value_unit_{{unique}} class="small" dominant-baseline="hanging"
 					text-anchor="middle" y="48px">					
 					`+config.unit+`											
 					</text>
 						
 				</g>			
-				<text class="small" text-anchor="start" alignment-baseline="hanging" x="15" y="0">`+config.max+`</text>	
-				<text id=level_max_{{unique}} class="small" text-anchor="start" alignment-baseline="baseline" x="15" ng-attr-y=`+config.lastpos+`px>`+config.min+`</text>			
+				<text class="small" text-anchor="start" dominant-baseline="hanging" x="15" y="0">`+config.max+`</text>	
+				<text id=level_max_{{unique}} class="small" text-anchor="start" dominant-baseline="baseline" x="15" ng-attr-y=`+config.lastpos+`px>`+config.min+`</text>			
 			</svg>				           
 		</div>`
 		var level_pair_h = String.raw`
@@ -112,28 +112,28 @@ module.exports = function (RED) {
 					height="16%" 
 					style="fill:{{color}}"
 				/>
-				<text id=level_channel_0_{{unique}} class="txt" text-anchor="start" alignment-baseline="hanging" x="0" y="0">`+config.channelA+`
-					<tspan class="small" alignment-baseline="hanging">
+				<text id=level_channel_0_{{unique}} class="txt" text-anchor="start" dominant-baseline="hanging" x="0" y="0">`+config.channelA+`
+					<tspan class="small" dominant-baseline="hanging">
 					`+config.unit+`
 					</tspan>
 				</text>
-				<text id=level_value_channel_0_{{unique}} class="txt" alignment-baseline="hanging"
+				<text id=level_value_channel_0_{{unique}} class="txt" dominant-baseline="hanging"
 				text-anchor="end" x="100%" y="0" style="font-weight: bold">
 						{{msg.value}}											
 				</text>
 				
-				<text id=level_channel_1_{{unique}} class="txt" text-anchor="start" alignment-baseline="baseline" x="0" y=`+config.exactheight+`>`+config.channelB+`
-					<tspan class="small" alignment-baseline="baseline">
+				<text id=level_channel_1_{{unique}} class="txt" text-anchor="start" dominant-baseline="baseline" x="0" y=`+config.exactheight+`>`+config.channelB+`
+					<tspan class="small" dominant-baseline="baseline">
 					`+config.unit+`
 					</tspan>
 				</text>
-				<text id=level_value_channel_1_{{unique}} class="txt" alignment-baseline="baseline"
+				<text id=level_value_channel_1_{{unique}} class="txt" dominant-baseline="baseline"
 				text-anchor="end" x="100%" y="100%" style="font-weight: bold">
 						{{msg.value}}											
 				</text>
 
-				<text class="small" text-anchor="start" alignment-baseline="middle" x="0" y="53%">`+config.min+`</text>	
-				<text id=level_max_{{unique}} class="small" text-anchor="end" alignment-baseline="middle" ng-attr-x=`+config.lastpos+`px y="53%">`+config.max+`</text>
+				<text class="small" text-anchor="start" dominant-baseline="middle" x="0" y="53%">`+config.min+`</text>	
+				<text id=level_max_{{unique}} class="small" text-anchor="end" dominant-baseline="middle" ng-attr-x=`+config.lastpos+`px y="53%">`+config.max+`</text>
 				
 			</svg>				           
 		</div>`

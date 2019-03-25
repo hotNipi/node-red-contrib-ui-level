@@ -116,8 +116,7 @@ SOFTWARE.
         <select id="node-input-layout" style="width:200px !important">
             <option value="sh">Single Horizontal</option>
             <option value="ph">Pair Horizontal</option>
-            <option value="sv">Single Vertical</option>
-            <option value="pv">Pair Verical</option>
+            <option value="sv">Single Vertical</option>           
         </select>
     </div>
     <div class="form-row" id="node-input-el-label">
@@ -126,9 +125,9 @@ SOFTWARE.
     </div>
     <div class="form-row" id="node-input-el-channels">
         <label for="node-input-channels"><i class="icon-tag"></i> Channels</label>
-        <span for="node-input-channelA">Channel A</span>
+        <span for="node-input-channelA">Top </span>
         <input type="text" id="node-input-channelA" style="width:80px" placeholder="A" dir="">
-        <span for="node-input-channelB" style="margin-left:20px;">Channel B</span>
+        <span for="node-input-channelB" style="margin-left:20px;">Bottom </span>
         <input type="text" id="node-input-channelB" style="width:80px" placeholder="B" dir="">
     </div>
 </br>
@@ -148,14 +147,7 @@ SOFTWARE.
         <label for="node-input-colorOff"><i class="fa fa-paint-brush"></i> Off</span></label>
         <input type="color" id="node-input-colorOff" style="width:80px"/>
     </div>
-</br>      
-    <div class="form-row">
-        <label for="node-input-unit">Format</label>
-        <span for="node-input-unit">Unit</span>
-        <input type="text" id="node-input-unit" style="width:80px" dir="">
-        <span for="node-input-decimals" style="margin-left:20px;">decimals</span>
-        <input type="text" id="node-input-decimals" style="width:80px" placeholder="0" dir="">
-    </div>
+</br>   
     <div class="form-row">
         <label for="node-input-min">Range</label>
         <span for="node-input-min">min</span>
@@ -171,14 +163,22 @@ SOFTWARE.
         <span id="seg-max" style="display:inline-block; width:40px; text-align:right">10</span>
     </div>
 </br>
-<div class="form-row">
-    <label for="node-input-animations"><i class="fa fa-list"></i> Animations</label>
-    <select id="node-input-animations" style="width:200px !important">
-        <option value="soft">Soft</option>
-        <option value="reactive">Reactive</option>
-        <option value="off">No animations</option>
-    </select>
-</div>  
+    <div class="form-row">
+        <label for="node-input-unit">Format</label>
+        <span for="node-input-unit">Unit</span>
+        <input type="text" id="node-input-unit" style="width:80px" dir="">
+        <span for="node-input-decimals" style="margin-left:20px;">decimals</span>
+        <input type="text" id="node-input-decimals" style="width:80px" placeholder="0" dir="">
+    </div>
+</br>
+    <div class="form-row">
+        <label for="node-input-animations"><i class="fa fa-list"></i> Animations</label>
+        <select id="node-input-animations" style="width:200px !important">
+            <option value="soft">Soft</option>
+            <option value="reactive">Reactive</option>
+            <option value="off">No animations</option>
+        </select>
+    </div>                   
 </br>
     <div class="form-row">
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
@@ -187,11 +187,14 @@ SOFTWARE.
 </script>
 
 <script type="text/x-red" data-help-name="ui_level">
-    <p>Adds a linear level type widget to the user interface</p>
+    <p>Adds a linear Level type widget to the user interface</p>
+    <p>Widget has 3 different layouts: Single Horizontal, Pair Horizontal and Single Vertical</p>
     <p>Takes the <code>msg.payload</code> and displays the value at the top of the level graphics.</p>
-    <p>The node's <code>Label</code> is displayed before the value. Leave the label field empty to show value only</p>
-    <p>The node's <code>Unit</code> will be displayed at the trailing end of the current value. A unit can be anything, for example: <code>lbs psi F°</code></p>
+    <p>For Pair Horizontal layout the <code>msg.payload</code> is expected to be an <code>array</code></p>
+    <p>The node's <code>Label</code> is displayed near the value. Leave the label field empty to show value only</p>
+    <p>For Pair Horizontal layout the <code>Label</code> is not displayed but both <code>Channels</code> can be labelled independently</p>
+    <p>The node's <code>Unit</code> will be displayed near the current value. Exact position of the unit depends on choosed layout. The unit can be any <code>string</code>, for example: <code>lbs psi F°</code></p>
     <p>The min amd max values are customizable within the configuration but cannot be set with a msg.</p>
     <p>The segments's values and colors are also customizable within the configuration but cannot be set with a msg.</p>    
-    <p>Widget anmations can be turned on/off.</p>
+    <p>You can choose anmations to be <code>soft</code> or <code>reactive</code> or animations can be turned <code>off</code> completely.</p>
 </script>

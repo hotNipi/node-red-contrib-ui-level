@@ -31,8 +31,8 @@ module.exports = function (RED) {
 			.level {
 				display: flex;
 				flex-flow: row;
-				justify-content: center;
-				overflow: hidden;
+				justify-content: ${config.justify};
+				
 			}
 			.txt {
 				fill: ${config.colorText};									
@@ -40,6 +40,13 @@ module.exports = function (RED) {
 			.small { 
 				font-size: 60%;
 				fill: ${config.colorText};	
+			}
+			.big { 
+				font-size: 175%;
+				fill: ${config.colorText};	
+			}
+			#level_single_v {
+				transform: translate(${(config.exactwidth/2)+6}px, ${(config.exactheight/2)-25}px);				
 			}
 		</style>`
 		var level_single_h = String.raw`
@@ -52,7 +59,7 @@ module.exports = function (RED) {
 					height="36%" 
 					style="fill:{{color}}"
 				/>
-				<text id=level_title_{{unique}} class="txt" text-anchor="middle" alignment-baseline="hanging" x="50%" y="0">`+config.label+
+				<text id=level_title_{{unique}} class="txt" text-anchor="middle" alignment-baseline="hanging" x=`+config.exactwidth/2+` y="0">`+config.label+
 				` <tspan id=level_value_channel_0_{{unique}} class="txt" alignment-baseline="hanging" style="font-weight: bold">
 						{{msg.value}}
 						</tspan>
@@ -61,7 +68,34 @@ module.exports = function (RED) {
 						</tspan>					
 				</text>
 				<text class="small" text-anchor="start" alignment-baseline="hanging" x="0" y="25%">`+config.min+`</text>	
-				<text id=level_max_{{unique}} class="small" text-anchor="end" alignment-baseline="hanging" x="100%" y="25%">`+config.max+`</text>			
+				<text id=level_max_{{unique}} class="small" text-anchor="end" alignment-baseline="hanging" ng-attr-x=`+config.lastpos+`px y="25%">`+config.max+`</text>			
+			</svg>				           
+		</div>`
+		var level_single_v = String.raw`
+		<div class="level" id="level_{{unique}}">
+			<svg id="level_svg_{{unique}}" style="width:`+config.exactwidth+`px; height:`+config.exactheight+`px;">
+				<rect id="level_led_{{unique}}_0_{{$index}}" ng-repeat="color in stripes track by $index" 
+					y=0 
+					ng-attr-y="{{$index * 6}}px"
+					width="12"
+					height="3" 
+					style="fill:{{color}}"
+				/>
+				<g id="level_single_v">
+					<text id=level_title_{{unique}} class="txt" text-anchor="middle" alignment-baseline="hanging" y="0">`+config.label+`</text>	
+					
+					<text id=level_value_channel_0_{{unique}} class="big" alignment-baseline="hanging"
+					text-anchor="middle" y="20px" style="font-weight: bold">
+							{{msg.value}}											
+					</text>
+					<text id=level_value_unit_{{unique}} class="small" alignment-baseline="hanging"
+					text-anchor="middle" y="48px">					
+					`+config.unit+`											
+					</text>
+						
+				</g>			
+				<text class="small" text-anchor="start" alignment-baseline="hanging" x="15" y="0">`+config.max+`</text>	
+				<text id=level_max_{{unique}} class="small" text-anchor="start" alignment-baseline="baseline" x="15" ng-attr-y=`+config.lastpos+`px>`+config.min+`</text>			
 			</svg>				           
 		</div>`
 		var level_pair_h = String.raw`
@@ -91,7 +125,7 @@ module.exports = function (RED) {
 						{{msg.value}}											
 				</text>
 				
-				<text id=level_channel_1_{{unique}} class="txt" text-anchor="start" alignment-baseline="baseline" x="0" y="100%">`+config.channelB+`
+				<text id=level_channel_1_{{unique}} class="txt" text-anchor="start" alignment-baseline="baseline" x="0" y=`+config.exactheight+`>`+config.channelB+`
 					<tspan class="small" alignment-baseline="baseline">
 					`+config.unit+`
 					</tspan>
@@ -102,11 +136,21 @@ module.exports = function (RED) {
 				</text>
 
 				<text class="small" text-anchor="start" alignment-baseline="middle" x="0" y="53%">`+config.min+`</text>	
-				<text id=level_max_{{unique}} class="small" text-anchor="end" alignment-baseline="middle" x="100%" y="53%">`+config.max+`</text>
+				<text id=level_max_{{unique}} class="small" text-anchor="end" alignment-baseline="middle" ng-attr-x=`+config.lastpos+`px y="53%">`+config.max+`</text>
 				
 			</svg>				           
 		</div>`
-		var layout = config.layout === "sh" ? level_single_h : level_pair_h
+		var layout;
+		if(config.layout === "sh"){
+			layout = level_single_h;
+		}
+		if(config.layout === "sv"){
+			layout = level_single_v;
+		}
+		if(config.layout === "ph"){
+			layout = level_pair_h;
+		}
+		
 		var html = String.raw`
 		${styles}
 		${layout}`
@@ -159,9 +203,10 @@ module.exports = function (RED) {
 					n = ((n - p.minin) / (p.maxin - p.minin) * (p.maxout - p.minout)) + p.minout;										
 					return Math.round(n);
 				}				
-				stripecount = function(){									
-					var w = siteoptions.site.sizes.sx * config.width;								
-					var c = parseInt((w / 6)) - 1;
+				stripecount = function(){
+									
+					var w =(config.layout.indexOf("v") != -1) ? config.exactheight : config.exactwidth;							
+					var c = parseInt((w / 6));
 					if(c & 1 !== 1){
 						c --;
 					}
@@ -171,31 +216,47 @@ module.exports = function (RED) {
 					var ret = 0;
 					switch(direction){
 						case "w":{
-							if(layout == "sh"){
+							if(config.layout == "sh"){
 								ret = 6;
 							}
-							if(layout == "ph"){
+							if(config.layout == "ph"){
 								ret = 6;
+							}
+							if(config.layout == "sv"){
+								ret = 3;
 							}
 							break;
 						}
 						case "h":{
-							if(layout == "sh"){
+							if(config.layout == "sh"){
 								ret = 1;
-							}
-							
-							if(layout == "ph"){
+							}							
+							if(config.layout == "ph"){
 								ret = 2;
+							}
+							if(config.layout == "sv"){
+								ret = 4;
 							}
 							break;
 						}
 						case "eh":{
-							if(layout == "sh"){
+							if(config.layout == "sh"){
 								ret = 4/6;
+							}							
+							if(config.layout == "ph"){
+								ret = .88;
 							}
-							
-							if(layout == "ph"){
-								ret = .9;
+							if(config.layout == "sv"){
+								ret = .83 + (config.height*2.5/100);
+							}
+							break;
+						}
+						case "ew":{
+							if(config.layout == "sh"|| config.layout == "ph"){
+								ret = .85 + (config.width/100);
+							}						
+							if(config.layout == "sv"){
+								ret = .94;
 							}
 							break;
 						}
@@ -206,18 +267,22 @@ module.exports = function (RED) {
 
 				var group = RED.nodes.getNode(config.group);
 				var siteoptions = site();
-				var layout = config.layout;
-
 												
 				if(config.width == 0){ config.width = parseInt(group.config.width) || dimensions("w")};
-				if(config.height == 0) {config.height = parseInt(group.config.height) || dimensions("h") }				
+				if(config.height == 0) {config.height = parseInt(group.config.height) || dimensions("h") }
+				config.exactwidth = parseInt(siteoptions.site.sizes.sx * config.width * dimensions("ew"));			
+				config.exactheight = parseInt(siteoptions.site.sizes.sy * config.height * dimensions("eh"));
+				config.justify = (config.layout.indexOf("v") != -1) ? 'left' : 'center';
+				config.count = stripecount();
+				config.lastpos = config.count * 6 - 3;				
+				
 				config.colorText = siteoptions.theme.themeState['widget-textColor'].value;
 				var offcolor = config.colorOff || "gray";
 				var normalcolor = config.colorNormal || "green";
 				var warncolor = config.colorWarn || "orange";
 				var alertcolor = config.colorHi || "red";
 				var opc = [offcolor,normalcolor,warncolor,alertcolor];
-				config.count = stripecount();
+				
 				config.min = parseFloat(config.min);
 				config.max = parseFloat(config.max);
 				config.params = {minin:config.min, maxin:config.max+0.00001, minout:1, maxout:config.count}; 				
@@ -228,15 +293,7 @@ module.exports = function (RED) {
 				high = range(sectorhigh,config.params);
 				warn = range(sectorwarn,config.params);	
 				
-				var decimals = isNaN(parseFloat(config.decimals)) ? {fixed:1,mult:0} : {fixed:parseInt(config.decimals),mult:Math.pow(10,parseInt(config.decimals))};
-				
-				config.stripes = [];						
-				for(var i=0; i < config.count; i++){								
-					config.stripes.push(opc[0])
-				}
-				
-				config.exactwidth = (config.count * 6) - 3;
-				config.exactheight = parseInt(siteoptions.site.sizes.sy * config.height* dimensions("eh")); //* 4 / 6
+				var decimals = isNaN(parseFloat(config.decimals)) ? {fixed:1,mult:0} : {fixed:parseInt(config.decimals),mult:Math.pow(10,parseInt(config.decimals))};				
 				
 				var html = HTML(config);
 				
@@ -279,13 +336,14 @@ module.exports = function (RED) {
 								col = ranged[1] <= i ? opc[0] : ( i < (warn) ? opc[1] : ( i < (high) ? opc[2] : opc[3]));
 								msg.colors[1].push(col)
 							}
-						}											
-						
-						msg.d = decimals;
-						msg.size = config.exactwidth;
-						msg.animate = config.animations
-					//	msg.payload = parseFloat(msg.payload);
-															
+						}
+						if((config.layout.indexOf("v") != -1)){
+							msg.colors[0].reverse();
+							msg.colors[1].reverse();
+							
+						}
+						msg.d = decimals;					
+						msg.animate = config.animations															
 						return { msg: msg };
 					},
 					
@@ -301,18 +359,7 @@ module.exports = function (RED) {
 						$scope.$watch('msg', function (msg) {
 							if (!msg) {								
 								return;
-							}
-							console.log(msg)
-							if(msg.size){
-								$scope.size = msg.size						
-								var el = document.getElementById("level_svg_"+$scope.unique)
-								if(el){el.setAttribute("width",msg.size);}							
-								el = document.getElementById("level_max_"+$scope.unique)
-								if(el){el.setAttribute("x",msg.size);}
-								el = document.getElementById("level_title_"+$scope.unique)
-								if(el){el.setAttribute("x",msg.size/2);}
-								
-							}						
+							}								
 							if(msg.colors){
 								if(!$scope.stripes || $scope.stripes.length !== msg.colors[0].length){								
 									$scope.stripes = msg.colors[0];
@@ -320,9 +367,8 @@ module.exports = function (RED) {
 								var stripe;
 								var len = msg.colors[1].length !== 0 ? 2 : 1;
 								var i;
-								var j;								
-															
-								speed = msg.animations == "reactive" ? .2 : .8;													
+								var j;					
+								var speed = msg.animations == "reactive" ? .2 : .8;													
 								for(j = 0; j<len; j++){									
 									for(i= 0;i<msg.colors[j].length;i++){									
 										stripe = document.getElementById("level_led_"+$scope.unique+"_"+j+"_"+i);

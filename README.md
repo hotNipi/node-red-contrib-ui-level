@@ -1,5 +1,8 @@
 # node-red-contrib-ui-level
 Adds a linear Level type widget to the user interface
+
+![setup.JPG](img/example.JPG)
+
 # Requirements
 Node-Red v19.4 or greater
 Node-Red-dashboard v2.13.0 or greater

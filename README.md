@@ -14,7 +14,7 @@ For Pair Horizontal layout the `Label` is not displayed but both `Channels` can 
 
 The node's `Unit` will be displayed near the current value. Exact position of the unit depends on choosed layout. The unit can be any `string`, for example: `lbs psi F°`
 
-The min amd max values are customizable within the configuration but cannot be set with a msg.
+The min and max values are customizable within the configuration but cannot be set with a msg.
 
 The segments's values and colors are also customizable within the configuration but cannot be set with a msg.    
 

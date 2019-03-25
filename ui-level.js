@@ -45,13 +45,10 @@ module.exports = function (RED) {
 				font-size: 175%;
 				fill: ${config.colorText};	
 			}
-			#level_single_v {
-				transform: translate(${(config.exactwidth/2)+6}px, ${(config.exactheight/2)-25}px);				
-			}
 		</style>`
 		var level_single_h = String.raw`
 		<div class="level" id="level_{{unique}}">
-			<svg id="level_svg_{{unique}}" style="width:`+config.exactwidth+`px; height:`+config.exactheight+`px;">
+			<svg id="level_svg_{{uni.que}}" style="width:`+config.exactwidth+`px; height:`+config.exactheight+`px;">
 				<rect id="level_led_{{unique}}_0_{{$index}}" ng-repeat="color in stripes track by $index" 
 					y=64% 
 					ng-attr-x="{{$index * 6}}px"
@@ -81,7 +78,7 @@ module.exports = function (RED) {
 					height="3" 
 					style="fill:{{color}}"
 				/>
-				<g id="level_single_v">
+				<g id="level_value_group_{{unique}}" transform="translate(${(config.exactwidth/2)+6}, ${(config.exactheight/2)-25})">
 					<text id=level_title_{{unique}} class="txt" text-anchor="middle" alignment-baseline="hanging" y="0">`+config.label+`</text>	
 					
 					<text id=level_value_channel_0_{{unique}} class="big" alignment-baseline="hanging"

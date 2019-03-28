@@ -174,7 +174,6 @@ module.exports = function (RED) {
 			}
 			
 			RED.nodes.createNode(this, config);
-
 			var done = null;
 			var range = null;
 			var stripecount = null;
@@ -183,13 +182,23 @@ module.exports = function (RED) {
 
 			if (checkConfig(node, config)) {								
 				site = function(){
-					var confs = config._flow.global.configs									
-					for(var key in confs){
-						if (confs.hasOwnProperty(key)) {							
-							if(confs[key].type === "ui_base"){								
-								return confs[key]
+					var fl = config_flow;					
+					if(fl){
+						var confs = config._flow.global.configs
+						for(var key in confs){
+							if (confs.hasOwnProperty(key)) {							
+								if(confs[key].type === "ui_base"){								
+									return confs[key]
+								}
 							}
 						}
+					}
+					else{
+						console.warn("[ui-level] couldn't reach to the site parameters. Using defauts")
+						var opts = {}
+						opts.site = {sizes:{ sx: 48, sy: 48, gx: 4, gy: 4, cx: 4, cy: 4, px: 4, py: 4 }}
+						opts.theme = {themeState: {"widget-textColor":{value:"#eeeeee"}}}
+						return opts
 					}
 				}
 				range = function (n,p){					
@@ -263,8 +272,7 @@ module.exports = function (RED) {
 
 
 				var group = RED.nodes.getNode(config.group);
-				var siteoptions = site();
-												
+				var siteoptions = site();												
 				if(config.width == 0){ config.width = parseInt(group.config.width) || dimensions("w")};
 				if(config.height == 0) {config.height = parseInt(group.config.height) || dimensions("h") }
 				config.exactwidth = parseInt(siteoptions.site.sizes.sx * config.width * dimensions("ew"));			

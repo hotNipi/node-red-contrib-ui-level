@@ -194,7 +194,7 @@ module.exports = function (RED) {
 						}
 					}
 					else{
-						console.warn("[ui-level] couldn't reach to the site parameters. Using defauts")
+						node.warn("couldn't reach to the site parameters. Using defauts")
 						var opts = {}
 						opts.site = {sizes:{ sx: 48, sy: 48, gx: 4, gy: 4, cx: 4, cy: 4, px: 4, py: 4 }}
 						opts.theme = {themeState: {"widget-textColor":{value:"#eeeeee"}}}
@@ -316,12 +316,34 @@ module.exports = function (RED) {
 					convertBack: function (value) {						
 						return value;
 					},
-					convert: function (value,old,msg){						
+					convert: function (value,old,msg){											
 						if(Array.isArray(value) === true){
+							var result = value.map(function (x) { 
+								return parseFloat(x); 
+							});
+							if(!result.some(isNaN)){
+								if(result.length < 2 ){
+									result.push(null);
+								}
+								msg.payload = result
+								return msg;
+							}
+							else{
+								node.warn("msg.payload doesn't contain array of numeric values")
+								msg.payload = [0,0]
+								return msg;
+							}													
+						}
+						value = parseFloat(value)
+						if(!isNaN(value)){
+							msg.payload = [value,null]
 							return msg;
 						}
-						msg.payload = [value,null]
-						return msg;
+						else{
+							node.warn("msg.payload is not numeric value")
+							msg.payload = [0,null]
+							return msg;
+						}						
 					},
 					
 					beforeEmit: function (msg, value) {	

@@ -182,7 +182,7 @@ module.exports = function (RED) {
 
 			if (checkConfig(node, config)) {								
 				site = function(){
-					var fl = config_flow;					
+					var fl = config._flow;					
 					if(fl){
 						var confs = config._flow.global.configs
 						for(var key in confs){

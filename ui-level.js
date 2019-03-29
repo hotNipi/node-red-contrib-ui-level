@@ -46,6 +46,7 @@ module.exports = function (RED) {
 				fill: ${config.colorText};	
 			}
 		</style>`
+		
 		var level_single_h = String.raw`
 		<div class="level" id="level_{{unique}}">
 			<svg id="level_svg_{{uni.que}}" style="width:`+config.exactwidth+`px; height:`+config.exactheight+`px;">
@@ -68,6 +69,7 @@ module.exports = function (RED) {
 				<text id=level_max_{{unique}} class="small" text-anchor="end" dominant-baseline="hanging" ng-attr-x=`+config.lastpos+`px y="25%">`+config.max+`</text>			
 			</svg>				           
 		</div>`
+		
 		var level_single_v = String.raw`
 		<div class="level" id="level_{{unique}}">
 			<svg id="level_svg_{{unique}}" style="width:`+config.exactwidth+`px; height:`+config.exactheight+`px;">
@@ -95,6 +97,7 @@ module.exports = function (RED) {
 				<text id=level_max_{{unique}} class="small" text-anchor="start" dominant-baseline="baseline" x="15" ng-attr-y=`+config.lastpos+`px>`+config.min+`</text>			
 			</svg>				           
 		</div>`
+		
 		var level_pair_h = String.raw`
 		<div class="level" id="level_{{unique}}">
 			<svg id="level_svg_{{unique}}" style="width:`+config.exactwidth+`px; height:`+config.exactheight+`px;">
@@ -209,8 +212,7 @@ module.exports = function (RED) {
 					n = ((n - p.minin) / (p.maxin - p.minin) * (p.maxout - p.minout)) + p.minout;										
 					return Math.round(n);
 				}				
-				stripecount = function(){
-									
+				stripecount = function(){									
 					var w =(config.layout.indexOf("v") != -1) ? config.exactheight : config.exactwidth;							
 					var c = parseInt((w / 6));
 					if(c & 1 !== 1){
@@ -269,8 +271,7 @@ module.exports = function (RED) {
 					}
 					return ret;
 				}
-
-
+				
 				var group = RED.nodes.getNode(config.group);
 				var siteoptions = site();												
 				if(config.width == 0){ config.width = parseInt(group.config.width) || dimensions("w")};
@@ -340,7 +341,7 @@ module.exports = function (RED) {
 							return msg;
 						}
 						else{
-							node.warn("msg.payload is not numeric value")
+							node.warn("msg.payload doesn't contain numeric value")
 							msg.payload = [0,null]
 							return msg;
 						}						
@@ -408,8 +409,7 @@ module.exports = function (RED) {
 											}	
 										}
 									}
-								}
-								
+								}						
 								
 								var val0 = document.getElementById("level_value_channel_"+0+"_"+$scope.unique);
 								if(val0){
@@ -451,10 +451,7 @@ module.exports = function (RED) {
 										$(val1).text(msg.payload[1].toFixed(msg.d.fixed));
 										$scope.lastvalue[1] = parseFloat(msg.payload[1].toFixed(msg.d.fixed));
 									}
-								}										
-								
-								 
-																
+								}							
 							}							
 						});
 					}

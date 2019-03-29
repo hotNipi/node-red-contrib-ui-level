@@ -194,7 +194,7 @@ module.exports = function (RED) {
 						}
 					}
 					else{
-						node.warn("couldn't reach to the site parameters. Using defauts")
+						node.warn("Couldn't reach to the site parameters. Using defaults")
 						var opts = {}
 						opts.site = {sizes:{ sx: 48, sy: 48, gx: 4, gy: 4, cx: 4, cy: 4, px: 4, py: 4 }}
 						opts.theme = {themeState: {"widget-textColor":{value:"#eeeeee"}}}

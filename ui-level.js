@@ -50,7 +50,7 @@ module.exports = function (RED) {
 		var level_single_h = String.raw`
 		<div class="level" id="level_{{unique}}">
 			<svg id="level_svg_{{uni.que}}" style="width:`+config.exactwidth+`px; height:`+config.exactheight+`px;">
-				<rect id="level_led_{{unique}}_0_{{$index}}" ng-repeat="color in stripes track by $index" 
+				<rect id="level_led_{{unique}}_0_{{$index}}" ng-repeat="color in stripes[0] track by $index" 
 					y=64% 
 					ng-attr-x="{{$index * 6}}px"
 					width="3"
@@ -59,7 +59,7 @@ module.exports = function (RED) {
 				/>
 				<text id=level_title_{{unique}} class="txt" text-anchor="middle" dominant-baseline="hanging" x=`+config.exactwidth/2+` y="0">`+config.label+
 				` <tspan id=level_value_channel_0_{{unique}} class="txt" dominant-baseline="hanging" style="font-weight: bold">
-						{{msg.value}}
+						{{msg.payload[0]}}
 						</tspan>
 						<tspan class="small" dominant-baseline="hanging">
 						`+config.unit+`
@@ -73,7 +73,7 @@ module.exports = function (RED) {
 		var level_single_v = String.raw`
 		<div class="level" id="level_{{unique}}">
 			<svg id="level_svg_{{unique}}" style="width:`+config.exactwidth+`px; height:`+config.exactheight+`px;">
-				<rect id="level_led_{{unique}}_0_{{$index}}" ng-repeat="color in stripes track by $index" 
+				<rect id="level_led_{{unique}}_0_{{$index}}" ng-repeat="color in stripes[0] track by $index" 
 					y=0 
 					ng-attr-y="{{$index * 6}}px"
 					width="12"
@@ -85,7 +85,7 @@ module.exports = function (RED) {
 					
 					<text id=level_value_channel_0_{{unique}} class="big" dominant-baseline="hanging"
 					text-anchor="middle" y="18px" style="font-weight: bold">
-							{{msg.value}}											
+							{{msg.payload[0]}}											
 					</text>
 					<text id=level_value_unit_{{unique}} class="small" dominant-baseline="hanging"
 					text-anchor="middle" y="48px">					
@@ -101,14 +101,14 @@ module.exports = function (RED) {
 		var level_pair_h = String.raw`
 		<div class="level" id="level_{{unique}}">
 			<svg id="level_svg_{{unique}}" style="width:`+config.exactwidth+`px; height:`+config.exactheight+`px;">
-				<rect id="level_led_{{unique}}_0_{{$index}}" ng-repeat="color in stripes track by $index" 
+				<rect id="level_led_{{unique}}_0_{{$index}}" ng-repeat="color in stripes[0] track by $index" 
 					y=24% 
 					ng-attr-x="{{$index * 6}}px"
 					width="3"
 					height="16%" 
 					style="fill:{{color}}"
 				/>
-				<rect id="level_led_{{unique}}_1_{{$index}}" ng-repeat="color in stripes track by $index" 
+				<rect id="level_led_{{unique}}_1_{{$index}}" ng-repeat="color in stripes[1] track by $index" 
 					y=63% 
 					ng-attr-x="{{$index * 6}}px"
 					width="3"
@@ -122,7 +122,7 @@ module.exports = function (RED) {
 				</text>
 				<text id=level_value_channel_0_{{unique}} class="txt" dominant-baseline="hanging"
 				text-anchor="end" x="100%" y="0" style="font-weight: bold">
-						{{msg.value}}											
+						{{msg.payload[0]}}											
 				</text>
 				
 				<text id=level_channel_1_{{unique}} class="txt" text-anchor="start" dominant-baseline="baseline" x="0" y=`+config.exactheight+`>`+config.channelB+`
@@ -132,7 +132,7 @@ module.exports = function (RED) {
 				</text>
 				<text id=level_value_channel_1_{{unique}} class="txt" dominant-baseline="baseline"
 				text-anchor="end" x="100%" y="100%" style="font-weight: bold">
-						{{msg.value}}											
+						{{msg.payload[1]}}											
 				</text>
 
 				<text class="small" text-anchor="start" dominant-baseline="middle" x="0" y="53%">`+config.min+`</text>	
@@ -318,10 +318,11 @@ module.exports = function (RED) {
 					convertBack: function (value) {						
 						return value;
 					},
-					convert: function (value,old,msg){											
+					convert: function (value,old,msg){
+																
 						if(Array.isArray(value) === true){
 							var result = value.map(function (x) { 
-								return parseFloat(x); 
+								return parseFloat(x.toFixed(decimals.fixed)); 
 							});
 							if(!result.some(isNaN)){
 								if(result.length < 2 ){
@@ -336,7 +337,7 @@ module.exports = function (RED) {
 								return msg;
 							}													
 						}
-						value = parseFloat(value)
+						value = parseFloat(value.toFixed(decimals.fixed))
 						if(!isNaN(value)){
 							msg.payload = [value,null]
 							return msg;
@@ -376,7 +377,7 @@ module.exports = function (RED) {
 						return { msg: msg };
 					},
 					
-					beforeSend: function (msg, orig) {						
+					beforeSend: function (msg, orig) {
 						if (orig) {
 							return orig.msg;
 						}						
@@ -386,12 +387,13 @@ module.exports = function (RED) {
 						$scope.unique = $scope.$eval('$id')	
 						$scope.lastvalue = [0,0]									
 						$scope.$watch('msg', function (msg) {
+							console.log('watch',msg)
 							if (!msg) {								
 								return;
 							}								
 							if(msg.colors){
-								if(!$scope.stripes || $scope.stripes.length !== msg.colors[0].length){								
-									$scope.stripes = msg.colors[0];
+								if(!$scope.stripes || $scope.stripes[0].length !== msg.colors[0].length){								
+									$scope.stripes = msg.colors;
 								}	
 								var stripe;
 								var len = msg.colors[1].length !== 0 ? 2 : 1;
@@ -422,14 +424,14 @@ module.exports = function (RED) {
 												$(val0).text((Math.ceil(this.ticker * msg.d.mult)/msg.d.mult).toFixed(msg.d.fixed));
 											},
 											complete: function() {
-												$(val0).text(msg.payload[0].toFixed(msg.d.fixed));
-												$scope.lastvalue[0] = parseFloat(msg.payload[0].toFixed(msg.d.fixed));										
+												$(val0).text(msg.payload[0]);
+												$scope.lastvalue[0] = msg.payload[0];										
 											}
 										}); 
 									}
 									else{
-										$(val0).text(msg.payload[0].toFixed(msg.d.fixed));
-										$scope.lastvalue[0] = parseFloat(msg.payload[0].toFixed(msg.d.fixed));
+										$(val0).text(msg.payload[0]);
+										$scope.lastvalue[0] = msg.payload[0];
 									}
 								}
 								
@@ -443,14 +445,14 @@ module.exports = function (RED) {
 												$(val1).text((Math.ceil(this.ticker * msg.d.mult)/msg.d.mult).toFixed(msg.d.fixed));
 											},
 											complete: function() {
-												$(val1).text(msg.payload[1].toFixed(msg.d.fixed));
-												$scope.lastvalue[1] = parseFloat(msg.payload[1].toFixed(msg.d.fixed));										
+												$(val1).text(msg.payload[1]);
+												$scope.lastvalue[1] = msg.payload[1];										
 											}
 										}); 
 									}
 									else{
-										$(val1).text(msg.payload[1].toFixed(msg.d.fixed));
-										$scope.lastvalue[1] = parseFloat(msg.payload[1].toFixed(msg.d.fixed));
+										$(val1).text(msg.payload[1]);
+										$scope.lastvalue[1] = msg.payload[1];
 									}
 								}							
 							}							

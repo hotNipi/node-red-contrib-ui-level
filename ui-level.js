@@ -387,7 +387,6 @@ module.exports = function (RED) {
 						$scope.unique = $scope.$eval('$id')	
 						$scope.lastvalue = [0,0]									
 						$scope.$watch('msg', function (msg) {
-							console.log('watch',msg)
 							if (!msg) {								
 								return;
 							}								

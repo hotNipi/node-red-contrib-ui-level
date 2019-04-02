@@ -398,7 +398,7 @@ module.exports = function (RED) {
 								var len = msg.colors[1].length !== 0 ? 2 : 1;
 								var i;
 								var j;					
-								var speed = msg.animations == "reactive" ? .2 : .8;													
+								var speed = msg.animate == "reactive" ? .3 : .8;													
 								for(j = 0; j<len; j++){									
 									for(i= 0;i<msg.colors[j].length;i++){									
 										stripe = document.getElementById("level_led_"+$scope.unique+"_"+j+"_"+i);

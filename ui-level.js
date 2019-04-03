@@ -183,26 +183,40 @@ module.exports = function (RED) {
 			var site = null;
 			var dimensions = null;
 
-			if (checkConfig(node, config)) {								
+			if (checkConfig(node, config)) {				
 				site = function(){
-					var fl = config._flow;					
-					if(fl){
-						var confs = config._flow.global.configs
-						for(var key in confs){
-							if (confs.hasOwnProperty(key)) {							
-								if(confs[key].type === "ui_base"){								
-									return confs[key]
+					var opts = null;					
+					if (typeof ui.getSizes === "function") {
+						//prepared to proper solution if dashboard version >= 2.15.0 (probably)						
+						opts = {};
+						opts.sizes = ui.getSizes();
+						opts.theme = ui.getTheme();
+					}					
+					if(opts === null){
+						// until 2.14 unreliable hack solution
+						var fl = config._flow;					
+						if(fl){
+							var confs = config._flow.global.configs
+							for(var key in confs){
+								if (confs.hasOwnProperty(key)) {							
+									if(confs[key].type === "ui_base"){																	
+										opts = {}
+										opts.sizes = confs[key].site.sizes
+										opts.theme = confs[key].theme.themeState										
+										break;
+									}
 								}
 							}
 						}
-					}
-					else{
-						node.warn("Couldn't reach to the site parameters. Using defaults")
-						var opts = {}
-						opts.site = {sizes:{ sx: 48, sy: 48, gx: 4, gy: 4, cx: 4, cy: 4, px: 4, py: 4 }}
-						opts.theme = {themeState: {"widget-textColor":{value:"#eeeeee"}}}
-						return opts
-					}
+					}					
+					if(opts === null){
+						// fallback to hardcoded defaults					
+						node.log("Couldn't reach to the site parameters. Using hardcoded default parameters!")
+						opts = {}
+						opts.sizes = { sx: 48, sy: 48, gx: 4, gy: 4, cx: 4, cy: 4, px: 4, py: 4 }
+						opts.theme = {"widget-textColor":{value:"#eeeeee"}}
+					}									
+					return opts
 				}
 				range = function (n,p){					
 					var divisor = p.maxin - p.minin;							
@@ -273,16 +287,16 @@ module.exports = function (RED) {
 				}
 				
 				var group = RED.nodes.getNode(config.group);
-				var siteoptions = site();												
+				var siteproperties = site();
+															
 				if(config.width == 0){ config.width = parseInt(group.config.width) || dimensions("w")};
 				if(config.height == 0) {config.height = parseInt(group.config.height) || dimensions("h") }
-				config.exactwidth = parseInt(siteoptions.site.sizes.sx * config.width * dimensions("ew"));			
-				config.exactheight = parseInt(siteoptions.site.sizes.sy * config.height * dimensions("eh"));
+				config.exactwidth = parseInt(siteproperties.sizes.sx * config.width * dimensions("ew"));			
+				config.exactheight = parseInt(siteproperties.sizes.sy * config.height * dimensions("eh"));
 				config.justify = (config.layout.indexOf("v") != -1) ? 'left' : 'center';
 				config.count = stripecount();
 				config.lastpos = config.count * 6 - 3;				
-				
-				config.colorText = siteoptions.theme.themeState['widget-textColor'].value;
+				config.colorText = siteproperties.theme['widget-textColor'].value
 				var offcolor = config.colorOff || "gray";
 				var normalcolor = config.colorNormal || "green";
 				var warncolor = config.colorWarn || "orange";
@@ -302,6 +316,7 @@ module.exports = function (RED) {
 				var decimals = isNaN(parseFloat(config.decimals)) ? {fixed:1,mult:0} : {fixed:parseInt(config.decimals),mult:Math.pow(10,parseInt(config.decimals))};				
 				
 				var html = HTML(config);
+				
 				
 				done = ui.addWidget({
 					node: node,

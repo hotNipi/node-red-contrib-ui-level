@@ -52,8 +52,8 @@ module.exports = function (RED) {
 			<svg id="level_svg_{{uni.que}}" style="width:`+config.exactwidth+`px; height:`+config.exactheight+`px;">
 				<rect id="level_led_{{unique}}_0_{{$index}}" ng-repeat="color in stripes[0] track by $index" 
 					y=64% 
-					ng-attr-x="{{$index * 6}}px"
-					width="3"
+					ng-attr-x="{{$index * `+config.stripe.gap+`}}px"
+					width="`+config.stripe.width+`"
 					height="36%" 
 					style="fill:{{color}}"
 				/>
@@ -75,9 +75,9 @@ module.exports = function (RED) {
 			<svg id="level_svg_{{unique}}" style="width:`+config.exactwidth+`px; height:`+config.exactheight+`px;">
 				<rect id="level_led_{{unique}}_0_{{$index}}" ng-repeat="color in stripes[0] track by $index" 
 					y=0 
-					ng-attr-y="{{$index * 6}}px"
+					ng-attr-y="{{$index * `+config.stripe.gap+`}}px"
 					width="12"
-					height="3" 
+					height="`+config.stripe.width+`" 
 					style="fill:{{color}}"
 				/>
 				<g id="level_value_group_{{unique}}" transform="translate(${(config.exactwidth/2)+6}, ${(config.exactheight/2)-25})">
@@ -103,15 +103,15 @@ module.exports = function (RED) {
 			<svg id="level_svg_{{unique}}" style="width:`+config.exactwidth+`px; height:`+config.exactheight+`px;">
 				<rect id="level_led_{{unique}}_0_{{$index}}" ng-repeat="color in stripes[0] track by $index" 
 					y=24% 
-					ng-attr-x="{{$index * 6}}px"
-					width="3"
+					ng-attr-x="{{$index * `+config.stripe.gap+`}}px"
+					width="`+config.stripe.width+`"
 					height="16%" 
 					style="fill:{{color}}"
 				/>
 				<rect id="level_led_{{unique}}_1_{{$index}}" ng-repeat="color in stripes[1] track by $index" 
 					y=63% 
-					ng-attr-x="{{$index * 6}}px"
-					width="3"
+					ng-attr-x="{{$index * `+config.stripe.gap+`}}px"
+					width="`+config.stripe.width+`"
 					height="16%" 
 					style="fill:{{color}}"
 				/>
@@ -228,7 +228,7 @@ module.exports = function (RED) {
 				}				
 				stripecount = function(){									
 					var w =(config.layout.indexOf("v") != -1) ? config.exactheight : config.exactwidth;							
-					var c = parseInt((w / 6));
+					var c = parseInt((w / config.stripe.gap));
 					if(c & 1 !== 1){
 						c --;
 					}
@@ -288,6 +288,7 @@ module.exports = function (RED) {
 				
 				var group = RED.nodes.getNode(config.group);
 				var siteproperties = site();
+				config.stripe = {gap: config.shape * 2, width: config.shape};
 															
 				if(config.width == 0){ config.width = parseInt(group.config.width) || dimensions("w")};
 				if(config.height == 0) {config.height = parseInt(group.config.height) || dimensions("h") }
@@ -295,7 +296,7 @@ module.exports = function (RED) {
 				config.exactheight = parseInt(siteproperties.sizes.sy * config.height * dimensions("eh"));
 				config.justify = (config.layout.indexOf("v") != -1) ? 'left' : 'center';
 				config.count = stripecount();
-				config.lastpos = config.count * 6 - 3;				
+				config.lastpos = config.count * config.stripe.gap - config.stripe.width;				
 				config.colorText = siteproperties.theme['widget-textColor'].value
 				var offcolor = config.colorOff || "gray";
 				var normalcolor = config.colorNormal || "green";

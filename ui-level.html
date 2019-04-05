@@ -55,7 +55,8 @@ SOFTWARE.
             channelA: {value: ""},
             channelB: {value: ""},
             decimals: {value: 0, required: false, validate: RED.validators.number()},
-            animations: {value:"soft"}
+            animations: {value:"soft"},
+            shape: {value: 2}
 
         },
         inputs:1,
@@ -83,7 +84,11 @@ SOFTWARE.
             }
             if (this.animations === undefined) {
                 this.animations = "soft";
-                $("#node-input-layout").val("soft");
+                $("#node-input-animations").val("soft");
+            }
+            if (this.shape === undefined) {
+                this.shape = 2;
+                $("#node-input-shape").val("Normal");
             }
             $("#node-input-layout").change(function() {
                 if (($(this).val() === "sh") || ($(this).val() === "sv")) {
@@ -178,6 +183,14 @@ SOFTWARE.
             <option value="reactive">Reactive</option>
             <option value="off">No animations</option>
         </select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-shape"><i class="fa fa-list"></i> Stripe shape</label>
+        <select id="node-input-shape" style="width:200px !important">
+            <option value=1>Thin</option>
+            <option value=2>Normal</option>
+            <option value=3>Thick</option>
+        </select>
     </div>                   
 </br>
     <div class="form-row">
@@ -195,6 +208,7 @@ SOFTWARE.
     <p>For Pair Horizontal layout the <code>Label</code> is not displayed but both <code>Channels</code> can be labelled independently</p>
     <p>The node's <code>Unit</code> will be displayed near the current value. Exact position of the unit depends on choosed layout. The unit can be any <code>string</code>, for example: <code>lbs psi F°</code></p>
     <p>The min and max values are customizable within the configuration but cannot be set with a msg.</p>
-    <p>The segments's values and colors are also customizable within the configuration but cannot be set with a msg.</p>    
+    <p>The segments's values and colors are also customizable within the configuration but cannot be set with a msg.</p> 
+    <p>You can choose between 3 different stripe shape. Thin, Normal and Thick</p>   
     <p>You can choose anmations to be <code>soft</code> or <code>reactive</code> or animations can be turned <code>off</code> completely.</p>
 </script>

@@ -1,7 +1,18 @@
 # node-red-contrib-ui-level
+
+[![Platform Node-RED](http://b.repl.ca/v1/Platform-Node--RED-red.png)](https://nodered.org/)
+[![NPM version][npm-image]][npm-url]
+[![CodeFactor](https://www.codefactor.io/repository/github/hotnipi/node-red-contrib-ui-level/badge)](https://www.codefactor.io/repository/github/hotnipi/node-red-contrib-ui-level)
+
+[npm-image]: http://img.shields.io/npm/v/node-red-contrib-self-adjusting-threshold.svg
+[npm-url]: https://npmjs.org/package/node-red-contrib-self-adjusting-threshold
+
 Adds a linear Level type widget to the user interface
 
-![setup.JPG](img/node-red-dashboard-ui-level.JPG)
+![node-red-dashboard-ui-level.JPG](img/node-red-dashboard-ui-level.JPG)
+
+Since version 0.0.14 the size of stripes has 3 options 
+![node-red-dashboard-ui-level-shapes.JPG](img/node-red-dashboard-ui-level-shapes.JPG)
 
 # Requirements
 Node-Red v19.4 or greater
@@ -22,4 +33,6 @@ The min and max values are customizable within the configuration but cannot be s
 The segments's values and colors are also customizable within the configuration but cannot be set with a msg.    
 
 You can choose anmations to be `soft` or `reactive` or animations can be turned `off` completely.
+
+You can choose between 3 different stripe shape. Thin, Normal and Thick
 

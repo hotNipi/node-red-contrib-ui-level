@@ -11,7 +11,8 @@ Adds a linear Level type widget to the user interface
 
 ![node-red-dashboard-ui-level.JPG](img/node-red-dashboard-ui-level.JPG)
 
-Since version 0.0.14 the size of stripes has 3 options 
+Since version 0.0.14 the size of stripes has 3 options
+
 ![node-red-dashboard-ui-level-shapes.JPG](img/node-red-dashboard-ui-level-shapes.JPG)
 
 # Requirements

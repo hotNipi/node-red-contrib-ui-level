@@ -38,3 +38,7 @@ You can choose anmations to be `soft` or `reactive` or animations can be turned 
 
 You can choose between 3 different stripe resolutions. Superfine, Fine and Normal
 
+## Performance alert
+
+This widget is not perfect choice to display high-frequent data changes like audio or similar.  
+If you are using a lot of Level widgets on your dashboard and you are feeling performance loss, considere lower resolution for stripes and/or turning off the animations.

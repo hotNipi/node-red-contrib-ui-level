@@ -417,8 +417,8 @@ module.exports = function (RED) {
 								var speed = msg.animate == "reactive" ? .3 : .8;													
 								for(j = 0; j<len; j++){									
 									for(i= 0;i<msg.colors[j].length;i++){									
-										stripe = document.getElementById("level_led_"+$scope.unique+"_"+j+"_"+i);
-										if(stripe){
+										stripe = document.getElementById("level_led_"+$scope.unique+"_"+j+"_"+i);										
+										if(stripe && stripe.style.fill !== msg.colors[j][i]){
 											if(msg.animate !== "off"){
 												$(stripe).stop().animate().css({'fill': msg.colors[j][i], 'transition': 'fill '+speed+'s'});
 											}

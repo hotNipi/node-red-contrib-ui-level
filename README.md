@@ -30,13 +30,22 @@ For Pair Horizontal layout the `Label` is not displayed but both `Channels` can 
 
 The node's `Unit` will be displayed near the current value. Exact position of the unit depends on choosed layout. The unit can be any `string`, for example: `lbs psi F°` Set the unit to empty string if you don't need to display it.
 
-The min and max values are customizable within the configuration but cannot be set with a msg.
+The min and max values are customizable within the configuration or you can change them on fly by sending new values with `msg.ui_control` property.
 
-The segments's values and colors are also customizable within the configuration but cannot be set with a msg.    
+The segments's values are also customizable within the configuration and with `msg.ui_control`
 
 You can choose anmations to be `soft` or `reactive` or animations can be turned `off` completely.
 
-You can choose between 3 different stripe resolutions. Superfine, Fine and Normal
+You can choose between 3 different stripe resolutions. `Superfine`, `Fine` and `Normal`
+
+
+## Examples of `msg.ui_control` usage
+
+`msg.ui_control = {min:10, max:80}` _to change min and max values._
+
+`msg.ui_control = {min:10, max:80, seg1:30, seg2:60}` _to change min, max and segments all together._
+
+`msg.ui_control = {seg2:60}` _to change high segement value only._
 
 ## Performance alert
 

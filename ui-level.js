@@ -65,7 +65,7 @@ module.exports = function (RED) {
 						`+config.unit+`
 						</tspan>					
 				</text>
-				<text class="small" text-anchor="start" dominant-baseline="hanging" x="0" y="25%">`+config.min+`</text>	
+				<text id=level_min_{{unique}} class="small" text-anchor="start" dominant-baseline="hanging" x="0" y="25%">`+config.min+`</text>	
 				<text id=level_max_{{unique}} class="small" text-anchor="end" dominant-baseline="hanging" ng-attr-x=`+config.lastpos+`px y="25%">`+config.max+`</text>			
 			</svg>				           
 		</div>`
@@ -93,8 +93,8 @@ module.exports = function (RED) {
 					</text>
 						
 				</g>			
-				<text class="small" text-anchor="start" dominant-baseline="hanging" x="15" y="0">`+config.max+`</text>	
-				<text id=level_max_{{unique}} class="small" text-anchor="start" dominant-baseline="baseline" x="15" ng-attr-y=`+config.lastpos+`px>`+config.min+`</text>			
+				<text id=level_max_{{unique}} class="small" text-anchor="start" dominant-baseline="hanging" x="15" y="0">`+config.max+`</text>	
+				<text id=level_min_{{unique}} class="small" text-anchor="start" dominant-baseline="baseline" x="15" ng-attr-y=`+config.lastpos+`px>`+config.min+`</text>			
 			</svg>				           
 		</div>`
 		
@@ -135,7 +135,7 @@ module.exports = function (RED) {
 						{{msg.payload[1]}}											
 				</text>
 
-				<text class="small" text-anchor="start" dominant-baseline="middle" x="0" y="53%">`+config.min+`</text>	
+				<text id=level_min_{{unique}} class="small" text-anchor="start" dominant-baseline="middle" x="0" y="53%">{{minvalue}}</text>	
 				<text id=level_max_{{unique}} class="small" text-anchor="end" dominant-baseline="middle" ng-attr-x=`+config.lastpos+`px y="53%">`+config.max+`</text>
 				
 			</svg>				           
@@ -286,6 +286,32 @@ module.exports = function (RED) {
 					return ret;
 				}
 				
+				updateControl = function(uicontrol){
+					var applies = false;
+					if(uicontrol.min && !isNaN(parseFloat(uicontrol.min))){
+						min =  parseFloat(uicontrol.min);
+						applies = true;
+					}
+					if(uicontrol.max && !isNaN(parseFloat(uicontrol.max))){
+						max =  parseFloat(uicontrol.max);
+						applies = true;
+					}
+					if(uicontrol.seg1 && !isNaN(parseFloat(uicontrol.seg1))){
+						sectorwarn =  parseFloat(uicontrol.seg1);
+						applies = true;
+					}
+					if(uicontrol.seg2 && !isNaN(parseFloat(uicontrol.seg2))){
+						sectorhigh =  parseFloat(uicontrol.seg2);
+						applies = true;
+					}
+					if(applies){
+						params = {minin:min, maxin:max+0.00001, minout:1, maxout:config.count};
+						high = range(sectorhigh,params);
+						warn = range(sectorwarn,params);
+						configsent = false;
+					}
+				}
+				
 				var group = RED.nodes.getNode(config.group);
 				var siteproperties = site();
 				config.stripe = {gap: config.shape * 2, width: config.shape};
@@ -304,20 +330,19 @@ module.exports = function (RED) {
 				var alertcolor = config.colorHi || "red";
 				var opc = [offcolor,normalcolor,warncolor,alertcolor];
 				
-				config.min = parseFloat(config.min);
-				config.max = parseFloat(config.max);
-				config.params = {minin:config.min, maxin:config.max+0.00001, minout:1, maxout:config.count}; 				
+				var min = config.min = parseFloat(config.min);
+				var max = config.max = parseFloat(config.max);
+				var params = {minin:min, maxin:max+0.00001, minout:1, maxout:config.count};			
+				var decimals = isNaN(parseFloat(config.decimals)) ? {fixed:1,mult:0} : {fixed:parseInt(config.decimals),mult:Math.pow(10,parseInt(config.decimals))};
 				var warn = config.max;
 				var high = config.max;
-				var sectorhigh = isNaN(parseFloat(config.segHigh)) ? Math.floor(high *.9) : parseFloat(config.segHigh);
-				var sectorwarn = isNaN(parseFloat(config.segWarn)) ? Math.floor(warn *.7) : parseFloat(config.segWarn);
-				high = range(sectorhigh,config.params);
-				warn = range(sectorwarn,config.params);	
-				
-				var decimals = isNaN(parseFloat(config.decimals)) ? {fixed:1,mult:0} : {fixed:parseInt(config.decimals),mult:Math.pow(10,parseInt(config.decimals))};				
-				
+				var sectorhigh = isNaN(parseFloat(config.segHigh)) ? parseFloat((high *.9).toFixed(decimals.fixed)) : parseFloat(config.segHigh);
+				var sectorwarn = isNaN(parseFloat(config.segWarn)) ? parseFloat((warn *.7).toFixed(decimals.fixed)) : parseFloat(config.segWarn);
+				high = range(sectorhigh,params);
+				warn = range(sectorwarn,params);								
+				var configsent = false;
+								
 				var html = HTML(config);
-				
 				
 				done = ui.addWidget({
 					node: node,
@@ -334,8 +359,7 @@ module.exports = function (RED) {
 					convertBack: function (value) {						
 						return value;
 					},
-					convert: function (value,old,msg){
-																
+					convert: function (value,old,msg){																
 						if(Array.isArray(value) === true){
 							var result = value.map(function (x) { 
 								return parseFloat(x.toFixed(decimals.fixed)); 
@@ -365,11 +389,14 @@ module.exports = function (RED) {
 						}						
 					},
 					
-					beforeEmit: function (msg, value) {	
+					beforeEmit: function (msg, value) {
+						if(msg.ui_control){
+							updateControl(msg.ui_control);
+						}
 						var ranged = [];
-						ranged.push(range(msg.payload[0], config.params));
+						ranged.push(range(msg.payload[0], params));
 						if(msg.payload[1] !== null){
-							ranged.push(range(msg.payload[1], config.params));
+							ranged.push(range(msg.payload[1], params));
 						}												
 						msg.colors = [[],[]];
 						var col;
@@ -388,6 +415,11 @@ module.exports = function (RED) {
 							msg.colors[1].reverse();
 							
 						}
+						if(!configsent){
+							msg.min = min;
+							msg.max = max;
+							configsent = true;
+						}
 						msg.d = decimals;					
 						msg.animate = config.animations															
 						return { msg: msg };
@@ -400,77 +432,82 @@ module.exports = function (RED) {
 					},
 					
 					initController: function ($scope) {																		
-						$scope.unique = $scope.$eval('$id')	
+						$scope.unique = $scope.$eval('$id')					
 						$scope.lastvalue = [0,0]									
 						$scope.$watch('msg', function (msg) {
 							if (!msg) {								
 								return;
-							}								
-							if(msg.colors){
-								if(!$scope.stripes || $scope.stripes[0].length !== msg.colors[0].length){								
-									$scope.stripes = msg.colors;
-								}	
-								var stripe;
-								var len = msg.colors[1].length !== 0 ? 2 : 1;
-								var i;
-								var j;					
-								var speed = msg.animate == "reactive" ? .3 : .8;													
-								for(j = 0; j<len; j++){									
-									for(i= 0;i<msg.colors[j].length;i++){									
-										stripe = document.getElementById("level_led_"+$scope.unique+"_"+j+"_"+i);										
-										if(stripe && stripe.style.fill !== msg.colors[j][i]){
-											if(msg.animate !== "off"){
-												$(stripe).stop().animate().css({'fill': msg.colors[j][i], 'transition': 'fill '+speed+'s'});
-											}
-											else{											
-												stripe.style.fill = msg.colors[j][i]
-											}	
+							}
+							if(msg.min){
+								var minval = document.getElementById("level_min_"+$scope.unique);
+								$(minval).text(msg.min);
+								var maxval = document.getElementById("level_max_"+$scope.unique);
+								$(maxval).text(msg.max);								
+							}							
+							if(!$scope.stripes || $scope.stripes[0].length !== msg.colors[0].length){								
+								$scope.stripes = msg.colors;
+							}	
+							var stripe;
+							var len = msg.colors[1].length !== 0 ? 2 : 1;
+							var i;
+							var j;					
+							var speed = msg.animate == "reactive" ? .3 : .8;													
+							for(j = 0; j<len; j++){									
+								for(i= 0;i<msg.colors[j].length;i++){									
+									stripe = document.getElementById("level_led_"+$scope.unique+"_"+j+"_"+i);										
+									if(stripe && stripe.style.fill !== msg.colors[j][i]){
+										if(msg.animate !== "off"){
+											$(stripe).stop().animate().css({'fill': msg.colors[j][i], 'transition': 'fill '+speed+'s'});
 										}
-									}
-								}						
-								
-								var val0 = document.getElementById("level_value_channel_"+0+"_"+$scope.unique);
-								if(val0){
-									if(msg.animate !== "off"){
-										$({ticker: $scope.lastvalue[0]}).stop().animate({ticker: msg.payload[0]}, {
-											duration: msg.animate == "reactive" ? 100 : 400,
-											easing:'swing',
-											step: function() {										
-												$(val0).text((Math.ceil(this.ticker * msg.d.mult)/msg.d.mult).toFixed(msg.d.fixed));
-											},
-											complete: function() {
-												$(val0).text(msg.payload[0]);
-												$scope.lastvalue[0] = msg.payload[0];										
-											}
-										}); 
-									}
-									else{
-										$(val0).text(msg.payload[0]);
-										$scope.lastvalue[0] = msg.payload[0];
+										else{											
+											stripe.style.fill = msg.colors[j][i]
+										}	
 									}
 								}
-								
-								var val1 = document.getElementById("level_value_channel_"+1+"_"+$scope.unique);
-								if(val1){
-									if(msg.animate !== "off"){
-										$({ticker: $scope.lastvalue[1]}).stop().animate({ticker: msg.payload[1]}, {
-											duration: msg.animate == "reactive" ? 100 : 400,
-											easing:'swing',
-											step: function() {										
-												$(val1).text((Math.ceil(this.ticker * msg.d.mult)/msg.d.mult).toFixed(msg.d.fixed));
-											},
-											complete: function() {
-												$(val1).text(msg.payload[1]);
-												$scope.lastvalue[1] = msg.payload[1];										
-											}
-										}); 
-									}
-									else{
-										$(val1).text(msg.payload[1]);
-										$scope.lastvalue[1] = msg.payload[1];
-									}
-								}							
+							}						
+							
+							var val0 = document.getElementById("level_value_channel_0_"+$scope.unique);
+							if(val0){
+								if(msg.animate !== "off"){
+									$({ticker: $scope.lastvalue[0]}).stop().animate({ticker: msg.payload[0]}, {
+										duration: msg.animate == "reactive" ? 100 : 400,
+										easing:'swing',
+										step: function() {										
+											$(val0).text((Math.ceil(this.ticker * msg.d.mult)/msg.d.mult).toFixed(msg.d.fixed));
+										},
+										complete: function() {
+											$(val0).text(msg.payload[0]);
+											$scope.lastvalue[0] = msg.payload[0];										
+										}
+									}); 
+								}
+								else{
+									$(val0).text(msg.payload[0]);
+									$scope.lastvalue[0] = msg.payload[0];
+								}
+							}
+							
+							var val1 = document.getElementById("level_value_channel_1_"+$scope.unique);
+							if(val1){
+								if(msg.animate !== "off"){
+									$({ticker: $scope.lastvalue[1]}).stop().animate({ticker: msg.payload[1]}, {
+										duration: msg.animate == "reactive" ? 100 : 400,
+										easing:'swing',
+										step: function() {										
+											$(val1).text((Math.ceil(this.ticker * msg.d.mult)/msg.d.mult).toFixed(msg.d.fixed));
+										},
+										complete: function() {
+											$(val1).text(msg.payload[1]);
+											$scope.lastvalue[1] = msg.payload[1];										
+										}
+									}); 
+								}
+								else{
+									$(val1).text(msg.payload[1]);
+									$scope.lastvalue[1] = msg.payload[1];
+								}
 							}							
+														
 						});
 					}
 				});

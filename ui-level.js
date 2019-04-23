@@ -135,7 +135,7 @@ module.exports = function (RED) {
 						{{msg.payload[1]}}											
 				</text>
 
-				<text id=level_min_{{unique}} class="small" text-anchor="start" dominant-baseline="middle" x="0" y="53%">{{minvalue}}</text>	
+				<text id=level_min_{{unique}} class="small" text-anchor="start" dominant-baseline="middle" x="0" y="53%">`+config.min+`</text>	
 				<text id=level_max_{{unique}} class="small" text-anchor="end" dominant-baseline="middle" ng-attr-x=`+config.lastpos+`px y="53%">`+config.max+`</text>
 				
 			</svg>				           

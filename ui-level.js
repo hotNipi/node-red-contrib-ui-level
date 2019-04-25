@@ -329,6 +329,7 @@ module.exports = function (RED) {
 				var warncolor = config.colorWarn || "orange";
 				var alertcolor = config.colorHi || "red";
 				var opc = [offcolor,normalcolor,warncolor,alertcolor];
+				var colorschema = config.colorschema || 'fixed';
 				
 				var min = config.min = parseFloat(config.min);
 				var max = config.max = parseFloat(config.max);
@@ -356,9 +357,7 @@ module.exports = function (RED) {
 					forwardInputMessages: false,
 					storeFrontEndInputAsState: true,					
 								
-					convertBack: function (value) {						
-						return value;
-					},
+					
 					convert: function (value,old,msg){																
 						if(Array.isArray(value) === true){
 							var result = value.map(function (x) { 
@@ -389,7 +388,7 @@ module.exports = function (RED) {
 						}						
 					},
 					
-					beforeEmit: function (msg, value) {
+					beforeEmit: function (msg) {
 						if(msg.ui_control){
 							updateControl(msg.ui_control);
 						}
@@ -400,20 +399,22 @@ module.exports = function (RED) {
 						}												
 						msg.colors = [[],[]];
 						var col;
-						for(var i=0; i < config.count; i++){								
-							col = ranged[0] <= i ? opc[0] : ( i < (warn) ? opc[1] : ( i < (high) ? opc[2] : opc[3]));
+						var selector = 0;
+						for(var i=0; i < config.count; i++){
+							selector = colorschema === 'fixed' ?  i : ranged[0];							
+							col = ranged[0] <= i ? opc[0] : ( selector < (warn) ? opc[1] : ( selector < (high) ? opc[2] : opc[3]));
 							msg.colors[0].push(col)
 						}
 						if(msg.payload[1] !== null){
-							for(var i=0; i < config.count; i++){								
-								col = ranged[1] <= i ? opc[0] : ( i < (warn) ? opc[1] : ( i < (high) ? opc[2] : opc[3]));
+							for(var i=0; i < config.count; i++){
+								selector = colorschema === 'fixed' ?  i : ranged[1];								
+								col = ranged[1] <= i ? opc[0] : ( selector < (warn) ? opc[1] : ( selector < (high) ? opc[2] : opc[3]));
 								msg.colors[1].push(col)
 							}
 						}
 						if((config.layout.indexOf("v") != -1)){
 							msg.colors[0].reverse();
-							msg.colors[1].reverse();
-							
+							msg.colors[1].reverse();							
 						}
 						if(!configsent){
 							msg.min = min;
@@ -423,12 +424,6 @@ module.exports = function (RED) {
 						msg.d = decimals;					
 						msg.animate = config.animations															
 						return { msg: msg };
-					},
-					
-					beforeSend: function (msg, orig) {
-						if (orig) {
-							return orig.msg;
-						}						
 					},
 					
 					initController: function ($scope) {																		

@@ -56,7 +56,8 @@ SOFTWARE.
             channelB: {value: ""},
             decimals: {value: 0, required: false, validate: RED.validators.number()},
             animations: {value:"soft"},
-            shape: {value: 2}
+            shape: {value: 2},
+            colorschema: {value: 'fixed'}
 
         },
         inputs:1,
@@ -89,6 +90,10 @@ SOFTWARE.
             if (this.shape === undefined) {
                 this.shape = 2;
                 $("#node-input-shape").val("Fine");
+            }
+            if (this.colorschema === undefined) {
+                this.colorschema = fixed;
+                $("#node-input-colorschema").val("Fixed sectors");
             }
             $("#node-input-layout").change(function() {
                 if (($(this).val() === "sh") || ($(this).val() === "sv")) {
@@ -151,6 +156,13 @@ SOFTWARE.
     <div class="form-row">
         <label for="node-input-colorOff"><i class="fa fa-paint-brush"></i> Off</span></label>
         <input type="color" id="node-input-colorOff" style="width:80px"/>
+    </div>
+    <div class="form-row">
+        <label for="node-input-colorschema"><i class="fa fa-paint-brush"></i> Schema</label>
+        <select id="node-input-colorschema" style="width:200px !important">
+            <option value="fixed">Fixed sectors</option>
+            <option value="valuedriven">Value driven</option>
+        </select>
     </div>
 </br>   
     <div class="form-row">

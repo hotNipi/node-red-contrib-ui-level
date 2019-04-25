@@ -331,9 +331,15 @@ module.exports = function (RED) {
 				var alertcolor = config.colorHi || "red";
 				var opc = [offcolor,normalcolor,warncolor,alertcolor];
 				var colorschema = config.colorschema || 'fixed';
+				config.min = parseFloat(config.min)
+				config.max = parseFloat(config.max)
 				
-				var min = config.min = parseFloat(config.min);
-				var max = config.max = parseFloat(config.max);
+				var min = config.min > config.max ? config.max : config.min;
+				var max = config.max < config.min ? config.min : config.max;
+				
+				var reverse = config.min > config.max
+				
+				
 				var params = {minin:min, maxin:max+0.00001, minout:1, maxout:config.count};			
 				var decimals = isNaN(parseFloat(config.decimals)) ? {fixed:1,mult:0} : {fixed:parseInt(config.decimals),mult:Math.pow(10,parseInt(config.decimals))};
 				var warn = config.max;
@@ -343,8 +349,16 @@ module.exports = function (RED) {
 				high = range(sectorhigh,params);
 				warn = range(sectorwarn,params);								
 				var configsent = false;
-								
+				
+				
+				//console.log('[ui-level]:', config.min , config.max,min,max )
+				
+				//config.min = min;
+				//config.max = max;
+				
 				var html = HTML(config);
+				
+				
 				
 				done = ui.addWidget({
 					node: node,
@@ -401,25 +415,42 @@ module.exports = function (RED) {
 						msg.colors = [[],[]];
 						var col;
 						var selector = 0;
-						for(var i=0; i < config.count; i++){
-							selector = colorschema === 'fixed' ?  i : ranged[0];							
-							col = ranged[0] <= i ? opc[0] : ( selector < (warn) ? opc[1] : ( selector < (high) ? opc[2] : opc[3]));
-							msg.colors[0].push(col)
-						}
-						if(msg.payload[1] !== null){
+						if(reverse){
 							for(var i=0; i < config.count; i++){
-								selector = colorschema === 'fixed' ?  i : ranged[1];								
-								col = ranged[1] <= i ? opc[0] : ( selector < (warn) ? opc[1] : ( selector < (high) ? opc[2] : opc[3]));
-								msg.colors[1].push(col)
+								selector = colorschema === 'fixed' ?  i : ranged[0];							
+								col = ranged[0] >= i ? opc[0] : ( selector > (warn) ? opc[1] : ( selector > (high) ? opc[2] : opc[3]));
+								msg.colors[0].unshift(col)
+							}
+							if(msg.payload[1] !== null){
+								for(var i=0; i < config.count; i++){
+									selector = colorschema === 'fixed' ?  i : ranged[1];								
+									col = ranged[1] >= i ? opc[0] : ( selector > (warn) ? opc[1] : ( selector > (high) ? opc[2] : opc[3]));
+									msg.colors[1].unshift(col)
+								}
 							}
 						}
+						else{
+							for(var i=0; i < config.count; i++){
+								selector = colorschema === 'fixed' ?  i : ranged[0];							
+								col = ranged[0] <= i ? opc[0] : ( selector < (warn) ? opc[1] : ( selector < (high) ? opc[2] : opc[3]));
+								msg.colors[0].push(col)
+							}
+							if(msg.payload[1] !== null){
+								for(var i=0; i < config.count; i++){
+									selector = colorschema === 'fixed' ?  i : ranged[1];								
+									col = ranged[1] <= i ? opc[0] : ( selector < (warn) ? opc[1] : ( selector < (high) ? opc[2] : opc[3]));
+									msg.colors[1].push(col)
+								}
+							}
+						}
+						
 						if((config.layout.indexOf("v") != -1)){
 							msg.colors[0].reverse();
 							msg.colors[1].reverse();							
 						}
 						if(!configsent){
-							msg.min = min;
-							msg.max = max;
+							msg.min = reverse ? max : min;
+							msg.max = reverse ? min : max;
 							configsent = true;
 						}
 						msg.d = decimals;					

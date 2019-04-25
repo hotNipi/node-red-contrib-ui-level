@@ -1,6 +1,10 @@
 {
     "name": "node-red-contrib-ui-level",
+<<<<<<< HEAD
     "version": "0.0.17",
+=======
+    "version": "0.0.16",
+>>>>>>> 9a5a17f972963173b1ebb7b43bc074e25e297c0d
     "description": "A Node Red dashboard ui node. Linear level indicator",
     "main": "ui-level.js",
     "node-red": {

@@ -182,6 +182,7 @@ module.exports = function (RED) {
 			var stripecount = null;
 			var site = null;
 			var dimensions = null;
+			var updateControl = null;
 
 			if (checkConfig(node, config)) {				
 				site = function(){

@@ -28,11 +28,15 @@ module.exports = function (RED) {
 		
 		var styles = String.raw`
 		<style>
-			.level {
+			.levelH {
 				display: flex;
 				flex-flow: row;
-				justify-content: ${config.justify};
-				
+				justify-content: center;				
+			}
+			.levelV {
+				display: flex;
+				flex-flow: row;
+				justify-content: left;				
 			}
 			.txt {
 				fill: ${config.colorText};									
@@ -48,8 +52,8 @@ module.exports = function (RED) {
 		</style>`
 		
 		var level_single_h = String.raw`
-		<div class="level" id="level_{{unique}}">
-			<svg id="level_svg_{{uni.que}}" style="width:`+config.exactwidth+`px; height:`+config.exactheight+`px;">
+		<div class="levelH" id="level_{{unique}}">
+			<svg id="level_svg_{{unique}}" style="width:`+config.exactwidth+`px; height:`+config.exactheight+`px;">
 				<rect id="level_led_{{unique}}_0_{{$index}}" ng-repeat="color in stripes[0] track by $index" 
 					y=64% 
 					ng-attr-x="{{$index * `+config.stripe.gap+`}}px"
@@ -71,7 +75,7 @@ module.exports = function (RED) {
 		</div>`
 		
 		var level_single_v = String.raw`
-		<div class="level" id="level_{{unique}}">
+		<div class="levelV" id="level_{{unique}}">
 			<svg id="level_svg_{{unique}}" style="width:`+config.exactwidth+`px; height:`+config.exactheight+`px;">
 				<rect id="level_led_{{unique}}_0_{{$index}}" ng-repeat="color in stripes[0] track by $index" 
 					y=0 
@@ -99,7 +103,7 @@ module.exports = function (RED) {
 		</div>`
 		
 		var level_pair_h = String.raw`
-		<div class="level" id="level_{{unique}}">
+		<div class="levelH" id="level_{{unique}}">
 			<svg id="level_svg_{{unique}}" style="width:`+config.exactwidth+`px; height:`+config.exactheight+`px;">
 				<rect id="level_led_{{unique}}_0_{{$index}}" ng-repeat="color in stripes[0] track by $index" 
 					y=24% 
@@ -321,7 +325,8 @@ module.exports = function (RED) {
 				if(config.height == 0) {config.height = parseInt(group.config.height) || dimensions("h")}
 				config.exactwidth = parseInt(siteproperties.sizes.sx * config.width * dimensions("ew"));			
 				config.exactheight = parseInt(siteproperties.sizes.sy * config.height * dimensions("eh"));
-				config.justify = (config.layout.indexOf("v") != -1) ? 'left' : 'center';
+				config.min = parseFloat(config.min)
+				config.max = parseFloat(config.max)				
 				config.count = stripecount();
 				config.lastpos = config.count * config.stripe.gap - config.stripe.width;				
 				config.colorText = siteproperties.theme['widget-textColor'].value
@@ -330,17 +335,14 @@ module.exports = function (RED) {
 				var warncolor = config.colorWarn || "orange";
 				var alertcolor = config.colorHi || "red";
 				var opc = [offcolor,normalcolor,warncolor,alertcolor];
-				var colorschema = config.colorschema || 'fixed';
-				config.min = parseFloat(config.min)
-				config.max = parseFloat(config.max)
+				var colorschema = config.colorschema || 'fixed';				
 				
 				var min = config.min > config.max ? config.max : config.min;
 				var max = config.max < config.min ? config.min : config.max;
 				
-				var reverse = config.min > config.max
+				var reverse = config.min > config.max;				
 				
-				
-				var params = {minin:min, maxin:max+0.00001, minout:1, maxout:config.count};			
+				var params = reverse ? {minin:min, maxin:max+0.00001, minout:0, maxout:config.count-1} : {minin:min, maxin:max+0.00001, minout:1, maxout:config.count} ;			
 				var decimals = isNaN(parseFloat(config.decimals)) ? {fixed:1,mult:0} : {fixed:parseInt(config.decimals),mult:Math.pow(10,parseInt(config.decimals))};
 				var warn = config.max;
 				var high = config.max;
@@ -350,15 +352,7 @@ module.exports = function (RED) {
 				warn = range(sectorwarn,params);								
 				var configsent = false;
 				
-				
-				//console.log('[ui-level]:', config.min , config.max,min,max )
-				
-				//config.min = min;
-				//config.max = max;
-				
 				var html = HTML(config);
-				
-				
 				
 				done = ui.addWidget({
 					node: node,
@@ -371,7 +365,6 @@ module.exports = function (RED) {
 					emitOnlyNewValues: false,
 					forwardInputMessages: false,
 					storeFrontEndInputAsState: true,					
-								
 					
 					convert: function (value,old,msg){																
 						if(Array.isArray(value) === true){
@@ -416,15 +409,15 @@ module.exports = function (RED) {
 						var col;
 						var selector = 0;
 						if(reverse){
-							for(var i=0; i < config.count; i++){
+							for(var i=0; i < config.count ; i++){
 								selector = colorschema === 'fixed' ?  i : ranged[0];							
-								col = ranged[0] >= i ? opc[0] : ( selector > (warn) ? opc[1] : ( selector > (high) ? opc[2] : opc[3]));
+								col = ranged[0] > i ? opc[0] : ( selector > (warn) ? opc[1] : ( selector > (high) ? opc[2] : opc[3]));
 								msg.colors[0].unshift(col)
 							}
 							if(msg.payload[1] !== null){
 								for(var i=0; i < config.count; i++){
 									selector = colorschema === 'fixed' ?  i : ranged[1];								
-									col = ranged[1] >= i ? opc[0] : ( selector > (warn) ? opc[1] : ( selector > (high) ? opc[2] : opc[3]));
+									col = ranged[1] > i ? opc[0] : ( selector > (warn) ? opc[1] : ( selector > (high) ? opc[2] : opc[3]));
 									msg.colors[1].unshift(col)
 								}
 							}

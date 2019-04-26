@@ -187,6 +187,9 @@ module.exports = function (RED) {
 			var site = null;
 			var dimensions = null;
 			var updateControl = null;
+			var interpolate = null;
+			var rainbow = null;
+			var createRainbow = null;
 
 			if (checkConfig(node, config)) {				
 				site = function(){
@@ -292,30 +295,78 @@ module.exports = function (RED) {
 				}
 				
 				updateControl = function(uicontrol){
+					if(reverse){
+						rbcolors.reverse();
+					}
+					reverse = false;
 					var applies = false;
-					if(uicontrol.min && !isNaN(parseFloat(uicontrol.min))){
-						min =  parseFloat(uicontrol.min);
+					var mi = min
+					var ma = max
+					if(uicontrol.min != undefined && !isNaN(parseFloat(uicontrol.min))){
+						mi =  parseFloat(uicontrol.min);
 						applies = true;
 					}
-					if(uicontrol.max && !isNaN(parseFloat(uicontrol.max))){
-						max =  parseFloat(uicontrol.max);
+					if(uicontrol.max != undefined && !isNaN(parseFloat(uicontrol.max))){
+						ma =  parseFloat(uicontrol.max);
 						applies = true;
 					}
-					if(uicontrol.seg1 && !isNaN(parseFloat(uicontrol.seg1))){
+					if(uicontrol.seg1 != undefined && !isNaN(parseFloat(uicontrol.seg1))){
 						sectorwarn =  parseFloat(uicontrol.seg1);
 						applies = true;
 					}
-					if(uicontrol.seg2 && !isNaN(parseFloat(uicontrol.seg2))){
+					if(uicontrol.seg2 != undefined && !isNaN(parseFloat(uicontrol.seg2))){
 						sectorhigh =  parseFloat(uicontrol.seg2);
 						applies = true;
-					}
+					}					
+					min = mi > ma ? ma : mi;
+					max = ma < mi ? mi : ma;				
+					reverse = mi > ma;
+					if(reverse){
+						rbcolors.reverse()
+					}					
 					if(applies){
-						params = {minin:min, maxin:max+0.00001, minout:1, maxout:config.count};
+						params = reverse ? {minin:min, maxin:max+0.00001, minout:0, maxout:config.count-1} : {minin:min, maxin:max+0.00001, minout:1, maxout:config.count};	
 						high = range(sectorhigh,params);
 						warn = range(sectorwarn,params);
 						configsent = false;
 					}
 				}
+				
+				interpolate = function(from, to, factor){
+					var result = from.slice();
+					for (var i = 0; i < 3; i++) {
+						result[i] = Math.round(result[i] + factor * (to[i] - from[i]));
+					}
+					return result;
+				}
+				
+				rainbow = function (from, to, steps){
+					var sf = 1 / (steps - 1);
+					var result = [];
+					from = String(from).match(/\d+/g).map(Number);
+					to = String(to).match(/\d+/g).map(Number);
+					var irc
+					for(var i = 0; i < steps; i++) {
+						irc = interpolate(from, to, sf * i)
+						result.push(rgbToHex(irc[0],irc[1],irc[2]));
+					}
+					return result;
+				}
+				
+				const rgbToHex = (r, g, b) => '#' + [r, g, b].map(x => { const hex = x.toString(16); return hex.length === 1 ? '0' + hex : hex}).join('')
+				const hexToRgb = hex => hex.replace(/^#?([a-f\d])([a-f\d])([a-f\d])$/i,(m, r, g, b) => '#' + r + r + g + g + b + b).substring(1).match(/.{2}/g).map(x => parseInt(x, 16))
+				
+				createRainbow = function(){
+					var hc = Math.floor(config.count/2);
+					var rb1 = rainbow(hexToRgb(normalcolor),hexToRgb(warncolor),hc);
+					var rb2 = rainbow(hexToRgb(warncolor),hexToRgb(alertcolor),config.count - hc);
+					var ret = rb1.concat(rb2);
+					if(reverse){
+						ret.reverse();
+					}
+					return ret
+				}
+				 
 				
 				var group = RED.nodes.getNode(config.group);
 				var siteproperties = site();
@@ -335,14 +386,23 @@ module.exports = function (RED) {
 				var warncolor = config.colorWarn || "orange";
 				var alertcolor = config.colorHi || "red";
 				var opc = [offcolor,normalcolor,warncolor,alertcolor];
-				var colorschema = config.colorschema || 'fixed';				
+				var colorschema = 'rainbow'// config.colorschema || 'fixed';
+				
+				
+				//console.log('[ui-level]: rainbow', rbcolors)
+				
+				
 				
 				var min = config.min > config.max ? config.max : config.min;
 				var max = config.max < config.min ? config.min : config.max;
 				
-				var reverse = config.min > config.max;				
+				var reverse = config.min > config.max;	
 				
-				var params = reverse ? {minin:min, maxin:max+0.00001, minout:0, maxout:config.count-1} : {minin:min, maxin:max+0.00001, minout:1, maxout:config.count} ;			
+				var rbcolors = createRainbow()
+				
+				
+				
+				var params = reverse ? {minin:min, maxin:max+0.00001, minout:0, maxout:config.count-1} : {minin:min, maxin:max+0.00001, minout:1, maxout:config.count};			
 				var decimals = isNaN(parseFloat(config.decimals)) ? {fixed:1,mult:0} : {fixed:parseInt(config.decimals),mult:Math.pow(10,parseInt(config.decimals))};
 				var warn = config.max;
 				var high = config.max;
@@ -367,8 +427,11 @@ module.exports = function (RED) {
 					storeFrontEndInputAsState: true,					
 					
 					convert: function (value,old,msg){																
-						if(Array.isArray(value) === true){
-							var result = value.map(function (x) { 
+						if(value !== undefined && Array.isArray(value) === true){
+							var result = value.map(function (x) {
+								if(x === undefined){
+									x = min;
+								} 
 								return parseFloat(x.toFixed(decimals.fixed)); 
 							});
 							if(!result.some(isNaN)){
@@ -384,6 +447,9 @@ module.exports = function (RED) {
 								return msg;
 							}													
 						}
+						if(value === undefined){
+							value = min
+						}
 						value = parseFloat(value.toFixed(decimals.fixed))
 						if(!isNaN(value)){
 							msg.payload = [value,null]
@@ -393,12 +459,15 @@ module.exports = function (RED) {
 							node.warn("msg.payload doesn't contain numeric value")
 							msg.payload = [0,null]
 							return msg;
-						}						
+						}				
 					},
 					
 					beforeEmit: function (msg) {
 						if(msg.ui_control){
 							updateControl(msg.ui_control);
+						}
+						if(msg.payload === undefined){
+							return
 						}
 						var ranged = [];
 						ranged.push(range(msg.payload[0], params));
@@ -410,28 +479,48 @@ module.exports = function (RED) {
 						var selector = 0;
 						if(reverse){
 							for(var i=0; i < config.count ; i++){
-								selector = colorschema === 'fixed' ?  i : ranged[0];							
-								col = ranged[0] > i ? opc[0] : ( selector > (warn) ? opc[1] : ( selector > (high) ? opc[2] : opc[3]));
+								if(colorschema === 'rainbow'){
+									col = ranged[0] > i ? opc[0] : rbcolors[i]
+								}
+								else{
+									selector = colorschema === 'fixed' ?  i : ranged[0];							
+									col = ranged[0] > i ? opc[0] : ( selector > (warn) ? opc[1] : ( selector > (high) ? opc[2] : opc[3]));
+								}								
 								msg.colors[0].unshift(col)
 							}
 							if(msg.payload[1] !== null){
 								for(var i=0; i < config.count; i++){
-									selector = colorschema === 'fixed' ?  i : ranged[1];								
-									col = ranged[1] > i ? opc[0] : ( selector > (warn) ? opc[1] : ( selector > (high) ? opc[2] : opc[3]));
+									if(colorschema === 'rainbow'){
+										col = ranged[1] > i ? opc[0] : rbcolors[i]
+									}
+									else{
+										selector = colorschema === 'fixed' ?  i : ranged[1];								
+										col = ranged[1] > i ? opc[0] : ( selector > (warn) ? opc[1] : ( selector > (high) ? opc[2] : opc[3]));
+									}									
 									msg.colors[1].unshift(col)
 								}
 							}
 						}
 						else{
 							for(var i=0; i < config.count; i++){
-								selector = colorschema === 'fixed' ?  i : ranged[0];							
-								col = ranged[0] <= i ? opc[0] : ( selector < (warn) ? opc[1] : ( selector < (high) ? opc[2] : opc[3]));
+								if(colorschema === 'rainbow'){
+									col = ranged[0] <= i ? opc[0] : rbcolors[i]
+								}
+								else{
+									selector = colorschema === 'fixed' ?  i : ranged[0];
+									col = ranged[0] <= i ? opc[0] : ( selector < (warn) ? opc[1] : ( selector < (high) ? opc[2] : opc[3]));
+								}								
 								msg.colors[0].push(col)
 							}
 							if(msg.payload[1] !== null){
 								for(var i=0; i < config.count; i++){
-									selector = colorschema === 'fixed' ?  i : ranged[1];								
-									col = ranged[1] <= i ? opc[0] : ( selector < (warn) ? opc[1] : ( selector < (high) ? opc[2] : opc[3]));
+									if(colorschema === 'rainbow'){
+										col = ranged[1] <= i ? opc[0] : rbcolors[i]
+									}
+									else{
+										selector = colorschema === 'fixed' ?  i : ranged[1];								
+										col = ranged[1] <= i ? opc[0] : ( selector < (warn) ? opc[1] : ( selector < (high) ? opc[2] : opc[3]));
+									}									
 									msg.colors[1].push(col)
 								}
 							}
@@ -458,7 +547,7 @@ module.exports = function (RED) {
 							if (!msg) {								
 								return;
 							}
-							if(msg.min){
+							if(msg.min || msg.max){								
 								var minval = document.getElementById("level_min_"+$scope.unique);
 								$(minval).text(msg.min);
 								var maxval = document.getElementById("level_max_"+$scope.unique);

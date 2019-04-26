@@ -28,7 +28,7 @@ For Pair Horizontal layout the `msg.payload` is expected to be an `array`
 The node's `Label` is displayed near the value. Leave the label field empty to show value only.
 For Pair Horizontal layout the `Label` is not displayed but both `Channels` can be labelled independently.
 
-All four colors for stripes can be customized. In adition there is two options to show the colors. `Multiple segments` - Colors tied to stripes according to sector values. `Single color bar` - Single value based color for all active stripes.
+All four colors for stripes can be customized. In adition there is three options to show the colors. `Multiple segments` - Colors tied to stripes according to sector values. `Single color bar` - Single value based color for all active stripes or `Interpolated colors`.
 
 The node's `Unit` will be displayed near the current value. Exact position of the unit depends on choosed layout. The unit can be any `string`, for example: `lbs psi F°` Set the unit to empty string if you don't need to display it.
 

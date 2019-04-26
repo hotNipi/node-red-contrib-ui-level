@@ -357,6 +357,9 @@ module.exports = function (RED) {
 				const hexToRgb = hex => hex.replace(/^#?([a-f\d])([a-f\d])([a-f\d])$/i,(m, r, g, b) => '#' + r + r + g + g + b + b).substring(1).match(/.{2}/g).map(x => parseInt(x, 16))
 				
 				createRainbow = function(){
+					if(colorschema !== 'rainbow'){
+						return []
+					}					
 					var hc = Math.floor(config.count/2);
 					var rb1 = rainbow(hexToRgb(normalcolor),hexToRgb(warncolor),hc);
 					var rb2 = rainbow(hexToRgb(warncolor),hexToRgb(alertcolor),config.count - hc);
@@ -364,9 +367,8 @@ module.exports = function (RED) {
 					if(reverse){
 						ret.reverse();
 					}
-					return ret
-				}
-				 
+					return ret;
+				}			 
 				
 				var group = RED.nodes.getNode(config.group);
 				var siteproperties = site();
@@ -386,22 +388,11 @@ module.exports = function (RED) {
 				var warncolor = config.colorWarn || "orange";
 				var alertcolor = config.colorHi || "red";
 				var opc = [offcolor,normalcolor,warncolor,alertcolor];
-				var colorschema = 'rainbow'// config.colorschema || 'fixed';
-				
-				
-				//console.log('[ui-level]: rainbow', rbcolors)
-				
-				
-				
+				var colorschema =  config.colorschema || 'fixed';
 				var min = config.min > config.max ? config.max : config.min;
-				var max = config.max < config.min ? config.min : config.max;
-				
-				var reverse = config.min > config.max;	
-				
-				var rbcolors = createRainbow()
-				
-				
-				
+				var max = config.max < config.min ? config.min : config.max;				
+				var reverse = config.min > config.max;				
+				var rbcolors = createRainbow();				
 				var params = reverse ? {minin:min, maxin:max+0.00001, minout:0, maxout:config.count-1} : {minin:min, maxin:max+0.00001, minout:1, maxout:config.count};			
 				var decimals = isNaN(parseFloat(config.decimals)) ? {fixed:1,mult:0} : {fixed:parseInt(config.decimals),mult:Math.pow(10,parseInt(config.decimals))};
 				var warn = config.max;

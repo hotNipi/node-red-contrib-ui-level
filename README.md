@@ -1,6 +1,6 @@
 # node-red-contrib-ui-level
 
-[![Platform Node-RED](http://b.repl.ca/v1/Platform-Node--RED-red.png)](https://nodered.org/)
+[![NodeRed](https://img.shields.io/badge/Node--Red-0.19.4-red.svg)](http://nodered.org)
 [![NPM version][npm-image]][npm-url]
 [![CodeFactor](https://www.codefactor.io/repository/github/hotnipi/node-red-contrib-ui-level/badge)](https://www.codefactor.io/repository/github/hotnipi/node-red-contrib-ui-level)
 

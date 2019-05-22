@@ -191,7 +191,29 @@ module.exports = function (RED) {
 			var rainbow = null;
 			var createRainbow = null;
 
-			if (checkConfig(node, config)) {				
+			if (checkConfig(node, config)) {	
+				
+				ensureNumber = function (input,dets) {
+					if (input === undefined) {
+						return min;
+					}
+					if (typeof input !== "number") {
+						var inputString = input.toString();
+						input = dets !== 0 ? parseFloat(inputString) : parseInt(inputString);
+						if(isNaN(input)){
+							node.warn("msg.payload does not contain numeric value")
+							return min
+						}						
+					}
+					if (dets > 0) { 
+						input = parseFloat(input.toFixed(dets))
+					}
+					if(isNaN(input)){
+						node.warn("msg.payload does not contain numeric value")
+						input = min;
+					}					
+					return input;
+				}
 				site = function(){
 					var opts = null;					
 					if (typeof ui.getSizes === "function") {
@@ -417,40 +439,29 @@ module.exports = function (RED) {
 					forwardInputMessages: false,
 					storeFrontEndInputAsState: true,					
 					
-					convert: function (value,old,msg){																
-						if(value !== undefined && Array.isArray(value) === true){
-							var result = value.map(function (x) {
-								if(x === undefined){
-									x = min;
-								} 
-								return parseFloat(x.toFixed(decimals.fixed)); 
-							});
-							if(!result.some(isNaN)){
-								if(result.length < 2 ){
-									result.push(null);
-								}
-								msg.payload = result
-								return msg;
-							}
-							else{
-								node.warn("msg.payload doesn't contain array of numeric values")
-								msg.payload = [0,0]
-								return msg;
-							}													
-						}
+					convert: function (value,old,msg){
 						if(value === undefined){
-							value = min
-						}
-						value = parseFloat(value.toFixed(decimals.fixed))
-						if(!isNaN(value)){
-							msg.payload = [value,null]
-							return msg;
+							value = min;
+						}																
+						if(Array.isArray(value) === true){
+							if(value.length < 2){
+								value.push(null)
+							}
+							var v
+							msg.payload = []
+							for(var i = 0;i < 2; i++){
+								v = value[i];
+								if(v !== null){
+									v = ensureNumber(v, decimals.fixed)
+								}
+								msg.payload.push(v)
+							}											
 						}
 						else{
-							node.warn("msg.payload doesn't contain numeric value")
-							msg.payload = [0,null]
-							return msg;
-						}				
+							value = ensureNumber(value, decimals.fixed)
+							msg.payload = [value,null];
+						}						
+						return msg;										
 					},
 					
 					beforeEmit: function (msg) {

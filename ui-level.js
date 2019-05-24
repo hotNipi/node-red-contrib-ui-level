@@ -396,8 +396,8 @@ module.exports = function (RED) {
 				var siteproperties = site();
 				config.stripe = {gap: config.shape * 2, width: config.shape};
 															
-				if(config.width == 0){ config.width = parseInt(group.config.width) || dimensions("w")};
-				if(config.height == 0) {config.height = parseInt(group.config.height) || dimensions("h")};
+				if(config.width == 0){ config.width = parseInt(group.config.width) || dimensions("w")}
+				if(config.height == 0) {config.height = parseInt(group.config.height) || dimensions("h")}
 				config.exactwidth = parseInt(siteproperties.sizes.sx * config.width * dimensions("ew"));			
 				config.exactheight = parseInt(siteproperties.sizes.sy * config.height * dimensions("eh"));
 				config.min = parseFloat(config.min);

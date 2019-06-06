@@ -11,13 +11,12 @@ Adds a linear Level type widget to the user interface
 
 ![node-red-dashboard-ui-level.JPG](img/node-red-dashboard-ui-level.JPG)
 
-Since version 0.0.14 the resolution of stripes has 3 options
-
 ![node-red-dashboard-ui-level-shapes.JPG](img/node-red-dashboard-ui-level-shapes.JPG)
 
 # Requirements
-Node-Red v19.4 or greater
-Node-Red-dashboard v2.13.0 or greater
+Node-Red v19.4 or greater. 
+Node-Red-dashboard v2.13.0 or greater. 
+For best user experiences it is reccomended to use Node-Red-dashboard v2.15.0 or creater.
 # Configuration and behavior
 Widget has 3 different layouts: Single Horizontal, Pair Horizontal and Single Vertical.
 
@@ -40,6 +39,7 @@ You can choose anmations to be `soft` or `reactive` or animations can be turned 
 
 You can choose between 3 different stripe resolutions. `Superfine`, `Fine` and `Normal`
 
+Texts sizes and color in widget can be customized within the configuration only. Color applies for all texts in widget. There is 3 different sizes for text elements in use. Values represent font relative size with unit `"em"`
 
 ## Examples of `msg.ui_control` usage
 

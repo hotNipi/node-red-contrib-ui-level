@@ -4,7 +4,7 @@ MIT License
 Copyright (c) 2019 hotNipi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
+of this software and associated documentation files (the 'Software'), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
@@ -13,7 +13,7 @@ furnished to do so, subject to the following conditions:
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
@@ -21,7 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 -->
-<script type="text/javascript">
+<script type='text/javascript'>
     RED.nodes.registerType('ui_level',{
         category: 'dashboard',
         color: 'rgb( 63, 173, 181)',
@@ -36,7 +36,7 @@ SOFTWARE.
                     var currentGroup = $('#node-input-group').val()|| this.group;
                     var groupNode = RED.nodes.node(currentGroup);
                     valid = !groupNode || +width <= +groupNode.width;
-                    $("#node-input-size").toggleClass("input-error",!valid);
+                    $('#node-input-size').toggleClass('input-error',!valid);
                     return valid;
                 }},
             height: {value: 0},
@@ -48,179 +48,261 @@ SOFTWARE.
             colorOff: {value: '#595959'},            
             min: {value: 0, required: true, validate: RED.validators.number()},
             max: {value: 100, required: true, validate: RED.validators.number()},
-            segWarn: {value: ""},
-            segHigh: {value: ""},
+            segWarn: {value: ''},
+            segHigh: {value: ''},
             unit: {value:'units'},
             layout: {value:'sh'},
-            channelA: {value: ""},
-            channelB: {value: ""},
+            channelA: {value: ''},
+            channelB: {value: ''},
             decimals: {value: 0, required: false, validate: RED.validators.number()},
-            animations: {value:"soft"},
+            animations: {value:'soft'},
             shape: {value: 2},
-            colorschema: {value: 'fixed'}
+            colorschema: {value: 'fixed'},
+            textoptions:{value:'default'},
+            colorText: {value:'#eeeeee'},
+            fontLabel:{value:''},
+            fontValue:{value:''},
+            fontSmall:{value:''},
+            colorFromTheme:{value:true}
         },
         inputs:1,
         outputs:0,
-        icon: "node-red/debug.png",
-        paletteLabel: "level",
+        icon: 'node-red/debug.png',
+        paletteLabel: 'level',
         label: function() {
-            return this.name||"Level";
+            return this.name||'Level';
         },
         oneditprepare: function() {
-            $("#node-input-size").elementSizer({
-                width: "#node-input-width",
-                height: "#node-input-height",
-                group: "#node-input-group"
+            $('#node-input-size').elementSizer({
+                width: '#node-input-width',
+                height: '#node-input-height',
+                group: '#node-input-group'
             });
-            $("#node-input-min").change(function() {
-                $("#seg-min").text($(this).val());
+            $('#node-input-min').change(function() {
+                $('#seg-min').text($(this).val());
             });
-            $("#node-input-max").change(function() {
-                $("#seg-max").text($(this).val());
+            $('#node-input-max').change(function() {
+                $('#seg-max').text($(this).val());
             });
             if (this.layout === undefined) {
-                this.layout = "sh";
-                $("#node-input-layout").val("sh");
+                this.layout = 'sh';
+                $('#node-input-layout').val('sh');
             }
             if (this.animations === undefined) {
-                this.animations = "soft";
-                $("#node-input-animations").val("soft");
+                this.animations = 'soft';
+                $('#node-input-animations').val('soft');
             }
             if (this.shape === undefined) {
                 this.shape = 2;
-                $("#node-input-shape").val("Fine");
+                $('#node-input-shape').val('Fine');
             }
             if (this.colorschema === undefined) {
                 this.colorschema = fixed;
-                $("#node-input-colorschema").val("Multiple segments");
+                $('#node-input-colorschema').val('Multiple segments');
             }
-            $("#node-input-layout").change(function() {
-                if (($(this).val() === "sh") || ($(this).val() === "sv")) {
-                    $("#node-input-el-label").show();
-                    $("#node-input-el-channels").hide();
+            if (this.textoptions === undefined) {
+                this.textoptions = 'default';
+                this.colorText = '#eeeeee';
+                $('#node-input-textoptions').val('default');
+                $('#node-input-fontcolor').hide();
+            }
+            $('#node-input-textoptions').change(function() {
+                if ($(this).val() === 'default') {
+                    $('#node-input-fontsizes').hide();
+                    $('#node-input-fontcolor').hide();                   
                 }
                 else {
-                    $("#node-input-el-label").hide();
-                    $("#node-input-el-channels").show();
+                    $('#node-input-fontsizes').show();   
+                    $('#node-input-fontcolor').show(); 
+                    if( $('#node-input-colorFromTheme').is(':checked')){                       
+                        $('#node-input-colorText').hide();
+                        $('#node-input-colorTextSpan').hide();
+                    }
+                    else{                        
+                        $('#node-input-colorText').show();
+                        $('#node-input-colorTextSpan').show();
+                    }
+                }
+            });            
+            
+            $('#node-input-colorFromTheme').change(function() {                
+                if (this.checked == true) {                                 
+                    $('#node-input-colorText').hide();                  
+                    $('#node-input-colorTextSpan').hide();                  
+                }
+                else {                   
+                    $('#node-input-colorText').show();
+                    $('#node-input-colorTextSpan').show();
                 }
             });
+            $('#node-input-layout').change(function() {
+                if ($(this).val() === 'sh') {
+                    $('#node-input-el-label').show();
+                    $('#node-input-el-channels').hide();
+                    $('#node-input-fontLabel').attr('placeholder','1');
+                    $('#node-input-fontValue').attr('placeholder','1.2');
+                    $('#node-input-fontSmall').attr('placeholder','0.65');                   
+                }
+                else if($(this).val() === 'sv'){
+                    $('#node-input-el-label').show();
+                    $('#node-input-el-channels').hide();
+                    $('#node-input-fontLabel').attr('placeholder','1.4');
+                    $('#node-input-fontValue').attr('placeholder','3');
+                    $('#node-input-fontSmall').attr('placeholder','0.65');
+                }
+                else {
+                    $('#node-input-el-label').hide();
+                    $('#node-input-el-channels').show();
+                    $('#node-input-fontLabel').attr('placeholder','1');
+                    $('#node-input-fontValue').attr('placeholder','1.2');
+                    $('#node-input-fontSmall').attr('placeholder','0.65');
+                }
+            });
+        },
+        oneditsave: function (){
+            $('input[name=foo]').attr('checked', this.colorFromTheme);
         }
     });
 </script>
-<script type="text/x-red" data-template-name="ui_level">
-    <div class="form-row" id="template-row-group">
-        <label for="node-input-group"><i class="fa fa-table"></i> Group</span></label>
-        <input type="text" id="node-input-group">
+<script type='text/x-red' data-template-name='ui_level'>
+    <div class='form-row' id='template-row-group'>
+        <label for='node-input-group'><i class='fa fa-table'></i> Group</span></label>
+        <input type='text' id='node-input-group'>
     </div>
-    <div class="form-row" id="template-row-size">
-        <label><i class="fa fa-object-group"></i> Size</span></label>
-        <input type="hidden" id="node-input-width">
-        <input type="hidden" id="node-input-height">
-        <button class="editor-button" id="node-input-size"></button>
+    <div class='form-row' id='template-row-size'>
+        <label><i class='fa fa-object-group'></i> Size</span></label>
+        <input type='hidden' id='node-input-width'>
+        <input type='hidden' id='node-input-height'>
+        <button class='editor-button' id='node-input-size'></button>
     </div>
     </br>
-    <div class="form-row">
-        <label for="node-input-layout"><i class="fa fa-list"></i> Layout</label>
-        <select id="node-input-layout" style="width:200px !important">
-            <option value="sh">Single Horizontal</option>
-            <option value="ph">Pair Horizontal</option>
-            <option value="sv">Single Vertical</option>           
+    <div class='form-row'>
+        <label for='node-input-layout'><i class='fa fa-list'></i> Layout</label>
+        <select id='node-input-layout' style='width:200px !important'>
+            <option value='sh'>Single Horizontal</option>
+            <option value='ph'>Pair Horizontal</option>
+            <option value='sv'>Single Vertical</option>           
         </select>
     </div>
-    <div class="form-row" id="node-input-el-label">
-        <label for="node-input-label"><i class="icon-tag"></i> Label</label>
-        <input type="text" id="node-input-label" placeholder="Level">
+    <div class='form-row' id='node-input-el-label'>
+        <label for='node-input-label'><i class='icon-tag'></i> Label</label>
+        <input type='text' id='node-input-label' placeholder='Level'>
     </div>
-    <div class="form-row" id="node-input-el-channels">
-        <label for="node-input-channels"><i class="icon-tag"></i> Channels</label>
-        <span for="node-input-channelA">Top </span>
-        <input type="text" id="node-input-channelA" style="width:80px" placeholder="A" dir="">
-        <span for="node-input-channelB" style="margin-left:20px;">Bottom </span>
-        <input type="text" id="node-input-channelB" style="width:80px" placeholder="B" dir="">
+    <div class='form-row' id='node-input-el-channels'>
+        <label for='node-input-channels'><i class='icon-tag'></i> Channels</label>
+        <span for='node-input-channelA'>Top </span>
+        <input type='text' id='node-input-channelA' style='width:80px' placeholder='A' dir=''>
+        <span for='node-input-channelB' style='margin-left:20px;'>Bottom </span>
+        <input type='text' id='node-input-channelB' style='width:80px' placeholder='B' dir=''>
     </div>
 </br>
-    <div class="form-row">
-        <label for="node-input-colorHi"><i class="fa fa-paint-brush"></i> High</span></label>
-        <input type="color" id="node-input-colorHi" style="width:80px"/>
+    <div class='form-row'>
+        <label for='node-input-colorHi'><i class='fa fa-paint-brush'></i> High</span></label>
+        <input type='color' id='node-input-colorHi' style='width:80px'/>
     </div>
-    <div class="form-row">
-        <label for="node-input-colorWarn"><i class="fa fa-paint-brush"></i> Warn</span></label>
-        <input type="color" id="node-input-colorWarn" style="width:80px"/>
+    <div class='form-row'>
+        <label for='node-input-colorWarn'><i class='fa fa-paint-brush'></i> Warn</span></label>
+        <input type='color' id='node-input-colorWarn' style='width:80px'/>
     </div>
-    <div class="form-row">
-        <label for="node-input-colorNormal"><i class="fa fa-paint-brush"></i> Normal</span></label>
-        <input type="color" id="node-input-colorNormal" style="width:80px"/>
+    <div class='form-row'>
+        <label for='node-input-colorNormal'><i class='fa fa-paint-brush'></i> Normal</span></label>
+        <input type='color' id='node-input-colorNormal' style='width:80px'/>
     </div>
-    <div class="form-row">
-        <label for="node-input-colorOff"><i class="fa fa-paint-brush"></i> Off</span></label>
-        <input type="color" id="node-input-colorOff" style="width:80px"/>
+    <div class='form-row'>
+        <label for='node-input-colorOff'><i class='fa fa-paint-brush'></i> Off</span></label>
+        <input type='color' id='node-input-colorOff' style='width:80px'/>
     </div>
-    <div class="form-row">
-        <label for="node-input-colorschema"><i class="fa fa-star-half-o"></i> Show</label>
-        <select id="node-input-colorschema" style="width:200px !important">
-            <option value="fixed">Multiple segments</option>
-            <option value="valuedriven">Single color bar</option>
-            <option value="rainbow">Interpolated colors</option>            
+    <div class='form-row'>
+        <label for='node-input-colorschema'><i class='fa fa-star-half-o'></i> Show</label>
+        <select id='node-input-colorschema' style='width:200px !important'>
+            <option value='fixed'>Multiple segments</option>
+            <option value='valuedriven'>Single color bar</option>
+            <option value='rainbow'>Interpolated colors</option>            
         </select>
     </div>
-</br>   
-    <div class="form-row">
-        <label for="node-input-min">Range</label>
-        <span for="node-input-min">min</span>
-        <input type="text" id="node-input-min" style="width:80px" dir="">
-        <span for="node-input-max" style="margin-left:20px;">max</span>
-        <input type="text" id="node-input-max" style="width:80px" dir="">
-    </div>
-    <div class="form-row" id="ui-gauge-segments">
-        <label>Sectors</label>
-        <span id="seg-min" style="display:inline-block; width:40px;">0</span>...
-        <input type="text" id="node-input-segWarn" style="text-align:center; width:87px;" placeholder="optional" dir=""> ...
-        <input type="text" id="node-input-segHigh" style="text-align:center; width:87px;" placeholder="optional" dir=""> ...
-        <span id="seg-max" style="display:inline-block; width:40px; text-align:right">10</span>
-    </div>
 </br>
-    <div class="form-row">
-        <label for="node-input-unit">Format</label>
-        <span for="node-input-unit">Unit</span>
-        <input type="text" id="node-input-unit" style="width:80px" dir="">
-        <span for="node-input-decimals" style="margin-left:20px;">decimals</span>
-        <input type="text" id="node-input-decimals" style="width:80px" placeholder="0" dir="">
-    </div>
-</br>
-    <div class="form-row">
-        <label for="node-input-animations"><i class="fa fa-list"></i> Animations</label>
-        <select id="node-input-animations" style="width:200px !important">
-            <option value="soft">Soft</option>
-            <option value="reactive">Reactive</option>
-            <option value="off">No animations</option>
+    <div class='form-row'>
+        <label for='node-input-textoptions'><i class='fa fa-font'></i> Text options</label>
+        <select id='node-input-textoptions' style='width:200px !important'>
+            <option value='default'>default</option>
+            <option value='custom'>custom</option>      
         </select>
     </div>
-    <div class="form-row">
-        <label for="node-input-shape"><i class="fa fa-list"></i> Stripe shape</label>
-        <select id="node-input-shape" style="width:200px !important">
+    <div class='form-row' id='node-input-fontsizes'>
+        <label for='node-input-font-sizes'><i class='fa fa-text-height'></i> Font sizes</label>
+        <span for='node-input-fontLabel'>Label</span>
+        <input type='text' id='node-input-fontLabel' style='width:50px' dir='' placeholder='1'>
+        <span for='node-input-fontValue' style='margin-left:20px;'>Value</span>
+        <input type='text' id='node-input-fontValue' style='width:50px' dir='' placeholder='1.2' >
+        <span for='node-input-fontSmall' style='margin-left:20px;'>Small</span>
+        <input type='text' id='node-input-fontSmall' style='width:50px' dir='' placeholder='0.65'>
+    </div>
+    
+    <div class='form-row' id='node-input-fontcolor'>
+        <label for='node-input-colorText'><i class='fa fa-paint-brush'></i> Font color</span></label>
+        <input type="checkbox" id="node-input-colorFromTheme" checked style="display:inline-block; width:auto; vertical-align:baseline; margin-right:5px;">Use theme color
+        <span for='node-input-colorText' id='node-input-colorTextSpan' style='margin-left:20px;'>Custom color</span>
+        <input type='color' id='node-input-colorText' style='width:80px'/>
+    </div>
+</br>    
+    <div class='form-row'>
+        <label for='node-input-min'><i class='fa fa-gear'></i> Range</label>
+        <span for='node-input-min'>min</span>
+        <input type='text' id='node-input-min' style='width:80px' dir=''>
+        <span for='node-input-max' style='margin-left:20px;'>max</span>
+        <input type='text' id='node-input-max' style='width:80px' dir=''>
+    </div>
+    <div class='form-row' id='ui-gauge-segments'>
+        <label><i class='fa fa-gear'></i> Sectors</label>
+        <span id='seg-min' style='display:inline-block; width:40px;'>0</span>...
+        <input type='text' id='node-input-segWarn' style='text-align:center; width:87px;' placeholder='optional' dir=''> ...
+        <input type='text' id='node-input-segHigh' style='text-align:center; width:87px;' placeholder='optional' dir=''> ...
+        <span id='seg-max' style='display:inline-block; width:40px; text-align:right'>10</span>
+    </div>
+</br>
+    <div class='form-row'>
+        <label for='node-input-unit'><i class='fa fa-gear'></i> Format</label>
+        <span for='node-input-unit'>Unit</span>
+        <input type='text' id='node-input-unit' style='width:80px' dir=''>
+        <span for='node-input-decimals' style='margin-left:20px;'>decimals</span>
+        <input type='text' id='node-input-decimals' style='width:80px' placeholder='0' dir=''>
+    </div>
+</br>
+    <div class='form-row'>
+        <label for='node-input-animations'><i class='fa fa-list'></i> Animations</label>
+        <select id='node-input-animations' style='width:200px !important'>
+            <option value='soft'>Soft</option>
+            <option value='reactive'>Reactive</option>
+            <option value='off'>No animations</option>
+        </select>
+    </div>
+    <div class='form-row'>
+        <label for='node-input-shape'><i class='fa fa-list'></i> Stripe shape</label>
+        <select id='node-input-shape' style='width:200px !important'>
             <option value=1>Superfine</option>
             <option value=2>Fine</option>
             <option value=3>Normal</option>
         </select>
     </div>                   
 </br>
-    <div class="form-row">
-        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
-        <input type="text" id="node-input-name" placeholder="Name">
+    <div class='form-row'>
+        <label for='node-input-name'><i class='icon-tag'></i> Name</label>
+        <input type='text' id='node-input-name' placeholder='Name'>
     </div>
 </script>
-<script type="text/x-red" data-help-name="ui_level">
+<script type='text/x-red' data-help-name='ui_level'>
     <p>Adds a linear Level type widget to the user interface</p>
     <p>Widget has 3 different layouts: Single Horizontal, Pair Horizontal and Single Vertical</p>
     <p>Takes the <code>msg.payload</code> and displays the value near the level graphics.</p>
     <p>For Pair Horizontal layout the <code>msg.payload</code> is expected to be an <code>array</code></p>
     <p>The node's <code>Label</code> is displayed near the value. Leave the label field empty to show value only</p>
     <p>For Pair Horizontal layout the <code>Label</code> is not displayed but both <code>Channels</code> can be labelled independently</p>
-    <p>All four colors for stripes can be customized. In adition there is three options to show the colors. <code>"Multiple segments"</code> - Colors tied to stripes 
-        according to sector values. <code>"Single color bar"</code> - Single value based color for all active stripes. <code>"Interpolated colors"</code> - Colors intrpolated from normal to high color</p>
-    <p>The node's <code>Unit</code> will be displayed near the current value. Exact position of the unit depends on choosed layout. The unit can be any <code>string</code>, for example: <code>lbs psi F°</code></p>
+    <p>All four colors for stripes can be customized. In adition there is three options to show the colors. <code>'Multiple segments'</code> - Colors tied to stripes 
+        according to sector values. <code>'Single color bar'</code> - Single value based color for all active stripes. <code>'Interpolated colors'</code> - Colors intrpolated from normal to high color</p>
+    <p>The node's <code>Unit</code> will be displayed near the current value. Exact position of the unit depends on choosed layout. The unit can be any <code>string</code>, for example: <code>lbs psi F°</code></p>    
     <p>The min and max values are customizable within the configuration or you can change them on fly via <code>msg.ui_control = {min:10, max:80}</code></p>
     <p>The segments's values also customizable within the configuration or by using <code>msg.ui_control = {seg1:30, seg2:60}</code>.</p> 
     <p>You can choose between 3 different stripe resolutions. <code>Normal</code>, <code>Fine</code> and <code>Superfine</code></p>   
     <p>You can choose anmations to be <code>soft</code> or <code>reactive</code> or animations can be turned <code>off</code> completely.</p>
+    <p>Texts sizes and color in widget can be customized within the configuration only. Color applies for all texts in widget. There is 3 different sizes for text elements in use. Values represent font relative size with unit <code>"em"</code></p>
 </script>

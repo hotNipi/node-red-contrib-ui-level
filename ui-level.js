@@ -22,61 +22,47 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-
 module.exports = function (RED) {
 	function HTML(config) {
-		
+	
 		var styles = String.raw`
 		<style>
-			.levelH {
-				display: flex;
-				flex-flow: row;
-				justify-content: center;				
+			.txt-{{unique}} {	
+				font-size:`+config.fontoptions.normal+`em;			
+				fill: ${config.fontoptions.color};											
 			}
-			.levelV {
-				display: flex;
-				flex-flow: row;
-				justify-content: left;				
-			}
-			.txt {
-				fill: currentColor;									
-			}				
-			.small { 
-				font-size: 60%;
-				fill: currentColor;	
-			}
-			.big { 
-				font-size: 175%;
-				fill: currentColor;	
-			}
+			.txt-{{unique}}.val{
+				font-size:`+config.fontoptions.big+`em;
+				font-weight: bold;
+			}			
+			.txt-{{unique}}.small{
+				font-size:`+config.fontoptions.small+`em;
+			}			
 		</style>`
 		
-		var level_single_h = String.raw`
-		<div class="levelH" id="level_{{unique}}">
-			<svg id="level_svg_{{unique}}" style="width:`+config.exactwidth+`px; height:`+config.exactheight+`px;">
+		var level_single_h = String.raw`		
+			<svg preserveAspectRatio="xMidYMid meet" id="level_svg_{{unique}}" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
 				<rect id="level_led_{{unique}}_0_{{$index}}" ng-repeat="color in stripes[0] track by $index" 
-					y=64% 
-					ng-attr-x="{{$index * `+config.stripe.gap+`}}px"
+					y=${config.exactheight-12} 
+					ng-attr-x="{{$index * `+config.stripe.gap+`}}"
 					width="`+config.stripe.width+`"
-					height="36%" 
+					height="12" 
 					style="fill:{{color}}"
 				/>
-				<text id=level_title_{{unique}} class="txt" text-anchor="middle" dominant-baseline="hanging" x=`+config.exactwidth/2+` y="0">`+config.label+
-				` <tspan id=level_value_channel_0_{{unique}} class="txt" dominant-baseline="hanging" style="font-weight: bold">
+				<text id=level_title_{{unique}} class="txt-{{unique}}" text-anchor="middle" dominant-baseline="baseline" x=`+config.exactwidth/2+` y=${config.exactheight-20}>`+config.label+
+				` <tspan id=level_value_channel_0_{{unique}} class="txt-{{unique}} val" dominant-baseline="baseline">
 						{{msg.payload[0]}}
 						</tspan>
-						<tspan class="small" dominant-baseline="hanging">
+						<tspan class="txt-{{unique}} small" dominant-baseline="baseline">
 						`+config.unit+`
 						</tspan>					
 				</text>
-				<text id=level_min_{{unique}} class="small" text-anchor="start" dominant-baseline="hanging" x="0" y="25%">`+config.min+`</text>	
-				<text id=level_max_{{unique}} class="small" text-anchor="end" dominant-baseline="hanging" ng-attr-x=`+config.lastpos+`px y="25%">`+config.max+`</text>			
-			</svg>				           
-		</div>`
+				<text id=level_min_{{unique}} class="txt-{{unique}} small" text-anchor="start" dominant-baseline="baseline" x="0" y=${config.exactheight-16}>`+config.min+`</text>	
+				<text id=level_max_{{unique}} class="txt-{{unique}} small" text-anchor="end" dominant-baseline="baseline" ng-attr-x=`+config.lastpos+`px y=${config.exactheight-16}>`+config.max+`</text>			
+			</svg>`
 		
-		var level_single_v = String.raw`
-		<div class="levelV" id="level_{{unique}}">
-			<svg id="level_svg_{{unique}}" style="width:`+config.exactwidth+`px; height:`+config.exactheight+`px;">
+		var level_single_v = String.raw`		
+			<svg preserveAspectRatio="xMidYMid meet" id="level_svg_{{unique}}" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
 				<rect id="level_led_{{unique}}_0_{{$index}}" ng-repeat="color in stripes[0] track by $index" 
 					y=0 
 					ng-attr-y="{{$index * `+config.stripe.gap+`}}px"
@@ -84,66 +70,61 @@ module.exports = function (RED) {
 					height="`+config.stripe.width+`" 
 					style="fill:{{color}}"
 				/>
-				<g id="level_value_group_{{unique}}" transform="translate(${(config.exactwidth/2)+6}, ${(config.exactheight/2)-25})">
-					<text id=level_title_{{unique}} class="txt" text-anchor="middle" dominant-baseline="hanging" y="0">`+config.label+`</text>	
-					
-					<text id=level_value_channel_0_{{unique}} class="big" dominant-baseline="hanging"
-					text-anchor="middle" y="18px" style="font-weight: bold">
+				<text id=level_textgroup_{{unique}}>
+					<tspan id=level_title_{{unique}} class="txt-{{unique}}" text-anchor="middle" dominant-baseline="hanging" x=`+config.exactwidth/2+` dx="12" y="0">
+						`+config.label+`
+					</tspan>
+					<tspan id=level_value_channel_0_{{unique}} class="txt-{{unique}} val" dominant-baseline="middle" text-anchor="middle" x=`+config.exactwidth/2+` dx="12" y="50%">
 							{{msg.payload[0]}}											
-					</text>
-					<text id=level_value_unit_{{unique}} class="small" dominant-baseline="hanging"
-					text-anchor="middle" y="48px">					
-					`+config.unit+`											
-					</text>
-						
-				</g>			
-				<text id=level_max_{{unique}} class="small" text-anchor="start" dominant-baseline="hanging" x="15" y="0">`+config.max+`</text>	
-				<text id=level_min_{{unique}} class="small" text-anchor="start" dominant-baseline="baseline" x="15" ng-attr-y=`+config.lastpos+`px>`+config.min+`</text>			
-			</svg>				           
-		</div>`
+					</tspan>
+					<tspan id=level_value_unit_{{unique}} class="txt-{{unique}} small" dominant-baseline="hanging"	text-anchor="middle" x=`+config.exactwidth/2+` dx="8"  y="50%" dy="`+config.fontoptions.big*.6+`em">					
+						`+config.unit+`											
+					</tspan>					
+				</text>					
+				<text id=level_max_{{unique}} class="txt-{{unique}} small" text-anchor="start" dominant-baseline="hanging" x="15" y="0">`+config.max+`</text>	
+				<text id=level_min_{{unique}} class="txt-{{unique}} small" text-anchor="start" dominant-baseline="baseline" x="15" ng-attr-y=`+config.lastpos+`px>`+config.min+`</text>			
+			</svg>`
 		
-		var level_pair_h = String.raw`
-		<div class="levelH" id="level_{{unique}}">
-			<svg id="level_svg_{{unique}}" style="width:`+config.exactwidth+`px; height:`+config.exactheight+`px;">
+		var level_pair_h = String.raw`		
+			<svg preserveAspectRatio="xMidYMid meet" id="level_svg_{{unique}}" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
 				<rect id="level_led_{{unique}}_0_{{$index}}" ng-repeat="color in stripes[0] track by $index" 
-					y=24% 
+					y=22% 
 					ng-attr-x="{{$index * `+config.stripe.gap+`}}px"
 					width="`+config.stripe.width+`"
 					height="16%" 
 					style="fill:{{color}}"
 				/>
 				<rect id="level_led_{{unique}}_1_{{$index}}" ng-repeat="color in stripes[1] track by $index" 
-					y=63% 
+					y=60% 
 					ng-attr-x="{{$index * `+config.stripe.gap+`}}px"
 					width="`+config.stripe.width+`"
 					height="16%" 
 					style="fill:{{color}}"
 				/>
-				<text id=level_channel_0_{{unique}} class="txt" text-anchor="start" dominant-baseline="hanging" x="0" y="0">`+config.channelA+`
-					<tspan class="small" dominant-baseline="hanging">
+				<text id=level_channel_0_{{unique}} class="txt-{{unique}}" text-anchor="start" dominant-baseline="hanging" x="0" y="0">`+config.channelA+`
+					<tspan class="txt-{{unique}} small" dominant-baseline="hanging">
 					`+config.unit+`
 					</tspan>
 				</text>
-				<text id=level_value_channel_0_{{unique}} class="txt" dominant-baseline="hanging"
-				text-anchor="end" x="100%" y="0" style="font-weight: bold">
+				<text id=level_value_channel_0_{{unique}} class="txt-{{unique}} val" dominant-baseline="hanging"
+				text-anchor="end" x="100%" y="0">
 						{{msg.payload[0]}}											
 				</text>
 				
-				<text id=level_channel_1_{{unique}} class="txt" text-anchor="start" dominant-baseline="baseline" x="0" y=`+config.exactheight+`>`+config.channelB+`
-					<tspan class="small" dominant-baseline="baseline">
+				<text id=level_channel_1_{{unique}} class="txt-{{unique}}" text-anchor="start" dominant-baseline="baseline" x="0" y=`+config.exactheight+`>`+config.channelB+`
+					<tspan class="txt-{{unique}} small" dominant-baseline="baseline">
 					`+config.unit+`
 					</tspan>
 				</text>
-				<text id=level_value_channel_1_{{unique}} class="txt" dominant-baseline="baseline"
-				text-anchor="end" x="100%" y="100%" style="font-weight: bold">
+				<text id=level_value_channel_1_{{unique}} class="txt-{{unique}} val" dominant-baseline="baseline"
+				text-anchor="end" x="100%" y="100%">
 						{{msg.payload[1]}}											
 				</text>
 
-				<text id=level_min_{{unique}} class="small" text-anchor="start" dominant-baseline="middle" x="0" y="53%">`+config.min+`</text>	
-				<text id=level_max_{{unique}} class="small" text-anchor="end" dominant-baseline="middle" ng-attr-x=`+config.lastpos+`px y="53%">`+config.max+`</text>
+				<text id=level_min_{{unique}} class="txt-{{unique}} small" text-anchor="start" dominant-baseline="middle" x="0" y="50%">`+config.min+`</text>	
+				<text id=level_max_{{unique}} class="txt-{{unique}} small" text-anchor="end" dominant-baseline="middle" ng-attr-x=`+config.lastpos+`px y="50%">`+config.max+`</text>
 				
-			</svg>				           
-		</div>`
+			</svg>`
 		var layout;
 		if(config.layout === "sh"){
 			layout = level_single_h;
@@ -208,6 +189,9 @@ module.exports = function (RED) {
 					if (dets > 0) { 
 						input = parseFloat(input.toFixed(dets))
 					}
+					else{
+						input = parseInt(input)
+					}
 					if(isNaN(input)){
 						node.warn("msg.payload does not contain numeric value")
 						input = min;
@@ -248,17 +232,30 @@ module.exports = function (RED) {
 					}									
 					return opts
 				}
-				range = function (n,p){					
+				range = function (n,p,r){					
 					var divisor = p.maxin - p.minin;							
 					n = n > p.maxin ? p.maxin - 0.00001 : n;
 					n = n < p.minin ? p.minin : n;
 					n = ((n - p.minin) % divisor + divisor) % divisor + p.minin;
 					n = ((n - p.minin) / (p.maxin - p.minin) * (p.maxout - p.minout)) + p.minout;										
-					return Math.round(n);
+					if(!r){
+						return Math.round(n);
+					}
+					return n
+					
 				}				
 				stripecount = function(){									
-					var w =(config.layout.indexOf("v") != -1) ? config.exactheight : config.exactwidth;							
-					var c = parseInt((w / config.stripe.gap));
+					var w = (config.layout.indexOf("v") != -1) ? config.exactheight : config.exactwidth;						
+					var cw = 0
+					var c = 0
+					while(cw <= w){
+						cw += config.stripe.width
+						c +=0.5 
+					}
+					c = Math.floor(c)
+					while(c*config.stripe.gap > w){
+						c--;
+					}
 					if(c & 1 !== 1){
 						c --;
 					}
@@ -288,27 +285,6 @@ module.exports = function (RED) {
 							}
 							if(config.layout == "sv"){
 								ret = 4;
-							}
-							break;
-						}
-						case "eh":{
-							if(config.layout == "sh"){
-								ret = 4/6;
-							}							
-							if(config.layout == "ph"){
-								ret = .88;
-							}
-							if(config.layout == "sv"){
-								ret = .83 + (config.height*2.5/100);
-							}
-							break;
-						}
-						case "ew":{
-							if(config.layout == "sh"|| config.layout == "ph"){
-								ret = .85 + (config.width/100);
-							}						
-							if(config.layout == "sv"){
-								ret = .94;
 							}
 							break;
 						}
@@ -390,16 +366,18 @@ module.exports = function (RED) {
 						ret.reverse();
 					}
 					return ret;
-				}			 
+				}	
+					 
 				
 				var group = RED.nodes.getNode(config.group);
 				var siteproperties = site();
-				config.stripe = {gap: config.shape * 2, width: config.shape};
-															
+				config.stripe = {gap: config.shape * 2, width: parseInt(config.shape)};
 				if(config.width == 0){ config.width = parseInt(group.config.width) || dimensions("w")}
 				if(config.height == 0) {config.height = parseInt(group.config.height) || dimensions("h")}
-				config.exactwidth = parseInt(siteproperties.sizes.sx * config.width * dimensions("ew"));			
-				config.exactheight = parseInt(siteproperties.sizes.sy * config.height * dimensions("eh"));
+				config.width = parseInt(config.width)
+				config.height = parseInt(config.height)
+				config.exactwidth = parseInt(parseInt(siteproperties.sizes.sx) * config.width + parseInt(siteproperties.sizes.cx) * (config.width-1)) - 12;		
+				config.exactheight = parseInt(parseInt(siteproperties.sizes.sy) * config.height + parseInt(siteproperties.sizes.cy) * (config.height-1)) - 12;
 				config.min = parseFloat(config.min);
 				config.max = parseFloat(config.max);				
 				config.count = stripecount();
@@ -409,7 +387,7 @@ module.exports = function (RED) {
 				var warncolor = config.colorWarn || "orange";
 				var alertcolor = config.colorHi || "red";
 				var opc = [offcolor,normalcolor,warncolor,alertcolor];
-				var colorschema =  config.colorschema || 'fixed';
+				var colorschema =  config.colorschema || 'fixed';				
 				var min = config.min > config.max ? config.max : config.min;
 				var max = config.max < config.min ? config.min : config.max;				
 				var reverse = config.min > config.max;				
@@ -422,7 +400,33 @@ module.exports = function (RED) {
 				var sectorwarn = isNaN(parseFloat(config.segWarn)) ? parseFloat((warn *.7).toFixed(decimals.fixed)) : parseFloat(config.segWarn);
 				high = range(sectorhigh,params);
 				warn = range(sectorwarn,params);								
-				var configsent = false;
+				var configsent = false;	
+				var defaultFontOptions = {"sh":{normal:1,small:0.65,big:1.2,color:'currentColor'},
+											"sv":{normal:1.4,small:0.65,big:3,color:'currentColor'},
+											"ph":{normal:1,small:0.65,big:1.2,color:'currentColor'}};			
+				
+				config.fontoptions = defaultFontOptions[config.layout]
+				
+				if(config.textoptions !== 'default'){
+					var opt = parseFloat(config.fontLabel);
+					if(!isNaN(opt)){
+						config.fontoptions.normal = opt;
+					}
+					opt = parseFloat(config.fontValue);
+					if(!isNaN(opt)){
+						config.fontoptions.big = opt;
+					}
+					opt = parseFloat(config.fontSmall);
+					if(!isNaN(opt)){
+						config.fontoptions.small = opt;
+					}
+					if(config.colorFromTheme == false){
+						opt = config.colorText;
+						if(opt != ""){
+							config.fontoptions.color = opt;
+						}
+					}					
+				}
 				
 				var html = HTML(config);
 				

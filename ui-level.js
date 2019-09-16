@@ -678,7 +678,7 @@ module.exports = function (RED) {
 							if(val0){
 								if(msg.animate.g !== "off" && msg.animate.t == true){
 									$({ticker: $scope.lastvalue[0]}).stop().animate({ticker: msg.payload[0]}, {
-										duration: msg.animate == "reactive" ? 300 : 800,
+										duration: msg.animate.g == "reactive" ? 300 : 800,
 										easing:'swing',
 										step: function() {										
 											$(val0).text((Math.ceil(this.ticker * msg.d.mult)/msg.d.mult).toFixed(msg.d.fixed));
@@ -699,7 +699,7 @@ module.exports = function (RED) {
 							if(val1){
 								if(msg.animate.g !== "off" && msg.animate.t == true){
 									$({ticker: $scope.lastvalue[1]}).stop().animate({ticker: msg.payload[1]}, {
-										duration: msg.animate == "reactive" ? 300 : 800,
+										duration: msg.animate.g == "reactive" ? 300 : 800,
 										easing:'swing',
 										step: function() {										
 											$(val1).text((Math.ceil(this.ticker * msg.d.mult)/msg.d.mult).toFixed(msg.d.fixed));

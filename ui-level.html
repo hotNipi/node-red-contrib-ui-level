@@ -63,7 +63,8 @@ SOFTWARE.
             fontLabel:{value:''},
             fontValue:{value:''},
             fontSmall:{value:''},
-            colorFromTheme:{value:true}
+            colorFromTheme:{value:true},
+            textAnimations:{value:false}
         },
         inputs:1,
         outputs:0,
@@ -275,6 +276,9 @@ SOFTWARE.
             <option value='reactive'>Reactive</option>
             <option value='off'>No animations</option>
         </select>
+        <input type="checkbox" id="node-input-textAnimations" 
+            style="display:inline-block; width:auto; vertical-align:baseline; 
+            margin-right:5px;margin-left:5px;">Animate value
     </div>
     <div class='form-row'>
         <label for='node-input-shape'><i class='fa fa-list'></i> Stripe shape</label>

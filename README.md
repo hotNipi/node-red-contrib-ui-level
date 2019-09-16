@@ -36,6 +36,8 @@ The min and max values are customizable within the configuration or you can chan
 The segments's values are also customizable within the configuration and with `msg.ui_control`
 
 You can choose anmations to be `soft` or `reactive` or animations can be turned `off` completely.
+Animation of value text is turned off by default. You can turn it on but be aware, text animation affects
+performance significantly!
 
 You can choose between 3 different stripe resolutions. `Superfine`, `Fine` and `Normal`
 
@@ -49,3 +51,6 @@ Texts sizes and color in widget can be customized within the configuration only.
 
 `msg.ui_control = {seg2:60}` _to change high segement value only._
 
+## Performance alert
+This widget is not perfect choice to display high-frequent data changes like audio or similar.  
+If you are using a lot of Level widgets on your dashboard and you are feeling performance loss, considere  turning off animations of value text (if used) or turn off all animations. 

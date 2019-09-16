@@ -518,7 +518,7 @@ module.exports = function (RED) {
 						}
 					}					
 				}
-				
+
 				var configsent = false;
 				
 				var html = HTML(config);
@@ -614,7 +614,7 @@ module.exports = function (RED) {
 						}
 						msg.d = decimals;
 						msg.prop = config.layout === "sv" ? 'height' : 'width'					
-						msg.animate = config.animations															
+						msg.animate = {g:config.animations,t:config.textAnimations}															
 						return { msg: msg };
 					},
 					
@@ -647,12 +647,12 @@ module.exports = function (RED) {
 							var mask;
 							var len = msg.percent[1] !== null ? 2 : 1;							
 							var j;					
-							var speed = msg.animate == "reactive" ? 300 : 800;
-							var dir = msg.dir													
+							var speed = msg.animate.g == "reactive" ? 300 : 800;
+													
 							for(j = 0; j<len; j++){														
 								mask = document.getElementById("level_mask_"+j+"_"+$scope.unique);																										
 								if(mask){
-									if(msg.animate !== "off"){
+									if(msg.animate.g !== "off"){
 										$(mask).stop().animate({[msg.prop]: msg.percent[j]+'px' },speed);
 									}
 									else{											
@@ -662,7 +662,7 @@ module.exports = function (RED) {
 								if(msg.color){
 									stripe = document.getElementById("level_stripe_"+j+"_"+$scope.unique);
 									if(stripe && msg.color[j] != null){
-										if(msg.animate !== "off"){
+										if(msg.animate.g !== "off"){
 											if(stripe.style.fill != msg.color[j]){
 												$(stripe).stop().animate().css({'fill': msg.color[j] ,'transition': 'fill '+speed/1000+'s'});
 											}										
@@ -676,7 +676,7 @@ module.exports = function (RED) {
 							
 							var val0 = document.getElementById("level_value_channel_0_"+$scope.unique);
 							if(val0){
-								if(msg.animate !== "off"){
+								if(msg.animate.g !== "off" && msg.animate.t == true){
 									$({ticker: $scope.lastvalue[0]}).stop().animate({ticker: msg.payload[0]}, {
 										duration: msg.animate == "reactive" ? 300 : 800,
 										easing:'swing',
@@ -697,7 +697,7 @@ module.exports = function (RED) {
 							
 							var val1 = document.getElementById("level_value_channel_1_"+$scope.unique);
 							if(val1){
-								if(msg.animate !== "off"){
+								if(msg.animate.g !== "off" && msg.animate.t == true){
 									$({ticker: $scope.lastvalue[1]}).stop().animate({ticker: msg.payload[1]}, {
 										duration: msg.animate == "reactive" ? 300 : 800,
 										easing:'swing',

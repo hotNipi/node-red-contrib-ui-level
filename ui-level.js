@@ -283,9 +283,9 @@ module.exports = function (RED) {
 			var site = null;
 			var dimensions = null;
 			var updateControl = null;
-			var interpolate = null;
-			var rainbow = null;
-			var createRainbow = null;
+			var exactPosition = null;
+			var ensureNumber = null;
+			var getSiteProperties = null;
 
 			if (checkConfig(node, config)) {	
 				
@@ -656,7 +656,7 @@ module.exports = function (RED) {
 										$(mask).stop().animate({[msg.prop]: msg.percent[j]+'px' },speed);
 									}
 									else{											
-										mask.style.width = msg.percent[j]+'%'
+										mask.style[msg.prop] = msg.percent[j]+'px'
 									}	
 								}																
 								if(msg.color){

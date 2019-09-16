@@ -40,14 +40,75 @@ module.exports = function (RED) {
 			}			
 		</style>`
 		
+		var ipgradient = String.raw`
+		<linearGradient id="level_gradi_{{unique}}" x2="100%" y2="0%">
+			<stop offset="5%" stop-color="`+config.colorNormal+`" />
+			<stop offset="50%" stop-color="`+config.colorWarn+`" />		
+			<stop offset="95%" stop-color="`+config.colorHi+`" />
+		</linearGradient>`
+		var verticalipgradient = String.raw`
+		<linearGradient id="level_gradi_{{unique}}" x2="0%" y2="100%">
+			<stop offset="5%" stop-color="`+config.colorHi+`" />
+			<stop offset="50%" stop-color="`+config.colorWarn+`" />		
+			<stop offset="95%" stop-color="`+config.colorNormal+`" />
+		</linearGradient>`
+		
+		var regulargradient = String.raw`
+		<linearGradient id="level_gradi_{{unique}}" x2="100%" y2="0%">
+			<stop offset="`+config.gradient.warn+`%" stop-color="`+config.colorNormal+`" />
+			<stop offset="`+config.gradient.warn+`%" stop-color="`+config.colorWarn+`" />
+			<stop offset="`+config.gradient.high+`%" stop-color="`+config.colorWarn+`" />
+			<stop offset="`+config.gradient.high+`%" stop-color="`+config.colorHi+`" />
+		</linearGradient>`
+		var verticalgradient = String.raw`
+		<linearGradient id="level_gradi_{{unique}}" x2="0%" y2="100%">
+			<stop offset="`+(100-config.gradient.high)+`%" stop-color="`+config.colorHi+`" />
+			<stop offset="`+(100-config.gradient.high)+`%" stop-color="`+config.colorWarn+`" />
+			<stop offset="`+(100-config.gradient.warn)+`%" stop-color="`+config.colorWarn+`" />
+			<stop offset="`+(100-config.gradient.warn)+`%" stop-color="`+config.colorNormal+`" />
+		</linearGradient>`
+		
+		var gradienttype
+		if(config.colorschema == 'rainbow'){
+			gradienttype = config.layout == 'sv' ? verticalipgradient : ipgradient
+		}
+		else{
+			if(config.colorschema == 'fixed'){
+				gradienttype =  config.layout == 'sv' ? verticalgradient : regulargradient
+			}
+			else{
+				gradienttype = ''
+			}
+		}
+		
+		
+		var filltype = config.colorschema == "valuedriven" ? String.raw`fill="`+config.colorOff+`"` : String.raw`fill="url(#level_gradi_{{unique}})"`
+		
 		var level_single_h = String.raw`		
 			<svg preserveAspectRatio="xMidYMid meet" id="level_svg_{{unique}}" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-				<rect id="level_led_{{unique}}_0_{{$index}}" ng-repeat="color in stripes[0] track by $index" 
-					y=${config.exactheight-12} 
-					ng-attr-x="{{$index * `+config.stripe.gap+`}}"
-					width="`+config.stripe.width+`"
-					height="12" 
-					style="fill:{{color}}"
+				<defs>
+					${gradienttype}
+					<pattern id="level_square_{{unique}}" x="0" y="0" width="`+config.stripe.step+`" height="`+config.stripe.height+`" patternUnits="userSpaceOnUse">
+						<rect x="0" width="`+config.stripe.width+`" height="`+config.stripe.height+`" y="0" fill="white" />				
+					</pattern>
+					<mask id="level_bgr_{{unique}}">
+						<rect x="0" y="`+config.stripe.y0+`" width="`+config.exactwidth+`" height="`+config.stripe.height+`" fill="url(#level_square_{{unique}})"/>
+					</mask>
+					<mask id="level_fgr_0_{{unique}}">
+						<rect id="level_mask_0_{{unique}}" x="0" y="`+config.stripe.y0+`" width="`+config.exactwidth+`" height="`+config.stripe.height+`" fill="url(#level_square_{{unique}})"/>
+					</mask>								
+				</defs>
+				<rect id="level_stripeoff_0_{{unique}}" x="0" y="`+config.stripe.y0+`"
+					width="`+config.exactwidth+`" height="`+config.stripe.height+`" 
+					style="stroke:none"; 
+					fill="`+config.colorOff+`" 
+					mask="url(#level_bgr_{{unique}})"
+				/>
+				<rect id="level_stripe_0_{{unique}}" x="0" y="`+config.stripe.y0+`" 
+					width="`+config.exactwidth+`" height="`+config.stripe.height+`"	
+					style="stroke:none";
+					${filltype}
+					mask="url(#level_fgr_0_{{unique}})"
 				/>
 				<text id=level_title_{{unique}} class="txt-{{unique}}" text-anchor="middle" dominant-baseline="baseline" x=`+config.exactwidth/2+` y=${config.exactheight-20}>`+config.label+
 				` <tspan id=level_value_channel_0_{{unique}} class="txt-{{unique}} val" dominant-baseline="baseline">
@@ -63,12 +124,35 @@ module.exports = function (RED) {
 		
 		var level_single_v = String.raw`		
 			<svg preserveAspectRatio="xMidYMid meet" id="level_svg_{{unique}}" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-				<rect id="level_led_{{unique}}_0_{{$index}}" ng-repeat="color in stripes[0] track by $index" 
-					y=0 
-					ng-attr-y="{{$index * `+config.stripe.gap+`}}px"
-					width="12"
-					height="`+config.stripe.width+`" 
-					style="fill:{{color}}"
+				<defs>
+					${gradienttype}
+					<pattern id="level_square_{{unique}}" x="0" y="0" width="`+config.stripe.height+`" height="`+config.stripe.step+`" patternUnits="userSpaceOnUse">
+						<rect x="0" width="`+config.stripe.height+`" height="`+config.stripe.width+`" y="0" fill="white" />				
+					</pattern>
+					<mask id="level_bgr_{{unique}}">
+						<rect x="0" y="0" width="`+config.stripe.height+`" height="`+config.exactheight+`" fill="url(#level_square_{{unique}})"
+							transform="scale(1,-1) translate(0,`+(config.exactheight*-1)+`)"
+						/>
+					</mask>
+					<mask id="level_fgr_0_{{unique}}">
+						<rect id="level_mask_0_{{unique}}" x="0" y="0" width="`+config.stripe.height+`" height="`+config.exactheight+`" fill="url(#level_square_{{unique}})"
+							transform="scale(1,-1) translate(0,`+(config.exactheight*-1)+`)"
+						/>
+					</mask>								
+				</defs>
+				<rect id="level_stripeoff_0_{{unique}}" x="0" y="0"
+					width="`+config.stripe.height+`" height="`+config.exactheight+`" 
+					style="stroke:none"; 
+					fill="`+config.colorOff+`" 
+					mask="url(#level_bgr_{{unique}})"
+					
+				/>
+				<rect id="level_stripe_0_{{unique}}" x="0" y="0" 
+					width="`+config.stripe.height+`" height="`+config.exactheight+`"	
+					style="stroke:none";
+					${filltype}
+					mask="url(#level_fgr_0_{{unique}})"
+				
 				/>
 				<text id=level_textgroup_{{unique}}>
 					<tspan id=level_title_{{unique}} class="txt-{{unique}}" text-anchor="middle" dominant-baseline="hanging" x=`+config.exactwidth/2+` dx="12" y="0">
@@ -82,25 +166,56 @@ module.exports = function (RED) {
 					</tspan>					
 				</text>					
 				<text id=level_max_{{unique}} class="txt-{{unique}} small" text-anchor="start" dominant-baseline="hanging" x="15" y="0">`+config.max+`</text>	
-				<text id=level_min_{{unique}} class="txt-{{unique}} small" text-anchor="start" dominant-baseline="baseline" x="15" ng-attr-y=`+config.lastpos+`px>`+config.min+`</text>			
+				<text id=level_min_{{unique}} class="txt-{{unique}} small" text-anchor="start" dominant-baseline="baseline" x="15" ng-attr-y=`+config.exactheight+`px>`+config.min+`</text>			
 			</svg>`
 		
 		var level_pair_h = String.raw`		
 			<svg preserveAspectRatio="xMidYMid meet" id="level_svg_{{unique}}" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-				<rect id="level_led_{{unique}}_0_{{$index}}" ng-repeat="color in stripes[0] track by $index" 
-					y=22% 
-					ng-attr-x="{{$index * `+config.stripe.gap+`}}px"
-					width="`+config.stripe.width+`"
-					height="16%" 
-					style="fill:{{color}}"
+				<defs>
+					${gradienttype}
+					<pattern id="level_square_{{unique}}" x="0" y="0" width="`+config.stripe.step+`" height="`+config.stripe.height+`" patternUnits="userSpaceOnUse">
+						<rect x="0" width="`+config.stripe.width+`" height="`+config.stripe.height+`" y="0" fill="white" />				
+					</pattern>
+					<mask id="level_bgr_0_{{unique}}">
+						<rect x="0" y="`+config.stripe.y0+`" width="`+config.exactwidth+`" height="`+config.stripe.height+`" fill="url(#level_square_{{unique}})"/>
+					</mask>
+					<mask id="level_bgr_1_{{unique}}">
+						<rect x="0" y="`+config.stripe.y1+`" width="`+config.exactwidth+`" height="`+config.stripe.height+`" fill="url(#level_square_{{unique}})"/>
+					</mask>
+					<mask id="level_fgr_0_{{unique}}">
+						<rect id="level_mask_0_{{unique}}" x="0" y="`+config.stripe.y0+`" width="`+config.exactwidth+`" height="`+config.stripe.height+`" fill="url(#level_square_{{unique}})"/>
+					</mask>
+					<mask id="level_fgr_1_{{unique}}">
+						<rect id="level_mask_1_{{unique}}" x="0" y="`+config.stripe.y1+`" width="`+config.exactwidth+`" height="`+config.stripe.height+`" fill="url(#level_square_{{unique}})"/>
+					</mask>								
+				</defs>
+				<rect id="level_stripeoff_0_{{unique}}" x="0" y="`+config.stripe.y0+`"
+					width="`+config.exactwidth+`" height="`+config.stripe.height+`" 
+					style="stroke:none"; 
+					fill="`+config.colorOff+`" 
+					mask="url(#level_bgr_0_{{unique}})"
 				/>
-				<rect id="level_led_{{unique}}_1_{{$index}}" ng-repeat="color in stripes[1] track by $index" 
-					y=60% 
-					ng-attr-x="{{$index * `+config.stripe.gap+`}}px"
-					width="`+config.stripe.width+`"
-					height="16%" 
-					style="fill:{{color}}"
+				<rect id="level_stripe_0_{{unique}}" x="0" y="`+config.stripe.y0+`" 
+					width="`+config.exactwidth+`" height="`+config.stripe.height+`"	
+					style="stroke:none";
+					${filltype}
+					mask="url(#level_fgr_0_{{unique}})"
 				/>
+				
+				<rect id="level_stripeoff_1_{{unique}}" x="0" y="`+config.stripe.y1+`"
+					width="`+config.exactwidth+`" height="`+config.stripe.height+`" 
+					style="stroke:none"; 
+					fill="`+config.colorOff+`" 
+					mask="url(#level_bgr_1_{{unique}})"
+				/>
+				<rect id="level_stripe_1_{{unique}}" x="0" y="`+config.stripe.y1+`" 
+					width="`+config.exactwidth+`" height="`+config.stripe.height+`"	
+					style="stroke:none";
+					${filltype}
+					mask="url(#level_fgr_1_{{unique}})"
+				/>
+				
+				
 				<text id=level_channel_0_{{unique}} class="txt-{{unique}}" text-anchor="start" dominant-baseline="hanging" x="0" y="0">`+config.channelA+`
 					<tspan class="txt-{{unique}} small" dominant-baseline="hanging">
 					`+config.unit+`
@@ -117,7 +232,7 @@ module.exports = function (RED) {
 					</tspan>
 				</text>
 				<text id=level_value_channel_1_{{unique}} class="txt-{{unique}} val" dominant-baseline="baseline"
-				text-anchor="end" x="100%" y="100%">
+				text-anchor="end" x="100%" y=`+config.exactheight+`>
 						{{msg.payload[1]}}											
 				</text>
 
@@ -198,31 +313,13 @@ module.exports = function (RED) {
 					}					
 					return input;
 				}
-				site = function(){
+				getSiteProperties = function(){
 					var opts = null;					
-					if (typeof ui.getSizes === "function") {
-						//prepared to proper solution if dashboard version >= 2.15.0 (probably)						
+					if (typeof ui.getSizes === "function") {			
 						opts = {};
 						opts.sizes = ui.getSizes();
 						opts.theme = ui.getTheme();
-					}					
-					if(opts === null){
-						// until 2.14 unreliable hack solution
-						var fl = config._flow;					
-						if(fl){
-							var confs = config._flow.global.configs
-							for(var key in confs){
-								if (confs.hasOwnProperty(key)) {							
-									if(confs[key].type === "ui_base"){																	
-										opts = {}
-										opts.sizes = confs[key].site.sizes
-										opts.theme = confs[key].theme.themeState										
-										break;
-									}
-								}
-							}
-						}
-					}					
+					}	
 					if(opts === null){
 						// fallback to hardcoded defaults					
 						node.log("Couldn't reach to the site parameters. Using hardcoded default parameters!")
@@ -252,8 +349,8 @@ module.exports = function (RED) {
 						cw += config.stripe.width
 						c +=0.5 
 					}
-					c = Math.floor(c)
-					while(c*config.stripe.gap > w){
+					c = Math.round(c)
+					while(c*config.stripe.step > w){
 						c--;
 					}
 					if(c & 1 !== 1){
@@ -293,11 +390,10 @@ module.exports = function (RED) {
 				}
 				
 				updateControl = function(uicontrol){
-					if(reverse){
-						rbcolors.reverse();
-					}
 					reverse = false;
 					var applies = false;
+					var updatesectors = false
+					sectorupdate = []
 					var mi = min
 					var ma = max
 					if(uicontrol.min != undefined && !isNaN(parseFloat(uicontrol.min))){
@@ -311,96 +407,91 @@ module.exports = function (RED) {
 					if(uicontrol.seg1 != undefined && !isNaN(parseFloat(uicontrol.seg1))){
 						sectorwarn =  parseFloat(uicontrol.seg1);
 						applies = true;
+						updatesectors = true;
 					}
 					if(uicontrol.seg2 != undefined && !isNaN(parseFloat(uicontrol.seg2))){
 						sectorhigh =  parseFloat(uicontrol.seg2);
 						applies = true;
+						updatesectors = true;
 					}					
 					min = mi > ma ? ma : mi;
 					max = ma < mi ? mi : ma;				
 					reverse = mi > ma;
-					if(reverse){
-						rbcolors.reverse()
-					}					
+									
 					if(applies){
-						params = reverse ? {minin:min, maxin:max+0.00001, minout:0, maxout:config.count-1} : {minin:min, maxin:max+0.00001, minout:1, maxout:config.count};	
-						high = range(sectorhigh,params);
-						warn = range(sectorwarn,params);
+						 if(updatesectors && config.colorschema == 'fixed'){
+							var high = exactPosition(sectorhigh,min,max,reverse,directiontarget).p
+							var warn = exactPosition(sectorwarn,min,max,reverse,directiontarget).p							
+							if(config.layout == 'sv'){
+								warn = 100-warn;
+								high = 100-high;
+								sectorupdate = [high,high,warn,warn]
+							}
+							else{
+								sectorupdate = [warn,warn,high,high]
+							}
+						} 
 						configsent = false;
-					}
+					} 
 				}
 				
-				interpolate = function(from, to, factor){
-					var result = from.slice();
-					for (var i = 0; i < 3; i++) {
-						result[i] = Math.round(result[i] + factor * (to[i] - from[i]));
+
+				
+			 	exactPosition = function(target,mi,ma,r,dir) {
+					var p = r ? {minin:mi, maxin:ma+0.00001, minout:100, maxout:1} : {minin:mi, maxin:ma+0.00001, minout:1, maxout:100}									
+					var c = Math.round(dir * range(target,p) / 100 / config.stripe.width) * config.stripe.width;					
+					var ret = c / dir
+					if(ret > 1){
+						ret = 1
 					}
-					return result;
+					if(ret < 0){
+						ret = 0
+					}
+					return {px:Math.floor(ret * dir),p:ret * 100}
 				}
-				
-				rainbow = function (from, to, steps){
-					var sf = 1 / (steps - 1);
-					var result = [];
-					from = String(from).match(/\d+/g).map(Number);
-					to = String(to).match(/\d+/g).map(Number);
-					var irc
-					for(var i = 0; i < steps; i++) {
-						irc = interpolate(from, to, sf * i)
-						result.push(rgbToHex(irc[0],irc[1],irc[2]));
-					}
-					return result;
-				}
-				
-				const rgbToHex = (r, g, b) => '#' + [r, g, b].map(x => { const hex = x.toString(16); return hex.length === 1 ? '0' + hex : hex}).join('')
-				const hexToRgb = hex => hex.replace(/^#?([a-f\d])([a-f\d])([a-f\d])$/i,(m, r, g, b) => '#' + r + r + g + g + b + b).substring(1).match(/.{2}/g).map(x => parseInt(x, 16))
-				
-				createRainbow = function(){
-					if(colorschema !== 'rainbow'){
-						return []
-					}					
-					var hc = Math.floor(config.count/2);
-					var rb1 = rainbow(hexToRgb(normalcolor),hexToRgb(warncolor),hc);
-					var rb2 = rainbow(hexToRgb(warncolor),hexToRgb(alertcolor),config.count - hc);
-					var ret = rb1.concat(rb2);
-					if(reverse){
-						ret.reverse();
-					}
-					return ret;
-				}	
 					 
 				
 				var group = RED.nodes.getNode(config.group);
-				var siteproperties = site();
-				config.stripe = {gap: config.shape * 2, width: parseInt(config.shape)};
+				var site = getSiteProperties();
+				
 				if(config.width == 0){ config.width = parseInt(group.config.width) || dimensions("w")}
 				if(config.height == 0) {config.height = parseInt(group.config.height) || dimensions("h")}
 				config.width = parseInt(config.width)
 				config.height = parseInt(config.height)
-				config.exactwidth = parseInt(parseInt(siteproperties.sizes.sx) * config.width + parseInt(siteproperties.sizes.cx) * (config.width-1)) - 12;		
-				config.exactheight = parseInt(parseInt(siteproperties.sizes.sy) * config.height + parseInt(siteproperties.sizes.cy) * (config.height-1)) - 12;
+				config.exactwidth = parseInt(site.sizes.sx * config.width + site.sizes.cx * (config.width-1)) - 12;		
+				config.exactheight = parseInt(site.sizes.sy * config.height + site.sizes.cy * (config.height-1)) - 12;
+				
+				var y_0 = config.exactheight - Math.floor((site.sizes.sy/2)) + 12;
+				var y_1 = 0
+				if(config.layout === "ph"){
+					y_0 = config.exactheight/3 - 6 //config.exactheight - Math.floor((site.sizes.sy/1.2)) + 12;
+					y_1 = config.exactheight/3*2  // - Math.floor((site.sizes.sy/1.8)) + 12;
+				}
+				
+				config.stripe = {step: parseInt(config.shape) * 2, width: parseInt(config.shape), height:Math.floor((site.sizes.sy/2)-12), y0:y_0,y1:y_1};
 				config.min = parseFloat(config.min);
 				config.max = parseFloat(config.max);				
 				config.count = stripecount();
-				config.lastpos = config.count * config.stripe.gap - config.stripe.width;			
-				var offcolor = config.colorOff || "gray";
-				var normalcolor = config.colorNormal || "green";
-				var warncolor = config.colorWarn || "orange";
-				var alertcolor = config.colorHi || "red";
-				var opc = [offcolor,normalcolor,warncolor,alertcolor];
-				var colorschema =  config.colorschema || 'fixed';				
+				config.lastpos = config.count * config.stripe.step - config.stripe.width;			
+				config.colorOff = config.colorOff || "gray";
+				config.colorNormal = config.colorNormal || "green";
+				config.colorWarn = config.colorWarn || "orange";
+				config.colorHi = config.colorHi || "red";				
+				config.colorschema = config.colorschema || 'fixed';
+				var opc = [config.colorOff,config.colorNormal,config.colorWarn,config.colorHi];
+								
 				var min = config.min > config.max ? config.max : config.min;
 				var max = config.max < config.min ? config.min : config.max;				
-				var reverse = config.min > config.max;				
-				var rbcolors = createRainbow();				
-				var params = reverse ? {minin:min, maxin:max+0.00001, minout:0, maxout:config.count-1} : {minin:min, maxin:max+0.00001, minout:1, maxout:config.count};			
+				var reverse = config.min > config.max;
 				var decimals = isNaN(parseFloat(config.decimals)) ? {fixed:1,mult:0} : {fixed:parseInt(config.decimals),mult:Math.pow(10,parseInt(config.decimals))};
-				var warn = config.max;
-				var high = config.max;
-				var sectorhigh = isNaN(parseFloat(config.segHigh)) ? parseFloat((high *.9).toFixed(decimals.fixed)) : parseFloat(config.segHigh);
-				var sectorwarn = isNaN(parseFloat(config.segWarn)) ? parseFloat((warn *.7).toFixed(decimals.fixed)) : parseFloat(config.segWarn);
-				high = range(sectorhigh,params);
-				warn = range(sectorwarn,params);								
-				var configsent = false;	
+				var directiontarget = config.layout === 'sv' ? config.exactheight : config.exactwidth
+				var sectorhigh = isNaN(parseFloat(config.segHigh)) ? parseFloat((max *.9).toFixed(decimals.fixed)) : parseFloat(config.segHigh);
+				var sectorwarn = isNaN(parseFloat(config.segWarn)) ? parseFloat((max *.7).toFixed(decimals.fixed)) : parseFloat(config.segWarn);				
+				var sectorupdate = []
+				config.gradient = {warn:exactPosition(sectorwarn,min,max,reverse,directiontarget).p,high:exactPosition(sectorhigh,min,max,reverse,directiontarget).p};
+				
+				
+				
 				var defaultFontOptions = {"sh":{normal:1,small:0.65,big:1.2,color:'currentColor'},
 											"sv":{normal:1.4,small:0.65,big:3,color:'currentColor'},
 											"ph":{normal:1,small:0.65,big:1.2,color:'currentColor'}};			
@@ -427,6 +518,8 @@ module.exports = function (RED) {
 						}
 					}					
 				}
+				
+				var configsent = false;
 				
 				var html = HTML(config);
 				
@@ -474,73 +567,53 @@ module.exports = function (RED) {
 						if(msg.payload === undefined){
 							return
 						}
-						var ranged = [];
-						ranged.push(range(msg.payload[0], params));
-						if(msg.payload[1] !== null){
-							ranged.push(range(msg.payload[1], params));
-						}												
-						msg.colors = [[],[]];
-						var col;
-						var selector = 0;
-						if(reverse){
-							for(var i=0; i < config.count ; i++){
-								if(colorschema === 'rainbow'){
-									col = ranged[0] > i ? opc[0] : rbcolors[i]
-								}
-								else{
-									selector = colorschema === 'fixed' ?  i : ranged[0];							
-									col = ranged[0] > i ? opc[0] : ( selector > (warn) ? opc[1] : ( selector > (high) ? opc[2] : opc[3]));
-								}								
-								msg.colors[0].unshift(col)
-							}
-							if(msg.payload[1] !== null){
-								for(var i=0; i < config.count; i++){
-									if(colorschema === 'rainbow'){
-										col = ranged[1] > i ? opc[0] : rbcolors[i]
-									}
-									else{
-										selector = colorschema === 'fixed' ?  i : ranged[1];								
-										col = ranged[1] > i ? opc[0] : ( selector > (warn) ? opc[1] : ( selector > (high) ? opc[2] : opc[3]));
-									}									
-									msg.colors[1].unshift(col)
-								}
-							}
-						}
-						else{
-							for(var i=0; i < config.count; i++){
-								if(colorschema === 'rainbow'){
-									col = ranged[0] <= i ? opc[0] : rbcolors[i]
-								}
-								else{
-									selector = colorschema === 'fixed' ?  i : ranged[0];
-									col = ranged[0] <= i ? opc[0] : ( selector < (warn) ? opc[1] : ( selector < (high) ? opc[2] : opc[3]));
-								}								
-								msg.colors[0].push(col)
-							}
-							if(msg.payload[1] !== null){
-								for(var i=0; i < config.count; i++){
-									if(colorschema === 'rainbow'){
-										col = ranged[1] <= i ? opc[0] : rbcolors[i]
-									}
-									else{
-										selector = colorschema === 'fixed' ?  i : ranged[1];								
-										col = ranged[1] <= i ? opc[0] : ( selector < (warn) ? opc[1] : ( selector < (high) ? opc[2] : opc[3]));
-									}									
-									msg.colors[1].push(col)
-								}
+						if(config.layout === "ph"){
+							if(msg.payload[1] === null){
+								msg.payload[1] = min
 							}
 						}
 						
-						if((config.layout.indexOf("v") != -1)){
-							msg.colors[0].reverse();
-							msg.colors[1].reverse();							
+						var pos = [exactPosition(msg.payload[0],min,max,reverse,directiontarget),null];
+						if(config.layout === "ph"){
+							pos[1] = exactPosition(msg.payload[1],min,max,reverse,directiontarget)
 						}
+						
+						
+						msg.percent = [pos[0].px,null];
+						if(config.layout === "ph"){							
+							msg.percent[1] = pos[1].px													
+						}
+						
+						if(config.colorschema == 'valuedriven'){
+							var col							
+							if(reverse){
+								col =  pos[0].p > (sectorwarn) ? opc[1] : ( pos[0].p > (sectorhigh) ? opc[2] : opc[3]);
+								msg.color = [col,null]
+								if(pos[1] != null){
+									col =  pos[1].p > (sectorwarn) ? opc[1] : ( pos[1].p > (sectorhigh) ? opc[2] : opc[3]);
+									msg.color[1] = col
+								}
+							}
+							else{
+								col =  pos[0].p < (sectorwarn) ? opc[1] : ( pos[0].p < (sectorhigh) ? opc[2] : opc[3]);
+								msg.color = [col,null]
+								if(pos[1] != null){
+									col = pos[1].p < (sectorwarn) ? opc[1] : (pos[1].p < (sectorhigh) ? opc[2] : opc[3]);
+									msg.color[1] = col
+								}
+							}							
+						}
+						
 						if(!configsent){
 							msg.min = reverse ? max : min;
 							msg.max = reverse ? min : max;
+							if(sectorupdate.length > 0){
+								msg.sectors = sectorupdate
+							}
 							configsent = true;
 						}
-						msg.d = decimals;					
+						msg.d = decimals;
+						msg.prop = config.layout === "sv" ? 'height' : 'width'					
 						msg.animate = config.animations															
 						return { msg: msg };
 					},
@@ -557,46 +630,67 @@ module.exports = function (RED) {
 								$(minval).text(msg.min);
 								var maxval = document.getElementById("level_max_"+$scope.unique);
 								$(maxval).text(msg.max);								
-							}							
-							if(!$scope.stripes || $scope.stripes[0].length !== msg.colors[0].length){								
-								$scope.stripes = msg.colors;
-							}	
-							var stripe;
-							var len = msg.colors[1].length !== 0 ? 2 : 1;
-							var i;
-							var j;					
-							var speed = msg.animate == "reactive" ? .3 : .8;													
-							for(j = 0; j<len; j++){									
-								for(i= 0;i<msg.colors[j].length;i++){									
-									stripe = document.getElementById("level_led_"+$scope.unique+"_"+j+"_"+i);										
-									if(stripe && stripe.style.fill !== msg.colors[j][i]){
-										if(msg.animate !== "off"){
-											$(stripe).stop().animate().css({'fill': msg.colors[j][i], 'transition': 'fill '+speed+'s'});
-										}
-										else{											
-											stripe.style.fill = msg.colors[j][i]
-										}	
-									}
+							}
+							 if(msg.sectors){
+								var gradient = document.getElementById("level_gradi_"+$scope.unique)
+								if(gradient){
+									for(var i = 0;i<msg.sectors.length;i++){
+										var stop = gradient.children[i]
+										if(stop){
+											$(stop).attr({offset:msg.sectors[i]+"%"})
+										}										
+									}								
 								}
+							} 
+							
+							var stripe;
+							var mask;
+							var len = msg.percent[1] !== null ? 2 : 1;							
+							var j;					
+							var speed = msg.animate == "reactive" ? 300 : 800;
+							var dir = msg.dir													
+							for(j = 0; j<len; j++){														
+								mask = document.getElementById("level_mask_"+j+"_"+$scope.unique);																										
+								if(mask){
+									if(msg.animate !== "off"){
+										$(mask).stop().animate({[msg.prop]: msg.percent[j]+'px' },speed);
+									}
+									else{											
+										mask.style.width = msg.percent[j]+'%'
+									}	
+								}																
+								if(msg.color){
+									stripe = document.getElementById("level_stripe_"+j+"_"+$scope.unique);
+									if(stripe && msg.color[j] != null){
+										if(msg.animate !== "off"){
+											if(stripe.style.fill != msg.color[j]){
+												$(stripe).stop().animate().css({'fill': msg.color[j] ,'transition': 'fill '+speed/1000+'s'});
+											}										
+										}
+										else{
+											stripe.style.fill = msg.color[j]
+										}									
+									}	
+								}					
 							}						
 							
 							var val0 = document.getElementById("level_value_channel_0_"+$scope.unique);
 							if(val0){
 								if(msg.animate !== "off"){
 									$({ticker: $scope.lastvalue[0]}).stop().animate({ticker: msg.payload[0]}, {
-										duration: msg.animate == "reactive" ? 100 : 400,
+										duration: msg.animate == "reactive" ? 300 : 800,
 										easing:'swing',
 										step: function() {										
 											$(val0).text((Math.ceil(this.ticker * msg.d.mult)/msg.d.mult).toFixed(msg.d.fixed));
 										},
 										complete: function() {
-											$(val0).text(msg.payload[0]);
-											$scope.lastvalue[0] = msg.payload[0];										
+											$(val0).text(msg.payload[0].toFixed(msg.d.fixed));
+											$scope.lastvalue[0] =msg.payload[0];										
 										}
 									}); 
 								}
 								else{
-									$(val0).text(msg.payload[0]);
+									$(val0).text(msg.payload[0].toFixed(msg.d.fixed));
 									$scope.lastvalue[0] = msg.payload[0];
 								}
 							}
@@ -605,19 +699,19 @@ module.exports = function (RED) {
 							if(val1){
 								if(msg.animate !== "off"){
 									$({ticker: $scope.lastvalue[1]}).stop().animate({ticker: msg.payload[1]}, {
-										duration: msg.animate == "reactive" ? 100 : 400,
+										duration: msg.animate == "reactive" ? 300 : 800,
 										easing:'swing',
 										step: function() {										
 											$(val1).text((Math.ceil(this.ticker * msg.d.mult)/msg.d.mult).toFixed(msg.d.fixed));
 										},
 										complete: function() {
-											$(val1).text(msg.payload[1]);
+											$(val1).text(msg.payload[1].toFixed(msg.d.fixed));
 											$scope.lastvalue[1] = msg.payload[1];										
 										}
 									}); 
 								}
 								else{
-									$(val1).text(msg.payload[1]);
+									$(val1).text(msg.payload[1].toFixed(msg.d.fixed));
 									$scope.lastvalue[1] = msg.payload[1];
 								}
 							}							

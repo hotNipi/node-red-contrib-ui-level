@@ -420,8 +420,8 @@ module.exports = function (RED) {
 									
 					if(applies){
 						 if(updatesectors && config.colorschema == 'fixed'){
-							var high = exactPosition(sectorhigh,min,max,reverse,directiontarget).p
-							var warn = exactPosition(sectorwarn,min,max,reverse,directiontarget).p							
+							var high = config.gradient.high = exactPosition(sectorhigh,min,max,reverse,directiontarget).p
+							var warn = config.gradient.warn = exactPosition(sectorwarn,min,max,reverse,directiontarget).p							
 							if(config.layout == 'sv'){
 								warn = 100-warn;
 								high = 100-high;
@@ -519,8 +519,7 @@ module.exports = function (RED) {
 					}					
 				}
 
-				var configsent = false;
-				
+				var configsent = false;				
 				var html = HTML(config);
 				
 				done = ui.addWidget({
@@ -578,30 +577,19 @@ module.exports = function (RED) {
 							pos[1] = exactPosition(msg.payload[1],min,max,reverse,directiontarget)
 						}
 						
-						
 						msg.percent = [pos[0].px,null];
 						if(config.layout === "ph"){							
 							msg.percent[1] = pos[1].px													
 						}
 						
 						if(config.colorschema == 'valuedriven'){
-							var col							
-							if(reverse){
-								col =  pos[0].p > (sectorwarn) ? opc[1] : ( pos[0].p > (sectorhigh) ? opc[2] : opc[3]);
-								msg.color = [col,null]
-								if(pos[1] != null){
-									col =  pos[1].p > (sectorwarn) ? opc[1] : ( pos[1].p > (sectorhigh) ? opc[2] : opc[3]);
-									msg.color[1] = col
-								}
-							}
-							else{
-								col =  pos[0].p < (sectorwarn) ? opc[1] : ( pos[0].p < (sectorhigh) ? opc[2] : opc[3]);
-								msg.color = [col,null]
-								if(pos[1] != null){
-									col = pos[1].p < (sectorwarn) ? opc[1] : (pos[1].p < (sectorhigh) ? opc[2] : opc[3]);
-									msg.color[1] = col
-								}
-							}							
+							var col
+							col =  pos[0].p < config.gradient.warn ? opc[1] : (pos[0].p < config.gradient.high ? opc[2] : opc[3]);
+							msg.color = [col,null]
+							if(pos[1] != null){
+								col = pos[1].p < config.gradient.warn ? opc[1] : (pos[1].p < config.gradient.high ? opc[2] : opc[3]);
+								msg.color[1] = col
+							}														
 						}
 						
 						if(!configsent){

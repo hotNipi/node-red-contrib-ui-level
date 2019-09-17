@@ -434,9 +434,7 @@ module.exports = function (RED) {
 						configsent = false;
 					} 
 				}
-				
 
-				
 			 	exactPosition = function(target,mi,ma,r,dir) {
 					var p = r ? {minin:mi, maxin:ma+0.00001, minout:100, maxout:1} : {minin:mi, maxin:ma+0.00001, minout:1, maxout:100}									
 					var c = Math.round(dir * range(target,p) / 100 / config.stripe.width) * config.stripe.width;					
@@ -534,7 +532,7 @@ module.exports = function (RED) {
 					forwardInputMessages: false,
 					storeFrontEndInputAsState: true,					
 					
-					convert: function (value,old,msg){
+					convert: function (value,old,msg){						
 						if(value === undefined){
 							value = min;
 						}																
@@ -562,8 +560,9 @@ module.exports = function (RED) {
 					beforeEmit: function (msg) {
 						if(msg.ui_control){
 							updateControl(msg.ui_control);
+							delete msg.ui_control
 						}
-						if(msg.payload === undefined){
+						if(!msg.payload){
 							return
 						}
 						if(config.layout === "ph"){
@@ -577,9 +576,9 @@ module.exports = function (RED) {
 							pos[1] = exactPosition(msg.payload[1],min,max,reverse,directiontarget)
 						}
 						
-						msg.percent = [pos[0].px,null];
+						msg.position = [pos[0].px,null];
 						if(config.layout === "ph"){							
-							msg.percent[1] = pos[1].px													
+							msg.position[1] = pos[1].px													
 						}
 						
 						if(config.colorschema == 'valuedriven'){
@@ -595,62 +594,68 @@ module.exports = function (RED) {
 						if(!configsent){
 							msg.min = reverse ? max : min;
 							msg.max = reverse ? min : max;
+							msg.d = decimals;
+							msg.prop = config.layout === "sv" ? 'height' : 'width'					
+							msg.animate = {g:config.animations,t:config.textAnimations}
 							if(sectorupdate.length > 0){
 								msg.sectors = sectorupdate
 							}
 							configsent = true;
 						}
-						msg.d = decimals;
-						msg.prop = config.layout === "sv" ? 'height' : 'width'					
-						msg.animate = {g:config.animations,t:config.textAnimations}															
+																					
 						return { msg: msg };
 					},
 					
 					initController: function ($scope) {																		
 						$scope.unique = $scope.$eval('$id')					
-						$scope.lastvalue = [0,0]									
+						$scope.lastvalue = [0,0]
+						$scope.animate = {g:'soft',t:false}	
+						$scope.d = {fixed:1,mult:0}
+						$scope.prop = 'width'								
 						$scope.$watch('msg', function (msg) {
 							if (!msg) {								
 								return;
 							}
-							if(msg.min || msg.max){								
+							if(msg.min){								
 								var minval = document.getElementById("level_min_"+$scope.unique);
 								$(minval).text(msg.min);
 								var maxval = document.getElementById("level_max_"+$scope.unique);
-								$(maxval).text(msg.max);								
-							}
-							 if(msg.sectors){
-								var gradient = document.getElementById("level_gradi_"+$scope.unique)
-								if(gradient){
-									for(var i = 0;i<msg.sectors.length;i++){
-										var stop = gradient.children[i]
-										if(stop){
-											$(stop).attr({offset:msg.sectors[i]+"%"})
-										}										
-									}								
-								}
-							} 
-							
+								$(maxval).text(msg.max);
+								$scope.animate = msg.animate;
+								$scope.d = msg.d;
+								$scope.prop = msg.prop;
+								if(msg.sectors){
+									var gradient = document.getElementById("level_gradi_"+$scope.unique)
+									if(gradient){
+										for(var i = 0;i<msg.sectors.length;i++){
+											var stop = gradient.children[i]
+											if(stop){
+												$(stop).attr({offset:msg.sectors[i]+"%"})
+											}										
+										}								
+									}
+								} 
+							}							
 							var stripe;
 							var mask;
-							var len = msg.percent[1] !== null ? 2 : 1;							
+							var len = msg.position[1] !== null ? 2 : 1;							
 							var j;					
-							var speed = msg.animate.g == "reactive" ? 300 : 800;
+							var speed = $scope.animate.g == "reactive" ? 300 : 800;
 													
 							for(j = 0; j<len; j++){														
 								mask = document.getElementById("level_mask_"+j+"_"+$scope.unique);																										
 								if(mask){
-									if(msg.animate.g !== "off"){
-										$(mask).stop().animate({[msg.prop]: msg.percent[j]+'px' },speed);
+									if($scope.animate.g !== "off"){
+										$(mask).stop().animate({[$scope.prop]: msg.position[j]+'px' },speed);
 									}
 									else{											
-										mask.style[msg.prop] = msg.percent[j]+'px'
+										mask.style[$scope.prop] = msg.position[j]+'px'
 									}	
 								}																
 								if(msg.color){
 									stripe = document.getElementById("level_stripe_"+j+"_"+$scope.unique);
 									if(stripe && msg.color[j] != null){
-										if(msg.animate.g !== "off"){
+										if($scope.animate.g !== "off"){
 											if(stripe.style.fill != msg.color[j]){
 												$(stripe).stop().animate().css({'fill': msg.color[j] ,'transition': 'fill '+speed/1000+'s'});
 											}										
@@ -664,46 +669,45 @@ module.exports = function (RED) {
 							
 							var val0 = document.getElementById("level_value_channel_0_"+$scope.unique);
 							if(val0){
-								if(msg.animate.g !== "off" && msg.animate.t == true){
+								if($scope.animate.g !== "off" && $scope.animate.t == true){
 									$({ticker: $scope.lastvalue[0]}).stop().animate({ticker: msg.payload[0]}, {
-										duration: msg.animate.g == "reactive" ? 300 : 800,
+										duration: $scope.animate.g == "reactive" ? 300 : 800,
 										easing:'swing',
 										step: function() {										
-											$(val0).text((Math.ceil(this.ticker * msg.d.mult)/msg.d.mult).toFixed(msg.d.fixed));
+											$(val0).text((Math.ceil(this.ticker * $scope.d.mult)/$scope.d.mult).toFixed($scope.d.fixed));
 										},
 										complete: function() {
-											$(val0).text(msg.payload[0].toFixed(msg.d.fixed));
+											$(val0).text(msg.payload[0].toFixed($scope.d.fixed));
 											$scope.lastvalue[0] =msg.payload[0];										
 										}
 									}); 
 								}
 								else{
-									$(val0).text(msg.payload[0].toFixed(msg.d.fixed));
+									$(val0).text(msg.payload[0].toFixed($scope.d.fixed));
 									$scope.lastvalue[0] = msg.payload[0];
 								}
 							}
 							
 							var val1 = document.getElementById("level_value_channel_1_"+$scope.unique);
 							if(val1){
-								if(msg.animate.g !== "off" && msg.animate.t == true){
+								if($scope.animate.g !== "off" && $scope.animate.t == true){
 									$({ticker: $scope.lastvalue[1]}).stop().animate({ticker: msg.payload[1]}, {
-										duration: msg.animate.g == "reactive" ? 300 : 800,
+										duration: $scope.animate.g == "reactive" ? 300 : 800,
 										easing:'swing',
 										step: function() {										
-											$(val1).text((Math.ceil(this.ticker * msg.d.mult)/msg.d.mult).toFixed(msg.d.fixed));
+											$(val1).text((Math.ceil(this.ticker * $scope.d.mult)/$scope.d.mult).toFixed($scope.d.fixed));
 										},
 										complete: function() {
-											$(val1).text(msg.payload[1].toFixed(msg.d.fixed));
+											$(val1).text(msg.payload[1].toFixed($scope.d.fixed));
 											$scope.lastvalue[1] = msg.payload[1];										
 										}
 									}); 
 								}
 								else{
-									$(val1).text(msg.payload[1].toFixed(msg.d.fixed));
+									$(val1).text(msg.payload[1].toFixed($scope.d.fixed));
 									$scope.lastvalue[1] = msg.payload[1];
 								}
-							}							
-														
+							}														
 						});
 					}
 				});

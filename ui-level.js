@@ -286,6 +286,7 @@ module.exports = function (RED) {
 			var exactPosition = null;
 			var ensureNumber = null;
 			var getSiteProperties = null;
+			var msgFormat = null;
 
 			if (checkConfig(node, config)) {	
 				
@@ -434,7 +435,9 @@ module.exports = function (RED) {
 						configsent = false;
 					} 
 				}
+				
 
+				
 			 	exactPosition = function(target,mi,ma,r,dir) {
 					var p = r ? {minin:mi, maxin:ma+0.00001, minout:100, maxout:1} : {minin:mi, maxin:ma+0.00001, minout:1, maxout:100}									
 					var c = Math.round(dir * range(target,p) / 100 / config.stripe.width) * config.stripe.width;					
@@ -446,6 +449,32 @@ module.exports = function (RED) {
 						ret = 0
 					}
 					return {px:Math.floor(ret * dir),p:ret * 100}
+				}
+				
+				msgFormat = function(value) {					
+					var msg = {}
+					if(value === undefined){
+						value = min;
+					}																
+					if(Array.isArray(value) === true){
+						if(value.length < 2){
+							value.push(null)
+						}
+						var v
+						msg.payload = []
+						for(var i = 0;i < 2; i++){
+							v = value[i];
+							if(v !== null){
+								v = ensureNumber(v, decimals.fixed)
+							}
+							msg.payload.push(v)
+						}											
+					}
+					else{
+						value = ensureNumber(value, decimals.fixed)
+						msg.payload = [value,null];
+					}						
+					return msg;			
 				}
 					 
 				
@@ -516,6 +545,8 @@ module.exports = function (RED) {
 						}
 					}					
 				}
+				
+				
 
 				var configsent = false;				
 				var html = HTML(config);
@@ -530,41 +561,17 @@ module.exports = function (RED) {
 					templateScope: "local",
 					emitOnlyNewValues: false,
 					forwardInputMessages: false,
-					storeFrontEndInputAsState: true,					
+					storeFrontEndInputAsState: true,
 					
-					convert: function (value,old,msg){						
-						if(value === undefined){
-							value = min;
-						}																
-						if(Array.isArray(value) === true){
-							if(value.length < 2){
-								value.push(null)
-							}
-							var v
-							msg.payload = []
-							for(var i = 0;i < 2; i++){
-								v = value[i];
-								if(v !== null){
-									v = ensureNumber(v, decimals.fixed)
-								}
-								msg.payload.push(v)
-							}											
-						}
-						else{
-							value = ensureNumber(value, decimals.fixed)
-							msg.payload = [value,null];
-						}						
-						return msg;										
-					},
-					
-					beforeEmit: function (msg) {
+					beforeEmit: function (msg) {						
 						if(msg.ui_control){
 							updateControl(msg.ui_control);
-							delete msg.ui_control
 						}
-						if(!msg.payload){
+						if(msg.payload === undefined){
 							return
-						}
+						}						
+						msg = msgFormat(msg.payload)						
+						
 						if(config.layout === "ph"){
 							if(msg.payload[1] === null){
 								msg.payload[1] = min
@@ -594,36 +601,29 @@ module.exports = function (RED) {
 						if(!configsent){
 							msg.min = reverse ? max : min;
 							msg.max = reverse ? min : max;
-							msg.d = decimals;
-							msg.prop = config.layout === "sv" ? 'height' : 'width'					
-							msg.animate = {g:config.animations,t:config.textAnimations}
 							if(sectorupdate.length > 0){
 								msg.sectors = sectorupdate
 							}
 							configsent = true;
 						}
-																					
+						msg.d = decimals;
+						msg.prop = config.layout === "sv" ? 'height' : 'width'					
+						msg.animate = {g:config.animations,t:config.textAnimations}															
 						return { msg: msg };
 					},
 					
 					initController: function ($scope) {																		
 						$scope.unique = $scope.$eval('$id')					
-						$scope.lastvalue = [0,0]
-						$scope.animate = {g:'soft',t:false}	
-						$scope.d = {fixed:1,mult:0}
-						$scope.prop = 'width'								
+						$scope.lastvalue = [0,0]									
 						$scope.$watch('msg', function (msg) {
 							if (!msg) {								
 								return;
 							}
-							if(msg.min){								
+							if(msg.min || msg.max){								
 								var minval = document.getElementById("level_min_"+$scope.unique);
 								$(minval).text(msg.min);
 								var maxval = document.getElementById("level_max_"+$scope.unique);
 								$(maxval).text(msg.max);
-								$scope.animate = msg.animate;
-								$scope.d = msg.d;
-								$scope.prop = msg.prop;
 								if(msg.sectors){
 									var gradient = document.getElementById("level_gradi_"+$scope.unique)
 									if(gradient){
@@ -634,28 +634,29 @@ module.exports = function (RED) {
 											}										
 										}								
 									}
-								} 
-							}							
+								} 								
+							}
+							
 							var stripe;
 							var mask;
 							var len = msg.position[1] !== null ? 2 : 1;							
 							var j;					
-							var speed = $scope.animate.g == "reactive" ? 300 : 800;
+							var speed = msg.animate.g == "reactive" ? 300 : 800;
 													
 							for(j = 0; j<len; j++){														
 								mask = document.getElementById("level_mask_"+j+"_"+$scope.unique);																										
 								if(mask){
-									if($scope.animate.g !== "off"){
-										$(mask).stop().animate({[$scope.prop]: msg.position[j]+'px' },speed);
+									if(msg.animate.g !== "off"){
+										$(mask).stop().animate({[msg.prop]: msg.position[j]+'px' },speed);
 									}
 									else{											
-										mask.style[$scope.prop] = msg.position[j]+'px'
+										mask.style[msg.prop] = msg.position[j]+'px'
 									}	
 								}																
 								if(msg.color){
 									stripe = document.getElementById("level_stripe_"+j+"_"+$scope.unique);
 									if(stripe && msg.color[j] != null){
-										if($scope.animate.g !== "off"){
+										if(msg.animate.g !== "off"){
 											if(stripe.style.fill != msg.color[j]){
 												$(stripe).stop().animate().css({'fill': msg.color[j] ,'transition': 'fill '+speed/1000+'s'});
 											}										
@@ -669,45 +670,46 @@ module.exports = function (RED) {
 							
 							var val0 = document.getElementById("level_value_channel_0_"+$scope.unique);
 							if(val0){
-								if($scope.animate.g !== "off" && $scope.animate.t == true){
+								if(msg.animate.g !== "off" && msg.animate.t == true){
 									$({ticker: $scope.lastvalue[0]}).stop().animate({ticker: msg.payload[0]}, {
-										duration: $scope.animate.g == "reactive" ? 300 : 800,
+										duration: msg.animate.g == "reactive" ? 300 : 800,
 										easing:'swing',
 										step: function() {										
-											$(val0).text((Math.ceil(this.ticker * $scope.d.mult)/$scope.d.mult).toFixed($scope.d.fixed));
+											$(val0).text((Math.ceil(this.ticker * msg.d.mult)/msg.d.mult).toFixed(msg.d.fixed));
 										},
 										complete: function() {
-											$(val0).text(msg.payload[0].toFixed($scope.d.fixed));
+											$(val0).text(msg.payload[0].toFixed(msg.d.fixed));
 											$scope.lastvalue[0] =msg.payload[0];										
 										}
 									}); 
 								}
 								else{
-									$(val0).text(msg.payload[0].toFixed($scope.d.fixed));
+									$(val0).text(msg.payload[0].toFixed(msg.d.fixed));
 									$scope.lastvalue[0] = msg.payload[0];
 								}
 							}
 							
 							var val1 = document.getElementById("level_value_channel_1_"+$scope.unique);
 							if(val1){
-								if($scope.animate.g !== "off" && $scope.animate.t == true){
+								if(msg.animate.g !== "off" && msg.animate.t == true){
 									$({ticker: $scope.lastvalue[1]}).stop().animate({ticker: msg.payload[1]}, {
-										duration: $scope.animate.g == "reactive" ? 300 : 800,
+										duration: msg.animate.g == "reactive" ? 300 : 800,
 										easing:'swing',
 										step: function() {										
-											$(val1).text((Math.ceil(this.ticker * $scope.d.mult)/$scope.d.mult).toFixed($scope.d.fixed));
+											$(val1).text((Math.ceil(this.ticker * msg.d.mult)/msg.d.mult).toFixed(msg.d.fixed));
 										},
 										complete: function() {
-											$(val1).text(msg.payload[1].toFixed($scope.d.fixed));
+											$(val1).text(msg.payload[1].toFixed(msg.d.fixed));
 											$scope.lastvalue[1] = msg.payload[1];										
 										}
 									}); 
 								}
 								else{
-									$(val1).text(msg.payload[1].toFixed($scope.d.fixed));
+									$(val1).text(msg.payload[1].toFixed(msg.d.fixed));
 									$scope.lastvalue[1] = msg.payload[1];
 								}
-							}														
+							}							
+														
 						});
 					}
 				});

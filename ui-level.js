@@ -561,8 +561,7 @@ module.exports = function (RED) {
 					forwardInputMessages: false,
 					storeFrontEndInputAsState: true,
 					
-					beforeEmit: function (msg) {
-						console.log('[ui-level]: beforeEmit', msg)						
+					beforeEmit: function (msg) {											
 						if(msg.ui_control){
 							updateControl(msg.ui_control);
 						}

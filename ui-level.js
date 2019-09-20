@@ -34,7 +34,10 @@ module.exports = function (RED) {
 			.txt-{{unique}}.val{
 				font-size:`+config.fontoptions.big+`em;
 				font-weight: bold;
-			}			
+			}
+			.txt-{{unique}}.medium{
+				font-size:`+config.fontoptions.normal*0.9+`em;						
+			}				
 			.txt-{{unique}}.small{
 				font-size:`+config.fontoptions.small+`em;
 			}			
@@ -154,7 +157,7 @@ module.exports = function (RED) {
 					mask="url(#level_fgr_0_{{unique}})"
 				
 				/>
-				<text id=level_textgroup_{{unique}}>
+				<text ng-if="${config.width > 1}" id=level_textgroup_{{unique}}>
 					<tspan id=level_title_{{unique}} class="txt-{{unique}}" text-anchor="middle" dominant-baseline="hanging" x=`+config.exactwidth/2+` dx="12" y="0">
 						`+config.label+`
 					</tspan>
@@ -164,7 +167,16 @@ module.exports = function (RED) {
 					<tspan id=level_value_unit_{{unique}} class="txt-{{unique}} small" dominant-baseline="hanging"	text-anchor="middle" x=`+config.exactwidth/2+` dx="8"  y="50%" dy="`+config.fontoptions.big*.6+`em">					
 						`+config.unit+`											
 					</tspan>					
-				</text>					
+				</text>				
+				<text ng-if="${config.width == 1}" transform="translate(25, ${config.exactheight-15}) rotate(270)" text-orientation="upright" id=level_title_{{unique}} class="txt-{{unique}} medium" text-anchor="start" dominant-baseline="baseline" x="0" y="0">`+config.label+
+				` <tspan  ng-if="${config.hideValue == false}" id=level_value_channel_0_{{unique}} class="txt-{{unique}} medium" dominant-baseline="baseline">
+						{{msg.payload[0]}}
+						</tspan>
+						<tspan ng-if="${config.unit != ''}" class="txt-{{unique}} medium" dominant-baseline="baseline">
+						`+config.unit+`
+						</tspan>					
+				</text>
+				
 				<text id=level_max_{{unique}} class="txt-{{unique}} small" text-anchor="start" dominant-baseline="hanging" x="15" y="0">`+config.max+`</text>	
 				<text id=level_min_{{unique}} class="txt-{{unique}} small" text-anchor="start" dominant-baseline="baseline" x="15" ng-attr-y=`+config.exactheight+`px>`+config.min+`</text>			
 			</svg>`
@@ -499,6 +511,7 @@ module.exports = function (RED) {
 				config.min = parseFloat(config.min);
 				config.max = parseFloat(config.max);				
 				config.count = stripecount();
+				config.hideValue = config.hideValue || false
 				config.lastpos = config.count * config.stripe.step - config.stripe.width;			
 				config.colorOff = config.colorOff || "gray";
 				config.colorNormal = config.colorNormal || "green";
@@ -522,6 +535,7 @@ module.exports = function (RED) {
 											"ph":{normal:1,small:0.65,big:1.2,color:'currentColor'}};			
 				
 				config.fontoptions = defaultFontOptions[config.layout]
+				
 				
 				if(config.textoptions !== 'default'){
 					var opt = parseFloat(config.fontLabel);

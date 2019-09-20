@@ -64,7 +64,8 @@ SOFTWARE.
             fontValue:{value:''},
             fontSmall:{value:''},
             colorFromTheme:{value:true},
-            textAnimations:{value:false}
+            textAnimations:{value:false},
+            hideValue:{value:false}
         },
         inputs:1,
         outputs:0,
@@ -107,6 +108,9 @@ SOFTWARE.
                 $('#node-input-textoptions').val('default');
                 $('#node-input-fontcolor').hide();
             }
+            if (this.hideValue === undefined) {
+                $("#node-input-hideValue").prop('checked', false);
+            }           
             $('#node-input-textoptions').change(function() {
                 if ($(this).val() === 'default') {
                     $('#node-input-fontsizes').hide();
@@ -267,6 +271,10 @@ SOFTWARE.
         <input type='text' id='node-input-unit' style='width:80px' dir=''>
         <span for='node-input-decimals' style='margin-left:20px;'>decimals</span>
         <input type='text' id='node-input-decimals' style='width:80px' placeholder='0' dir=''>
+    </div>
+    <div class='form-row' id='node-input-valuefield'>
+        <label for='node-input-valuefield'><i class='fa fa-eye-slash'></i> Value field</span></label>
+        <input type="checkbox" id="node-input-hideValue" style="display:inline-block; width:auto; vertical-align:baseline; margin-right:5px;">Hide value field        
     </div>
 </br>
     <div class='form-row'>

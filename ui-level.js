@@ -114,10 +114,10 @@ module.exports = function (RED) {
 					mask="url(#level_fgr_0_{{unique}})"
 				/>
 				<text id=level_title_{{unique}} class="txt-{{unique}}" text-anchor="middle" dominant-baseline="baseline" x=`+config.exactwidth/2+` y=${config.exactheight-20}>`+config.label+
-				` <tspan id=level_value_channel_0_{{unique}} class="txt-{{unique}} val" dominant-baseline="baseline">
+				` <tspan ng-if="${config.hideValue == false}" id=level_value_channel_0_{{unique}} class="txt-{{unique}} val" dominant-baseline="baseline">
 						{{msg.payload[0]}}
 						</tspan>
-						<tspan class="txt-{{unique}} small" dominant-baseline="baseline">
+						<tspan ng-if="${config.unit != ''}" class="txt-{{unique}} small" dominant-baseline="baseline">
 						`+config.unit+`
 						</tspan>					
 				</text>
@@ -161,15 +161,15 @@ module.exports = function (RED) {
 					<tspan id=level_title_{{unique}} class="txt-{{unique}}" text-anchor="middle" dominant-baseline="hanging" x=`+config.exactwidth/2+` dx="12" y="0">
 						`+config.label+`
 					</tspan>
-					<tspan id=level_value_channel_0_{{unique}} class="txt-{{unique}} val" dominant-baseline="middle" text-anchor="middle" x=`+config.exactwidth/2+` dx="12" y="50%">
+					<tspan ng-if="${config.hideValue == false}" id=level_value_channel_0_{{unique}} class="txt-{{unique}} val" dominant-baseline="middle" text-anchor="middle" x=`+config.exactwidth/2+` dx="12" y="50%">
 							{{msg.payload[0]}}											
 					</tspan>
-					<tspan id=level_value_unit_{{unique}} class="txt-{{unique}} small" dominant-baseline="hanging"	text-anchor="middle" x=`+config.exactwidth/2+` dx="8"  y="50%" dy="`+config.fontoptions.big*.6+`em">					
+					<tspan ng-if="${config.unit != ''}" id=level_value_unit_{{unique}} class="txt-{{unique}} small" dominant-baseline="hanging"	text-anchor="middle" x=`+config.exactwidth/2+` dx="8"  y="50%" dy="`+config.fontoptions.big*.6+`em">					
 						`+config.unit+`											
 					</tspan>					
 				</text>				
 				<text ng-if="${config.width == 1}" transform="translate(25, ${config.exactheight-15}) rotate(270)" text-orientation="upright" id=level_title_{{unique}} class="txt-{{unique}} medium" text-anchor="start" dominant-baseline="baseline" x="0" y="0">`+config.label+
-				` <tspan  ng-if="${config.hideValue == false}" id=level_value_channel_0_{{unique}} class="txt-{{unique}} medium" dominant-baseline="baseline">
+				` <tspan ng-if="${config.hideValue == false}" id=level_value_channel_0_{{unique}} class="txt-{{unique}} medium" dominant-baseline="baseline">
 						{{msg.payload[0]}}
 						</tspan>
 						<tspan ng-if="${config.unit != ''}" class="txt-{{unique}} medium" dominant-baseline="baseline">
@@ -229,21 +229,21 @@ module.exports = function (RED) {
 				
 				
 				<text id=level_channel_0_{{unique}} class="txt-{{unique}}" text-anchor="start" dominant-baseline="hanging" x="0" y="0">`+config.channelA+`
-					<tspan class="txt-{{unique}} small" dominant-baseline="hanging">
+					<tspan ng-if="${config.unit != ''}" class="txt-{{unique}} small" dominant-baseline="hanging">
 					`+config.unit+`
 					</tspan>
 				</text>
-				<text id=level_value_channel_0_{{unique}} class="txt-{{unique}} val" dominant-baseline="hanging"
+				<text ng-if="${config.hideValue == false}" id=level_value_channel_0_{{unique}} class="txt-{{unique}} val" dominant-baseline="hanging"
 				text-anchor="end" x="100%" y="0">
 						{{msg.payload[0]}}											
 				</text>
 				
 				<text id=level_channel_1_{{unique}} class="txt-{{unique}}" text-anchor="start" dominant-baseline="baseline" x="0" y=`+config.exactheight+`>`+config.channelB+`
-					<tspan class="txt-{{unique}} small" dominant-baseline="baseline">
+					<tspan ng-if="${config.unit != ''}" class="txt-{{unique}} small" dominant-baseline="baseline">
 					`+config.unit+`
 					</tspan>
 				</text>
-				<text id=level_value_channel_1_{{unique}} class="txt-{{unique}} val" dominant-baseline="baseline"
+				<text ng-if="${config.hideValue == false}" id=level_value_channel_1_{{unique}} class="txt-{{unique}} val" dominant-baseline="baseline"
 				text-anchor="end" x="100%" y=`+config.exactheight+`>
 						{{msg.payload[1]}}											
 				</text>
@@ -531,7 +531,7 @@ module.exports = function (RED) {
 				config.gradient = {warn:exactPosition(sectorwarn,min,max,reverse,directiontarget).p,high:exactPosition(sectorhigh,min,max,reverse,directiontarget).p};
 				
 				var defaultFontOptions = {"sh":{normal:1,small:0.65,big:1.2,color:'currentColor'},
-											"sv":{normal:1.4,small:0.65,big:3,color:'currentColor'},
+											"sv":{normal:1,small:0.65,big:2.5,color:'currentColor'},
 											"ph":{normal:1,small:0.65,big:1.2,color:'currentColor'}};			
 				
 				config.fontoptions = defaultFontOptions[config.layout]

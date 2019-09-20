@@ -517,8 +517,6 @@ module.exports = function (RED) {
 				var sectorupdate = []
 				config.gradient = {warn:exactPosition(sectorwarn,min,max,reverse,directiontarget).p,high:exactPosition(sectorhigh,min,max,reverse,directiontarget).p};
 				
-				
-				
 				var defaultFontOptions = {"sh":{normal:1,small:0.65,big:1.2,color:'currentColor'},
 											"sv":{normal:1.4,small:0.65,big:3,color:'currentColor'},
 											"ph":{normal:1,small:0.65,big:1.2,color:'currentColor'}};			
@@ -563,7 +561,8 @@ module.exports = function (RED) {
 					forwardInputMessages: false,
 					storeFrontEndInputAsState: true,
 					
-					beforeEmit: function (msg) {						
+					beforeEmit: function (msg) {
+						console.log('[ui-level]: beforeEmit', msg)						
 						if(msg.ui_control){
 							updateControl(msg.ui_control);
 						}
@@ -599,10 +598,11 @@ module.exports = function (RED) {
 						}
 						
 						if(!configsent){
-							msg.min = reverse ? max : min;
-							msg.max = reverse ? min : max;
+							msg.config = {}
+							msg.config.min = reverse ? max : min;
+							msg.config.max = reverse ? min : max;
 							if(sectorupdate.length > 0){
-								msg.sectors = sectorupdate
+								msg.config.sectors = sectorupdate
 							}
 							configsent = true;
 						}
@@ -614,23 +614,20 @@ module.exports = function (RED) {
 					
 					initController: function ($scope) {																		
 						$scope.unique = $scope.$eval('$id')					
-						$scope.lastvalue = [0,0]									
-						$scope.$watch('msg', function (msg) {
-							if (!msg) {								
-								return;
-							}
-							if(msg.min || msg.max){								
+						$scope.lastvalue = [0,0]
+						var updateLevel = function(data){
+							if(data.config){								
 								var minval = document.getElementById("level_min_"+$scope.unique);
-								$(minval).text(msg.min);
+								$(minval).text(data.config.min);
 								var maxval = document.getElementById("level_max_"+$scope.unique);
-								$(maxval).text(msg.max);
-								if(msg.sectors){
+								$(maxval).text(data.config.max);
+								if(data.config.sectors){
 									var gradient = document.getElementById("level_gradi_"+$scope.unique)
 									if(gradient){
-										for(var i = 0;i<msg.sectors.length;i++){
+										for(var i = 0;i<data.config.sectors.length;i++){
 											var stop = gradient.children[i]
 											if(stop){
-												$(stop).attr({offset:msg.sectors[i]+"%"})
+												$(stop).attr({offset:data.config.sectors[i]+"%"})
 											}										
 										}								
 									}
@@ -639,76 +636,98 @@ module.exports = function (RED) {
 							
 							var stripe;
 							var mask;
-							var len = msg.position[1] !== null ? 2 : 1;							
+							var len = data.position[1] !== null ? 2 : 1;							
 							var j;					
-							var speed = msg.animate.g == "reactive" ? 300 : 800;
+							var speed = data.animate.g == "reactive" ? 300 : 800;
 													
 							for(j = 0; j<len; j++){														
-								mask = document.getElementById("level_mask_"+j+"_"+$scope.unique);																										
+								mask = document.getElementById("level_mask_"+j+"_"+$scope.unique);	
+																										
 								if(mask){
-									if(msg.animate.g !== "off"){
-										$(mask).stop().animate({[msg.prop]: msg.position[j]+'px' },speed);
+									if(data.animate.g !== "off"){
+										$(mask).stop().animate({[data.prop]: data.position[j]+'px' },speed);
 									}
 									else{											
-										mask.style[msg.prop] = msg.position[j]+'px'
+										mask.style[data.prop] = data.position[j]+'px'
 									}	
 								}																
-								if(msg.color){
+								if(data.color){
 									stripe = document.getElementById("level_stripe_"+j+"_"+$scope.unique);
-									if(stripe && msg.color[j] != null){
-										if(msg.animate.g !== "off"){
-											if(stripe.style.fill != msg.color[j]){
-												$(stripe).stop().animate().css({'fill': msg.color[j] ,'transition': 'fill '+speed/1000+'s'});
+
+									if(stripe && data.color[j] != null){
+										if(data.animate.g !== "off"){
+											if(stripe.style.fill != data.color[j]){
+												$(stripe).stop().animate().css({'fill': data.color[j] ,'transition': 'fill '+speed/1000+'s'});
 											}										
 										}
 										else{
-											stripe.style.fill = msg.color[j]
+											stripe.style.fill = data.color[j]
 										}									
 									}	
 								}					
 							}						
 							
 							var val0 = document.getElementById("level_value_channel_0_"+$scope.unique);
+
 							if(val0){
-								if(msg.animate.g !== "off" && msg.animate.t == true){
-									$({ticker: $scope.lastvalue[0]}).stop().animate({ticker: msg.payload[0]}, {
-										duration: msg.animate.g == "reactive" ? 300 : 800,
+								if(data.animate.g !== "off" && data.animate.t == true){
+									$({ticker: $scope.lastvalue[0]}).stop().animate({ticker: data.payload[0]}, {
+										duration: data.animate.g == "reactive" ? 300 : 800,
 										easing:'swing',
 										step: function() {										
-											$(val0).text((Math.ceil(this.ticker * msg.d.mult)/msg.d.mult).toFixed(msg.d.fixed));
+											$(val0).text((Math.ceil(this.ticker * data.d.mult)/data.d.mult).toFixed(data.d.fixed));
 										},
 										complete: function() {
-											$(val0).text(msg.payload[0].toFixed(msg.d.fixed));
-											$scope.lastvalue[0] =msg.payload[0];										
+											$(val0).text(data.payload[0].toFixed(data.d.fixed));
+											$scope.lastvalue[0] =data.payload[0];										
 										}
 									}); 
 								}
 								else{
-									$(val0).text(msg.payload[0].toFixed(msg.d.fixed));
-									$scope.lastvalue[0] = msg.payload[0];
+									$(val0).text(data.payload[0].toFixed(data.d.fixed));
+									$scope.lastvalue[0] = data.payload[0];
 								}
 							}
 							
 							var val1 = document.getElementById("level_value_channel_1_"+$scope.unique);
 							if(val1){
-								if(msg.animate.g !== "off" && msg.animate.t == true){
-									$({ticker: $scope.lastvalue[1]}).stop().animate({ticker: msg.payload[1]}, {
-										duration: msg.animate.g == "reactive" ? 300 : 800,
+								if(data.animate.g !== "off" && data.animate.t == true){
+									$({ticker: $scope.lastvalue[1]}).stop().animate({ticker: data.payload[1]}, {
+										duration: data.animate.g == "reactive" ? 300 : 800,
 										easing:'swing',
 										step: function() {										
-											$(val1).text((Math.ceil(this.ticker * msg.d.mult)/msg.d.mult).toFixed(msg.d.fixed));
+											$(val1).text((Math.ceil(this.ticker * data.d.mult)/data.d.mult).toFixed(data.d.fixed));
 										},
 										complete: function() {
-											$(val1).text(msg.payload[1].toFixed(msg.d.fixed));
-											$scope.lastvalue[1] = msg.payload[1];										
+											$(val1).text(data.payload[1].toFixed(data.d.fixed));
+											$scope.lastvalue[1] = data.payload[1];										
 										}
 									}); 
 								}
 								else{
-									$(val1).text(msg.payload[1].toFixed(msg.d.fixed));
-									$scope.lastvalue[1] = msg.payload[1];
+									$(val1).text(data.payload[1].toFixed(data.d.fixed));
+									$scope.lastvalue[1] = data.payload[1];
 								}
-							}							
+							}
+						};												
+						$scope.$watch('msg', function (msg) {
+							if (!msg) {								
+								return;
+							}
+							var id = "level_stripe_0_"+$scope.unique
+							var stripe = document.getElementById(id);						
+							if(stripe == null){
+								var stateCheck = setInterval(function() {									
+									stripe = document.getElementById(id)									
+									if (stripe != null) {
+										clearInterval(stateCheck);
+										updateLevel(msg)										
+									}
+								}, 40);
+							}
+							else{								
+								updateLevel(msg)
+							}						
 														
 						});
 					}

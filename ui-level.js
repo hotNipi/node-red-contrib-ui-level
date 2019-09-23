@@ -24,7 +24,7 @@ SOFTWARE.
 
 module.exports = function (RED) {
 	function HTML(config) {
-	
+		var configAsJson = JSON.stringify(config);
 		var styles = String.raw`
 		<style>
 			.txt-{{unique}} {	
@@ -82,13 +82,11 @@ module.exports = function (RED) {
 			else{
 				gradienttype = ''
 			}
-		}
-		
-		
+		}		
 		var filltype = config.colorschema == "valuedriven" ? String.raw`fill="`+config.colorOff+`"` : String.raw`fill="url(#level_gradi_{{unique}})"`
 		
 		var level_single_h = String.raw`		
-			<svg preserveAspectRatio="xMidYMid meet" id="level_svg_{{unique}}" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+			<svg preserveAspectRatio="xMidYMid meet" id="level_svg_{{unique}}" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" ng-init='init(`+configAsJson+`)'>
 				<defs>
 					${gradienttype}
 					<pattern id="level_square_{{unique}}" x="0" y="0" width="`+config.stripe.step+`" height="`+config.stripe.height+`" patternUnits="userSpaceOnUse">
@@ -113,6 +111,12 @@ module.exports = function (RED) {
 					${filltype}
 					mask="url(#level_fgr_0_{{unique}})"
 				/>
+				<rect ng-if="${config.peakmode == true}" id="level_peak_0_{{unique}}" x="0" y="`+config.stripe.y0+`" 
+					width="`+config.stripe.width+`" height="`+config.stripe.height+`"	
+					style="stroke:none"
+					fill="`+config.colorOff+`"
+					display="none"					
+				/>
 				<text id=level_title_{{unique}} class="txt-{{unique}}" text-anchor="middle" dominant-baseline="baseline" x=`+config.exactwidth/2+` y=${config.exactheight-20}>`+config.label+
 				` <tspan ng-if="${config.hideValue == false}" id=level_value_channel_0_{{unique}} class="txt-{{unique}} val" dominant-baseline="baseline">
 						{{msg.payload[0]}}
@@ -126,7 +130,7 @@ module.exports = function (RED) {
 			</svg>`
 		
 		var level_single_v = String.raw`		
-			<svg preserveAspectRatio="xMidYMid meet" id="level_svg_{{unique}}" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+			<svg preserveAspectRatio="xMidYMid meet" id="level_svg_{{unique}}" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" ng-init='init(`+configAsJson+`)'>
 				<defs>
 					${gradienttype}
 					<pattern id="level_square_{{unique}}" x="0" y="0" width="`+config.stripe.height+`" height="`+config.stripe.step+`" patternUnits="userSpaceOnUse">
@@ -154,8 +158,14 @@ module.exports = function (RED) {
 					width="`+config.stripe.height+`" height="`+config.exactheight+`"	
 					style="stroke:none";
 					${filltype}
-					mask="url(#level_fgr_0_{{unique}})"
-				
+					mask="url(#level_fgr_0_{{unique}})"				
+				/>
+				<rect ng-if="${config.peakmode == true}" id="level_peak_0_{{unique}}" x="0" y="0" 
+					width="`+config.stripe.height+`" height="`+config.stripe.width+`"	
+					style="stroke:none"
+					fill="`+config.colorOff+`"
+					display="none"
+					transform="scale(1,-1) translate(0,`+(config.exactheight*-1)+`)"					
 				/>
 				<text ng-if="${config.width > 1}" id=level_textgroup_{{unique}}>
 					<tspan id=level_title_{{unique}} class="txt-{{unique}}" text-anchor="middle" dominant-baseline="hanging" x=`+config.exactwidth/2+` dx="12" y="0">
@@ -175,14 +185,13 @@ module.exports = function (RED) {
 						<tspan ng-if="${config.unit != ''}" class="txt-{{unique}} medium" dominant-baseline="baseline">
 						`+config.unit+`
 						</tspan>					
-				</text>
-				
+				</text>				
 				<text id=level_max_{{unique}} class="txt-{{unique}} small" text-anchor="start" dominant-baseline="hanging" x="15" y="0">`+config.max+`</text>	
 				<text id=level_min_{{unique}} class="txt-{{unique}} small" text-anchor="start" dominant-baseline="baseline" x="15" ng-attr-y=`+config.exactheight+`px>`+config.min+`</text>			
 			</svg>`
 		
 		var level_pair_h = String.raw`		
-			<svg preserveAspectRatio="xMidYMid meet" id="level_svg_{{unique}}" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+			<svg preserveAspectRatio="xMidYMid meet" id="level_svg_{{unique}}" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" ng-init='init(`+configAsJson+`)'>
 				<defs>
 					${gradienttype}
 					<pattern id="level_square_{{unique}}" x="0" y="0" width="`+config.stripe.step+`" height="`+config.stripe.height+`" patternUnits="userSpaceOnUse">
@@ -226,8 +235,19 @@ module.exports = function (RED) {
 					${filltype}
 					mask="url(#level_fgr_1_{{unique}})"
 				/>
-				
-				
+				<rect ng-if="${config.peakmode == true}" id="level_peak_0_{{unique}}" x="0" y="`+config.stripe.y0+`" 
+					width="`+config.stripe.width+`" height="`+config.stripe.height+`"	
+					style="stroke:none"
+					fill="`+config.colorOff+`"
+					display="none"
+										
+				/>
+				<rect ng-if="${config.peakmode == true}" id="level_peak_1_{{unique}}" x="0" y="`+config.stripe.y1+`" 
+					width="`+config.stripe.width+`" height="`+config.stripe.height+`"	
+					style="stroke:none"
+					fill="`+config.colorOff+`"
+					display="none"				
+				/>				
 				<text id=level_channel_0_{{unique}} class="txt-{{unique}}" text-anchor="start" dominant-baseline="hanging" x="0" y="0">`+config.channelA+`
 					<tspan ng-if="${config.unit != ''}" class="txt-{{unique}} small" dominant-baseline="hanging">
 					`+config.unit+`
@@ -452,7 +472,8 @@ module.exports = function (RED) {
 				
 			 	exactPosition = function(target,mi,ma,r,dir) {
 					var p = r ? {minin:mi, maxin:ma+0.00001, minout:100, maxout:1} : {minin:mi, maxin:ma+0.00001, minout:1, maxout:100}									
-					var c = Math.round(dir * range(target,p) / 100 / config.stripe.width) * config.stripe.width;					
+					//var c = Math.round(dir * range(target,p) / 100 / config.stripe.width) * config.stripe.width;	
+					c = Math.floor(dir * range(target,p) / 100 / config.stripe.step) * config.stripe.step;				
 					var ret = c / dir
 					if(ret > 1){
 						ret = 1
@@ -509,7 +530,8 @@ module.exports = function (RED) {
 				
 				config.stripe = {step: parseInt(config.shape) * 2, width: parseInt(config.shape), height:Math.floor((site.sizes.sy/2)-12), y0:y_0,y1:y_1};
 				config.min = parseFloat(config.min);
-				config.max = parseFloat(config.max);				
+				config.max = parseFloat(config.max);
+				config.peaktime = parseInt(config.peaktime);				
 				config.count = stripecount();
 				config.hideValue = config.hideValue || false
 				config.lastpos = config.count * config.stripe.step - config.stripe.width;			
@@ -523,7 +545,7 @@ module.exports = function (RED) {
 				var min = config.min > config.max ? config.max : config.min;
 				var max = config.max < config.min ? config.min : config.max;				
 				var reverse = config.min > config.max;
-				var decimals = isNaN(parseFloat(config.decimals)) ? {fixed:1,mult:0} : {fixed:parseInt(config.decimals),mult:Math.pow(10,parseInt(config.decimals))};
+				var decimals = config.decimals = isNaN(parseFloat(config.decimals)) ? {fixed:1,mult:0} : {fixed:parseInt(config.decimals),mult:Math.pow(10,parseInt(config.decimals))};
 				var directiontarget = config.layout === 'sv' ? config.exactheight : config.exactwidth
 				var sectorhigh = isNaN(parseFloat(config.segHigh)) ? parseFloat((max *.9).toFixed(decimals.fixed)) : parseFloat(config.segHigh);
 				var sectorwarn = isNaN(parseFloat(config.segWarn)) ? parseFloat((max *.7).toFixed(decimals.fixed)) : parseFloat(config.segWarn);				
@@ -534,8 +556,7 @@ module.exports = function (RED) {
 											"sv":{normal:1,small:0.65,big:2.5,color:'currentColor'},
 											"ph":{normal:1,small:0.65,big:1.2,color:'currentColor'}};			
 				
-				config.fontoptions = defaultFontOptions[config.layout]
-				
+				config.fontoptions = defaultFontOptions[config.layout]		
 				
 				if(config.textoptions !== 'default'){
 					var opt = parseFloat(config.fontLabel);
@@ -557,8 +578,6 @@ module.exports = function (RED) {
 						}
 					}					
 				}
-				
-				
 
 				var configsent = false;				
 				var html = HTML(config);
@@ -600,13 +619,25 @@ module.exports = function (RED) {
 							msg.position[1] = pos[1].px													
 						}
 						
-						if(config.colorschema == 'valuedriven'){
+						if(config.colorschema == 'valuedriven' || config.peakmode == true){
 							var col
 							col =  pos[0].p < config.gradient.warn ? opc[1] : (pos[0].p < config.gradient.high ? opc[2] : opc[3]);
-							msg.color = [col,null]
+							if(config.colorschema == 'valuedriven'){
+								msg.color = [col,null]
+							}
+							if(config.peakmode == true){
+								msg.peak = [col,null]
+							}
+							
+							
 							if(pos[1] != null){
 								col = pos[1].p < config.gradient.warn ? opc[1] : (pos[1].p < config.gradient.high ? opc[2] : opc[3]);
-								msg.color[1] = col
+								if(config.colorschema == 'valuedriven'){
+									msg.color[1] = col
+								}
+								if(config.peakmode == true){
+									msg.peak[1] = col
+								}
 							}														
 						}
 						
@@ -618,115 +649,137 @@ module.exports = function (RED) {
 								msg.config.sectors = sectorupdate
 							}
 							configsent = true;
-						}
-						msg.d = decimals;
-						msg.prop = config.layout === "sv" ? 'height' : 'width'					
-						msg.animate = {g:config.animations,t:config.textAnimations}															
+						}																	
 						return { msg: msg };
 					},
 					
 					initController: function ($scope) {																		
 						$scope.unique = $scope.$eval('$id')					
 						$scope.lastvalue = [0,0]
-						var updateLevel = function(data){
-							if(data.config){								
-								var minval = document.getElementById("level_min_"+$scope.unique);
-								$(minval).text(data.config.min);
-								var maxval = document.getElementById("level_max_"+$scope.unique);
-								$(maxval).text(data.config.max);
-								if(data.config.sectors){
-									var gradient = document.getElementById("level_gradi_"+$scope.unique)
-									if(gradient){
-										for(var i = 0;i<data.config.sectors.length;i++){
-											var stop = gradient.children[i]
-											if(stop){
-												$(stop).attr({offset:data.config.sectors[i]+"%"})
-											}										
-										}								
-									}
-								} 								
+						$scope.init = function(config){							
+							$scope.d = config.decimals;
+							$scope.prop = config.layout === "sv" ? {dir:'height',pos:'y'} : {dir:'width',pos:'x'}
+							$scope.len	 = 	config.layout === "ph"	? 2 : 1		
+							$scope.animate = {g:config.animations,t:config.textAnimations,peak:config.peaktime}
+							$scope.speed = $scope.animate.g == "rocket" ? {ms:100,s:0.1} : ($scope.animate.g == "reactive" ? {ms:300,s:0.3} : {ms:800,s:0.8});	
+						}
+						
+						var tom = [null,null];							
+						var peak;					
+						
+						var resetPeak = function(){
+							for(var j=0; j<$scope.len; j++){
+							peak = document.getElementById("level_peak_"+j+"_"+$scope.unique);
+							if(peak != null){								
+									peak.setAttribute($scope.prop.pos,'0')
+									peak.setAttribute('display','none')
+								}
 							}
-							
+						}
+						
+						var setPeak = function(data){
+							if(!data.peak){
+								return
+							}							 
+							for(var j=0; j<$scope.len; j++){								
+								peak = document.getElementById("level_peak_"+j+"_"+$scope.unique);																									
+								if(peak){								
+									if(peak.getAttribute($scope.prop.pos) < data.position[j]){
+										if(tom[j]){
+											clearInterval(tom[j])
+										}
+										tom[j] = setInterval(resetPeak,$scope.animate.peak)
+										peak.setAttribute($scope.prop.pos,data.position[j])
+										peak.setAttribute('display','inline')
+										if(peak.getAttribute('fill') != data.peak[j]){											
+											peak.setAttribute('fill',data.peak[j])	
+										}																																						
+									}										
+								}
+							}			
+						}
+						
+						var updateConfig = function (config){
+							var minval = document.getElementById("level_min_"+$scope.unique);
+							$(minval).text(config.min);
+							var maxval = document.getElementById("level_max_"+$scope.unique);
+							$(maxval).text(config.max);
+							if(config.sectors){
+								var gradient = document.getElementById("level_gradi_"+$scope.unique)
+								if(gradient){
+									for(var i = 0;i<config.sectors.length;i++){
+										var stop = gradient.children[i]
+										if(stop){
+											$(stop).attr({offset:config.sectors[i]+"%"})
+										}										
+									}								
+								}
+							} 
+						}
+						
+						
+						var updateLevel = function(data){							
+							if(data.config){								
+								updateConfig(data.config)								
+							}							
 							var stripe;
-							var mask;
-							var len = data.position[1] !== null ? 2 : 1;							
-							var j;					
-							var speed = data.animate.g == "reactive" ? 300 : 800;
-													
-							for(j = 0; j<len; j++){														
-								mask = document.getElementById("level_mask_"+j+"_"+$scope.unique);	
-																										
+							var mask;												
+							var j;							
+							var valfield;											
+												
+							for(j = 0; j<$scope.len; j++){														
+								mask = document.getElementById("level_mask_"+j+"_"+$scope.unique);
 								if(mask){
-									if(data.animate.g !== "off"){
-										$(mask).stop().animate({[data.prop]: data.position[j]+'px' },speed);
-									}
-									else{											
-										mask.style[data.prop] = data.position[j]+'px'
-									}	
-								}																
+									if(parseInt(mask.style[$scope.prop.dir]) != data.position[j]){
+										if($scope.animate.g !== "off"){
+											$(mask).stop(true,true).animate({[$scope.prop.dir]: data.position[j]+'px' },$scope.speed.ms,'swing',function(){setPeak(data)});
+										}
+										else{											
+											mask.style[$scope.prop.dir] = data.position[j]+'px'
+											setPeak(data)
+										}	
+									}									
+								}																						
 								if(data.color){
 									stripe = document.getElementById("level_stripe_"+j+"_"+$scope.unique);
-
 									if(stripe && data.color[j] != null){
-										if(data.animate.g !== "off"){
+										if($scope.animate.g !== "off"){
 											if(stripe.style.fill != data.color[j]){
-												$(stripe).stop().animate().css({'fill': data.color[j] ,'transition': 'fill '+speed/1000+'s'});
+												$(stripe).stop().animate().css({'fill': data.color[j] ,'transition': 'fill '+$scope.speed.s+'s'});
 											}										
 										}
 										else{
 											stripe.style.fill = data.color[j]
 										}									
 									}	
-								}					
-							}						
-							
-							var val0 = document.getElementById("level_value_channel_0_"+$scope.unique);
-
-							if(val0){
-								if(data.animate.g !== "off" && data.animate.t == true){
-									$({ticker: $scope.lastvalue[0]}).stop().animate({ticker: data.payload[0]}, {
-										duration: data.animate.g == "reactive" ? 300 : 800,
-										easing:'swing',
-										step: function() {										
-											$(val0).text((Math.ceil(this.ticker * data.d.mult)/data.d.mult).toFixed(data.d.fixed));
-										},
-										complete: function() {
-											$(val0).text(data.payload[0].toFixed(data.d.fixed));
-											$scope.lastvalue[0] =data.payload[0];										
-										}
-									}); 
 								}
-								else{
-									$(val0).text(data.payload[0].toFixed(data.d.fixed));
-									$scope.lastvalue[0] = data.payload[0];
-								}
+								valfield = document.getElementById("level_value_channel_"+j+"_"+$scope.unique);
+								if(valfield){
+									if($scope.animate.g !== "off" && $scope.animate.t == true){
+										$({ticker: $scope.lastvalue[j]}).stop().animate({ticker: data.payload[j]}, {
+											duration: $scope.speed.ms,
+											easing:'swing',
+											step: function() {										
+												$(valfield).text((Math.ceil(this.ticker * $scope.d.mult)/$scope.d.mult).toFixed($scope.d.fixed));
+											},
+											complete: function() {
+												$(valfield).text(data.payload[j].toFixed($scope.d.fixed));
+												$scope.lastvalue[j] = data.payload[j];										
+											}
+										}); 
+									}
+									else{
+										$(valfield).text(data.payload[j].toFixed($scope.d.fixed));
+										$scope.lastvalue[j] = data.payload[j];
+									}
+								}								
 							}
-							
-							var val1 = document.getElementById("level_value_channel_1_"+$scope.unique);
-							if(val1){
-								if(data.animate.g !== "off" && data.animate.t == true){
-									$({ticker: $scope.lastvalue[1]}).stop().animate({ticker: data.payload[1]}, {
-										duration: data.animate.g == "reactive" ? 300 : 800,
-										easing:'swing',
-										step: function() {										
-											$(val1).text((Math.ceil(this.ticker * data.d.mult)/data.d.mult).toFixed(data.d.fixed));
-										},
-										complete: function() {
-											$(val1).text(data.payload[1].toFixed(data.d.fixed));
-											$scope.lastvalue[1] = data.payload[1];										
-										}
-									}); 
-								}
-								else{
-									$(val1).text(data.payload[1].toFixed(data.d.fixed));
-									$scope.lastvalue[1] = data.payload[1];
-								}
-							}
-						};												
+						}; 
+																		
 						$scope.$watch('msg', function (msg) {
 							if (!msg) {								
 								return;
-							}
+							}							
 							var id = "level_stripe_0_"+$scope.unique
 							var stripe = document.getElementById(id);						
 							if(stripe == null){
@@ -742,6 +795,15 @@ module.exports = function (RED) {
 								updateLevel(msg)
 							}						
 														
+						});
+						$scope.$on('$destroy', function() {
+							if(tom && Array.isArray(tom)) {
+								for(var i= 0;i<2;i++){
+									if(tom[i]){
+										clearInterval(tom[i])
+									}
+								}								
+							}
 						});
 					}
 				});

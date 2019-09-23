@@ -65,7 +65,13 @@ SOFTWARE.
             fontSmall:{value:''},
             colorFromTheme:{value:true},
             textAnimations:{value:false},
-            hideValue:{value:false}
+            hideValue:{value:false},
+            peakmode:{value:false},
+            peaktime:{value: 3000, required: false, validate:function(v) {
+                    var mi = 800;
+                    var ma = 7200000;
+                    return (v >= mi && v <= ma)
+                }},
         },
         inputs:1,
         outputs:0,
@@ -110,7 +116,23 @@ SOFTWARE.
             }
             if (this.hideValue === undefined) {
                 $("#node-input-hideValue").prop('checked', false);
-            }           
+            } 
+            if (this.peakmode === undefined) {
+                $("#node-input-peakmode").prop('checked', false);
+            }
+            if (this.peaktime === undefined) {
+                $("#node-input-peaktime").val(3000);
+            }
+            $('#node-input-peakmode').change(function() {                
+                if (this.checked == true) {                                 
+                    $('#node-input-peaktime').show();
+                    $('#node-input-peaktimeSpan').show();
+                }
+                else {                   
+                    $('#node-input-peaktime').hide();
+                    $('#node-input-peaktimeSpan').hide();
+                }
+            });            
             $('#node-input-textoptions').change(function() {
                 if ($(this).val() === 'default') {
                     $('#node-input-fontsizes').hide();
@@ -128,7 +150,21 @@ SOFTWARE.
                         $('#node-input-colorTextSpan').show();
                     }
                 }
-            });            
+            });
+            
+            $('#node-input-colorschema').change(function() {
+                if ($(this).val() === 'fixed') {                   
+                    $('#peakOptions').show();                               
+                }
+                else {
+                    if($("#node-input-peakmode").prop('checked') == true){
+                        $("#node-input-peakmode").prop('checked', false);
+                        $('#node-input-peaktime').hide();
+                        $('#node-input-peaktimeSpan').hide();  
+                    };
+                    $('#peakOptions').hide();                    
+                }
+            });      
             
             $('#node-input-colorFromTheme').change(function() {                
                 if (this.checked == true) {                                 
@@ -225,6 +261,14 @@ SOFTWARE.
             <option value='rainbow'>Interpolated colors</option>            
         </select>
     </div>
+    <div class='form-row' id='peakOptions'>        
+        <label for='node-input-peakmode'><i class='fa fa-star-half-o'></i> Peak mode</label>
+        <input type="checkbox" id="node-input-peakmode" 
+        style="display:inline-block; width:auto; vertical-align:baseline; 
+        margin-right:5px;margin-left:5px;">Hold peak 
+        <span for='node-input-peaktime'  id='node-input-peaktimeSpan' style='margin-left:20px;'>time (ms)</span>
+        <input type='text' id='node-input-peaktime' style='width:120px' placeholder='800 ... 7200000' dir=''>  
+    </div>        
 </br>
     <div class='form-row'>
         <label for='node-input-textoptions'><i class='fa fa-font'></i> Text options</label>
@@ -282,6 +326,7 @@ SOFTWARE.
         <select id='node-input-animations' style='width:200px !important'>
             <option value='soft'>Soft</option>
             <option value='reactive'>Reactive</option>
+            <option value='rocket'>Rocket</option>
             <option value='off'>No animations</option>
         </select>
         <input type="checkbox" id="node-input-textAnimations" 
@@ -295,7 +340,7 @@ SOFTWARE.
             <option value=2>Fine</option>
             <option value=3>Normal</option>
         </select>
-    </div>                   
+    </div>
 </br>
     <div class='form-row'>
         <label for='node-input-name'><i class='icon-tag'></i> Name</label>
@@ -311,10 +356,11 @@ SOFTWARE.
     <p>For Pair Horizontal layout the <code>Label</code> is not displayed but both <code>Channels</code> can be labelled independently</p>
     <p>All four colors for stripes can be customized. In adition there is three options to show the colors. <code>'Multiple segments'</code> - Colors tied to stripes 
         according to sector values. <code>'Single color bar'</code> - Single value based color for all active stripes. <code>'Interpolated colors'</code> - Colors intrpolated from normal to high color</p>
+    <p>If you choose <code>Multiple segments</code> for your stripe colors, you can optionally use the <code>Peak mode</code>. By selecting the <code>Peak mode</code>, you can adjust <code>peak hold</code> time (in milliseconds, validated to be between 800 ... 7200000)
     <p>The node's <code>Unit</code> will be displayed near the current value. Exact position of the unit depends on choosed layout. The unit can be any <code>string</code>, for example: <code>lbs psi F°</code></p>    
     <p>The min and max values are customizable within the configuration or you can change them on fly via <code>msg.ui_control = {min:10, max:80}</code></p>
     <p>The segments's values also customizable within the configuration or by using <code>msg.ui_control = {seg1:30, seg2:60}</code>.</p> 
     <p>You can choose between 3 different stripe resolutions. <code>Normal</code>, <code>Fine</code> and <code>Superfine</code></p>   
-    <p>You can choose anmations to be <code>soft</code> or <code>reactive</code> or animations can be turned <code>off</code> completely.</p>
+    <p>You can choose anmations to be <code>Soft</code>,<code>Reactive</code> or <code>Rocket</code>. Animations can be turned <code>off</code> completely.</p>
     <p>Texts sizes and color in widget can be customized within the configuration only. Color applies for all texts in widget. There is 3 different sizes for text elements in use. Values represent font relative size with unit <code>"em"</code></p>
 </script>

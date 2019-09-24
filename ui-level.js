@@ -620,13 +620,15 @@ module.exports = function (RED) {
 						}
 						
 						if(config.colorschema == 'valuedriven' || config.peakmode == true){
+							var peakpos
 							var col
 							col =  pos[0].p < config.gradient.warn ? opc[1] : (pos[0].p < config.gradient.high ? opc[2] : opc[3]);
 							if(config.colorschema == 'valuedriven'){
 								msg.color = [col,null]
 							}
 							if(config.peakmode == true){
-								msg.peak = [col,null]
+								peakpos = exactPosition(msg.payload[0],min,max,reverse,config.lastpos).px								
+								msg.peak = [{px:peakpos,c:col},null]
 							}
 							
 							
@@ -636,7 +638,8 @@ module.exports = function (RED) {
 									msg.color[1] = col
 								}
 								if(config.peakmode == true){
-									msg.peak[1] = col
+									peakpos = peakpos = exactPosition(msg.payload[1],min,max,reverse,config.lastpos).px																		
+									msg.peak[1] = {px:peakpos,c:col}
 								}
 							}														
 						}
@@ -680,19 +683,20 @@ module.exports = function (RED) {
 						var setPeak = function(data){
 							if(!data.peak){
 								return
-							}							 
+							}
+							console.log(data)							 
 							for(var j=0; j<$scope.len; j++){								
 								peak = document.getElementById("level_peak_"+j+"_"+$scope.unique);																									
-								if(peak){								
-									if(peak.getAttribute($scope.prop.pos) < data.position[j]){
+								if(peak){	
+									if(peak.getAttribute($scope.prop.pos) < data.peak[j].px){
 										if(tom[j]){
 											clearInterval(tom[j])
 										}
 										tom[j] = setInterval(resetPeak,$scope.animate.peak)
-										peak.setAttribute($scope.prop.pos,data.position[j])
+										peak.setAttribute($scope.prop.pos,data.peak[j].px)
 										peak.setAttribute('display','inline')
-										if(peak.getAttribute('fill') != data.peak[j]){											
-											peak.setAttribute('fill',data.peak[j])	
+										if(peak.getAttribute('fill') != data.peak[j].c){											
+											peak.setAttribute('fill',data.peak[j].c)	
 										}																																						
 									}										
 								}

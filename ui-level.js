@@ -683,8 +683,7 @@ module.exports = function (RED) {
 						var setPeak = function(data){
 							if(!data.peak){
 								return
-							}
-							console.log(data)							 
+							}														 
 							for(var j=0; j<$scope.len; j++){								
 								peak = document.getElementById("level_peak_"+j+"_"+$scope.unique);																									
 								if(peak){	

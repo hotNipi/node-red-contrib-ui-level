@@ -422,16 +422,27 @@ module.exports = function (RED) {
 					return ret;
 				}
 				
-				updateControl = function(uicontrol){
+				updateControl = function(uicontrol){					
 					reverse = false;
 					var applies = false;
 					var updatesectors = false
+					var updatepeak = false;
+					peakupdate = null;
 					sectorupdate = []
 					var mi = min
 					var ma = max
+					if(uicontrol.peakreset != undefined ){
+						if(config.peakmode == true){
+							if(uicontrol.peakreset == 'auto' || uicontrol.peakreset == 'reset'){
+								peakupdate = uicontrol.peakreset								
+								applies = true;
+							}													
+							
+						}
+					}
 					if(uicontrol.min != undefined && !isNaN(parseFloat(uicontrol.min))){
 						mi =  parseFloat(uicontrol.min);
-						applies = true;
+						applies = true;						
 					}
 					if(uicontrol.max != undefined && !isNaN(parseFloat(uicontrol.max))){
 						ma =  parseFloat(uicontrol.max);
@@ -550,6 +561,7 @@ module.exports = function (RED) {
 				var sectorhigh = isNaN(parseFloat(config.segHigh)) ? parseFloat((max *.9).toFixed(decimals.fixed)) : parseFloat(config.segHigh);
 				var sectorwarn = isNaN(parseFloat(config.segWarn)) ? parseFloat((max *.7).toFixed(decimals.fixed)) : parseFloat(config.segWarn);				
 				var sectorupdate = []
+				var peakupdate = null
 				config.gradient = {warn:exactPosition(sectorwarn,min,max,reverse,directiontarget).p,high:exactPosition(sectorhigh,min,max,reverse,directiontarget).p};
 				
 				var defaultFontOptions = {"sh":{normal:1,small:0.65,big:1.2,color:'currentColor'},
@@ -651,6 +663,9 @@ module.exports = function (RED) {
 							if(sectorupdate.length > 0){
 								msg.config.sectors = sectorupdate
 							}
+							if(peakupdate){
+								msg.config.peakupdate = peakupdate;
+							}
 							configsent = true;
 						}																	
 						return { msg: msg };
@@ -659,6 +674,7 @@ module.exports = function (RED) {
 					initController: function ($scope) {																		
 						$scope.unique = $scope.$eval('$id')					
 						$scope.lastvalue = [0,0]
+						$scope.peakreset = 'auto'
 						$scope.init = function(config){							
 							$scope.d = config.decimals;
 							$scope.prop = config.layout === "sv" ? {dir:'height',pos:'y'} : {dir:'width',pos:'x'}
@@ -672,8 +688,8 @@ module.exports = function (RED) {
 						
 						var resetPeak = function(){
 							for(var j=0; j<$scope.len; j++){
-							peak = document.getElementById("level_peak_"+j+"_"+$scope.unique);
-							if(peak != null){								
+								peak = document.getElementById("level_peak_"+j+"_"+$scope.unique);
+								if(peak != null){								
 									peak.setAttribute($scope.prop.pos,'0')
 									peak.setAttribute('display','none')
 								}
@@ -691,7 +707,9 @@ module.exports = function (RED) {
 										if(tom[j]){
 											clearInterval(tom[j])
 										}
-										tom[j] = setInterval(resetPeak,$scope.animate.peak)
+										if($scope.peakreset == 'auto'){
+											tom[j] = setInterval(resetPeak,$scope.animate.peak)
+										}										
 										peak.setAttribute($scope.prop.pos,data.peak[j].px)
 										peak.setAttribute('display','inline')
 										if(peak.getAttribute('fill') != data.peak[j].c){											
@@ -702,7 +720,7 @@ module.exports = function (RED) {
 							}			
 						}
 						
-						var updateConfig = function (config){
+						var updateConfig = function (config){							
 							var minval = document.getElementById("level_min_"+$scope.unique);
 							$(minval).text(config.min);
 							var maxval = document.getElementById("level_max_"+$scope.unique);
@@ -717,6 +735,10 @@ module.exports = function (RED) {
 										}										
 									}								
 								}
+							}
+							if(config.peakupdate){
+								$scope.peakreset = config.peakupdate
+								resetPeak()
 							} 
 						}
 						

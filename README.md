@@ -53,6 +53,11 @@ Texts sizes and color in widget can be customized within the configuration only.
 
 `msg.ui_control = {seg2:60}` _to change high segement value only._
 
+If peak mode used, it can be turned to hold peak permanently and then reset peak manually. 
+`msg.ui_control = {peakreset:"reset"}` _to turn on permanent hold or if already in this mode, just reset peak._
+
+`msg.ui_control = {peakreset:"auto"}` _to change peak mode delay based._
+
 ## Performance alert
 This widget is not perfect choice to display high-frequent data changes like audio or similar.  
 If you are using a lot of Level widgets on your dashboard and you are feeling performance loss, considere  turning off animations of value text (if used) or turn off all animations. 

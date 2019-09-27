@@ -93,31 +93,30 @@ module.exports = function (RED) {
 						<rect x="0" width="`+config.stripe.width+`" height="`+config.stripe.height+`" y="0" fill="white" />				
 					</pattern>
 					<mask id="level_bgr_{{unique}}">
-						<rect x="0" y="`+config.stripe.y0+`" width="`+config.exactwidth+`" height="`+config.stripe.height+`" fill="url(#level_square_{{unique}})"/>
+						<rect x="0" y="`+config.stripe.y0+`" width="`+config.lastpos+`" height="`+config.stripe.height+`" fill="url(#level_square_{{unique}})"/>
 					</mask>
 					<mask id="level_fgr_0_{{unique}}">
-						<rect id="level_mask_0_{{unique}}" x="0" y="`+config.stripe.y0+`" width="`+config.exactwidth+`" height="`+config.stripe.height+`" fill="url(#level_square_{{unique}})"/>
+						<rect id="level_mask_0_{{unique}}" x="0" y="`+config.stripe.y0+`" width="`+config.lastpos+`" height="`+config.stripe.height+`" fill="url(#level_square_{{unique}})"/>
 					</mask>								
 				</defs>
 				<rect id="level_stripeoff_0_{{unique}}" x="0" y="`+config.stripe.y0+`"
-					width="`+config.exactwidth+`" height="`+config.stripe.height+`" 
+					width="`+config.lastpos+`" height="`+config.stripe.height+`" 
 					style="stroke:none"; 
 					fill="`+config.colorOff+`" 
 					mask="url(#level_bgr_{{unique}})"
 				/>
 				<rect id="level_stripe_0_{{unique}}" x="0" y="`+config.stripe.y0+`" 
-					width="`+config.exactwidth+`" height="`+config.stripe.height+`"	
+					width="`+config.lastpos+`" height="`+config.stripe.height+`"	
 					style="stroke:none";
 					${filltype}
 					mask="url(#level_fgr_0_{{unique}})"
 				/>
-				<rect ng-if="${config.peakmode == true}" id="level_peak_0_{{unique}}" x="0" y="`+config.stripe.y0+`" 
+				<rect ng-if="${config.peakmode == true}" id="level_peak_0_{{unique}}" x="`+config.lastpos+`" y=${config.stripe.y0} 
 					width="`+config.stripe.width+`" height="`+config.stripe.height+`"	
-					style="stroke:none"
-					fill="`+config.colorOff+`"
-					display="none"					
+					style="stroke:none; display:inline"
+					fill="`+config.colorOff+`"										
 				/>
-				<text id=level_title_{{unique}} class="txt-{{unique}}" text-anchor="middle" dominant-baseline="baseline" x=`+config.exactwidth/2+` y=${config.exactheight-20}>`+config.label+
+				<text id=level_title_{{unique}} class="txt-{{unique}}" text-anchor="middle" dominant-baseline="baseline" x=`+config.lastpos/2+` y=${config.exactheight-20}>`+config.label+
 				` <tspan ng-if="${config.hideValue == false}" id=level_value_channel_0_{{unique}} class="txt-{{unique}} val" dominant-baseline="baseline">
 						{{msg.payload[0]}}
 						</tspan>
@@ -137,35 +136,34 @@ module.exports = function (RED) {
 						<rect x="0" width="`+config.stripe.height+`" height="`+config.stripe.width+`" y="0" fill="white" />				
 					</pattern>
 					<mask id="level_bgr_{{unique}}">
-						<rect x="0" y="0" width="`+config.stripe.height+`" height="`+config.exactheight+`" fill="url(#level_square_{{unique}})"
-							transform="scale(1,-1) translate(0,`+(config.exactheight*-1)+`)"
+						<rect x="0" y="0" width="`+config.stripe.height+`" height="`+config.lastpos+`" fill="url(#level_square_{{unique}})"
+							transform="scale(1,-1) translate(0,`+(config.lastpos*-1)+`)"
 						/>
 					</mask>
 					<mask id="level_fgr_0_{{unique}}">
-						<rect id="level_mask_0_{{unique}}" x="0" y="0" width="`+config.stripe.height+`" height="`+config.exactheight+`" fill="url(#level_square_{{unique}})"
-							transform="scale(1,-1) translate(0,`+(config.exactheight*-1)+`)"
+						<rect id="level_mask_0_{{unique}}" x="0" y="0" width="`+config.stripe.height+`" height="`+config.lastpos+`" fill="url(#level_square_{{unique}})"
+							transform="scale(1,-1) translate(0,`+(config.lastpos*-1)+`)"
 						/>
 					</mask>								
 				</defs>
 				<rect id="level_stripeoff_0_{{unique}}" x="0" y="0"
-					width="`+config.stripe.height+`" height="`+config.exactheight+`" 
+					width="`+config.stripe.height+`" height="`+config.lastpos+`" 
 					style="stroke:none"; 
 					fill="`+config.colorOff+`" 
 					mask="url(#level_bgr_{{unique}})"
 					
 				/>
 				<rect id="level_stripe_0_{{unique}}" x="0" y="0" 
-					width="`+config.stripe.height+`" height="`+config.exactheight+`"	
+					width="`+config.stripe.height+`" height="`+config.lastpos+`"	
 					style="stroke:none";
 					${filltype}
 					mask="url(#level_fgr_0_{{unique}})"				
 				/>
-				<rect ng-if="${config.peakmode == true}" id="level_peak_0_{{unique}}" x="0" y="0" 
+				<rect ng-if="${config.peakmode == true}" id="level_peak_0_{{unique}}" x="0" y="`+config.lastpos+`" 
 					width="`+config.stripe.height+`" height="`+config.stripe.width+`"	
 					style="stroke:none"
-					fill="`+config.colorOff+`"
-					display="none"
-					transform="scale(1,-1) translate(0,`+(config.exactheight*-1)+`)"					
+					fill="`+config.colorOff+`"					
+					transform="scale(1,-1) translate(0,`+(config.lastpos*-1)+`)"					
 				/>
 				<text ng-if="${config.width > 1}" id=level_textgroup_{{unique}}>
 					<tspan id=level_title_{{unique}} class="txt-{{unique}}" text-anchor="middle" dominant-baseline="hanging" x=`+config.exactwidth/2+` dx="12" y="0">
@@ -178,7 +176,7 @@ module.exports = function (RED) {
 						`+config.unit+`											
 					</tspan>					
 				</text>				
-				<text ng-if="${config.width == 1}" transform="translate(25, ${config.exactheight-15}) rotate(270)" text-orientation="upright" id=level_title_{{unique}} class="txt-{{unique}} medium" text-anchor="start" dominant-baseline="baseline" x="0" y="0">`+config.label+
+				<text ng-if="${config.width == 1}" transform="translate(25, ${config.lastpos-15}) rotate(270)" text-orientation="upright" id=level_title_{{unique}} class="txt-{{unique}} medium" text-anchor="start" dominant-baseline="baseline" x="0" y="0">`+config.label+
 				` <tspan ng-if="${config.hideValue == false}" id=level_value_channel_0_{{unique}} class="txt-{{unique}} medium" dominant-baseline="baseline">
 						{{msg.payload[0]}}
 						</tspan>
@@ -187,7 +185,7 @@ module.exports = function (RED) {
 						</tspan>					
 				</text>				
 				<text id=level_max_{{unique}} class="txt-{{unique}} small" text-anchor="start" dominant-baseline="hanging" x="15" y="0">`+config.max+`</text>	
-				<text id=level_min_{{unique}} class="txt-{{unique}} small" text-anchor="start" dominant-baseline="baseline" x="15" ng-attr-y=`+config.exactheight+`px>`+config.min+`</text>			
+				<text id=level_min_{{unique}} class="txt-{{unique}} small" text-anchor="start" dominant-baseline="baseline" x="15" ng-attr-y=`+config.lastpos+`px>`+config.min+`</text>			
 			</svg>`
 		
 		var level_pair_h = String.raw`		
@@ -198,55 +196,55 @@ module.exports = function (RED) {
 						<rect x="0" width="`+config.stripe.width+`" height="`+config.stripe.height+`" y="0" fill="white" />				
 					</pattern>
 					<mask id="level_bgr_0_{{unique}}">
-						<rect x="0" y="`+config.stripe.y0+`" width="`+config.exactwidth+`" height="`+config.stripe.height+`" fill="url(#level_square_{{unique}})"/>
+						<rect x="0" y="`+config.stripe.y0+`" width="`+config.lastpos+`" height="`+config.stripe.height+`" fill="url(#level_square_{{unique}})"/>
 					</mask>
 					<mask id="level_bgr_1_{{unique}}">
-						<rect x="0" y="`+config.stripe.y1+`" width="`+config.exactwidth+`" height="`+config.stripe.height+`" fill="url(#level_square_{{unique}})"/>
+						<rect x="0" y="`+config.stripe.y1+`" width="`+config.lastpos+`" height="`+config.stripe.height+`" fill="url(#level_square_{{unique}})"/>
 					</mask>
 					<mask id="level_fgr_0_{{unique}}">
-						<rect id="level_mask_0_{{unique}}" x="0" y="`+config.stripe.y0+`" width="`+config.exactwidth+`" height="`+config.stripe.height+`" fill="url(#level_square_{{unique}})"/>
+						<rect id="level_mask_0_{{unique}}" x="0" y="`+config.stripe.y0+`" width="`+config.lastpos+`" height="`+config.stripe.height+`" fill="url(#level_square_{{unique}})"/>
 					</mask>
 					<mask id="level_fgr_1_{{unique}}">
-						<rect id="level_mask_1_{{unique}}" x="0" y="`+config.stripe.y1+`" width="`+config.exactwidth+`" height="`+config.stripe.height+`" fill="url(#level_square_{{unique}})"/>
+						<rect id="level_mask_1_{{unique}}" x="0" y="`+config.stripe.y1+`" width="`+config.lastpos+`" height="`+config.stripe.height+`" fill="url(#level_square_{{unique}})"/>
 					</mask>								
 				</defs>
 				<rect id="level_stripeoff_0_{{unique}}" x="0" y="`+config.stripe.y0+`"
-					width="`+config.exactwidth+`" height="`+config.stripe.height+`" 
+					width="`+config.lastpos+`" height="`+config.stripe.height+`" 
 					style="stroke:none"; 
 					fill="`+config.colorOff+`" 
 					mask="url(#level_bgr_0_{{unique}})"
 				/>
 				<rect id="level_stripe_0_{{unique}}" x="0" y="`+config.stripe.y0+`" 
-					width="`+config.exactwidth+`" height="`+config.stripe.height+`"	
+					width="`+config.lastpos+`" height="`+config.stripe.height+`"	
 					style="stroke:none";
 					${filltype}
 					mask="url(#level_fgr_0_{{unique}})"
 				/>
 				
 				<rect id="level_stripeoff_1_{{unique}}" x="0" y="`+config.stripe.y1+`"
-					width="`+config.exactwidth+`" height="`+config.stripe.height+`" 
+					width="`+config.lastpos+`" height="`+config.stripe.height+`" 
 					style="stroke:none"; 
 					fill="`+config.colorOff+`" 
 					mask="url(#level_bgr_1_{{unique}})"
 				/>
 				<rect id="level_stripe_1_{{unique}}" x="0" y="`+config.stripe.y1+`" 
-					width="`+config.exactwidth+`" height="`+config.stripe.height+`"	
+					width="`+config.lastpos+`" height="`+config.stripe.height+`"	
 					style="stroke:none";
 					${filltype}
 					mask="url(#level_fgr_1_{{unique}})"
 				/>
-				<rect ng-if="${config.peakmode == true}" id="level_peak_0_{{unique}}" x="0" y="`+config.stripe.y0+`" 
+				<rect ng-if="${config.peakmode == true}" id="level_peak_0_{{unique}}" x="`+config.lastpos+`" y="`+config.stripe.y0+`" 
 					width="`+config.stripe.width+`" height="`+config.stripe.height+`"	
 					style="stroke:none"
 					fill="`+config.colorOff+`"
-					display="none"
+					
 										
 				/>
-				<rect ng-if="${config.peakmode == true}" id="level_peak_1_{{unique}}" x="0" y="`+config.stripe.y1+`" 
+				<rect ng-if="${config.peakmode == true}" id="level_peak_1_{{unique}}" x="`+config.lastpos+`" y="`+config.stripe.y1+`" 
 					width="`+config.stripe.width+`" height="`+config.stripe.height+`"	
 					style="stroke:none"
 					fill="`+config.colorOff+`"
-					display="none"				
+								
 				/>				
 				<text id=level_channel_0_{{unique}} class="txt-{{unique}}" text-anchor="start" dominant-baseline="hanging" x="0" y="0">`+config.channelA+`
 					<tspan ng-if="${config.unit != ''}" class="txt-{{unique}} small" dominant-baseline="hanging">
@@ -309,6 +307,7 @@ module.exports = function (RED) {
 			}
 			
 			RED.nodes.createNode(this, config);
+			
 			var done = null;
 			var range = null;
 			var stripecount = null;
@@ -483,8 +482,7 @@ module.exports = function (RED) {
 				
 			 	exactPosition = function(target,mi,ma,r,dir) {
 					var p = r ? {minin:mi, maxin:ma+0.00001, minout:100, maxout:1} : {minin:mi, maxin:ma+0.00001, minout:1, maxout:100}									
-					//var c = Math.round(dir * range(target,p) / 100 / config.stripe.width) * config.stripe.width;	
-					c = Math.floor(dir * range(target,p) / 100 / config.stripe.step) * config.stripe.step;				
+					var c = Math.round(dir * range(target,p) / 100 / config.stripe.step) * config.stripe.step;				
 					var ret = c / dir
 					if(ret > 1){
 						ret = 1
@@ -492,7 +490,8 @@ module.exports = function (RED) {
 					if(ret < 0){
 						ret = 0
 					}
-					return {px:Math.floor(ret * dir),p:ret * 100}
+					var ep = Math.round(ret * dir / config.stripe.step) * config.stripe.step
+					return {px:ep,p:ret * 100}
 				}
 				
 				msgFormat = function(value) {					
@@ -520,6 +519,24 @@ module.exports = function (RED) {
 					}						
 					return msg;			
 				}
+				
+				peaksteps = function(){
+					var pos = 0
+					var pr
+					var col
+					var ret = []
+					var ob
+					for(var i=0;i<config.count;i++){
+						pr = (pos + config.stripe.width) / config.lastpos * 100
+						col = pr <= config.gradient.warn ? opc[1] : (pr <= config.gradient.high ? opc[2] : opc[3]);
+						ob = {px:pos,c:col}
+						ret.push(ob)						
+						pos += config.stripe.step
+					}
+					
+					return ret
+					
+				}
 					 
 				
 				var group = RED.nodes.getNode(config.group);
@@ -542,7 +559,8 @@ module.exports = function (RED) {
 				config.stripe = {step: parseInt(config.shape) * 2, width: parseInt(config.shape), height:Math.floor((site.sizes.sy/2)-12), y0:y_0,y1:y_1};
 				config.min = parseFloat(config.min);
 				config.max = parseFloat(config.max);
-				config.peaktime = parseInt(config.peaktime);				
+				config.keepPeak = parseInt(config.peaktime) === -1;
+				config.peaktime = parseInt(config.peaktime) === -1 ? 3000 : parseInt(config.peaktime);				
 				config.count = stripecount();
 				config.hideValue = config.hideValue || false
 				config.lastpos = config.count * config.stripe.step - config.stripe.width;			
@@ -557,13 +575,14 @@ module.exports = function (RED) {
 				var max = config.max < config.min ? config.min : config.max;				
 				var reverse = config.min > config.max;
 				var decimals = config.decimals = isNaN(parseFloat(config.decimals)) ? {fixed:1,mult:0} : {fixed:parseInt(config.decimals),mult:Math.pow(10,parseInt(config.decimals))};
-				var directiontarget = config.layout === 'sv' ? config.exactheight : config.exactwidth
+				var directiontarget = config.lastpos//config.layout === 'sv' ? config.exactheight : config.exactwidth
 				var sectorhigh = isNaN(parseFloat(config.segHigh)) ? parseFloat((max *.9).toFixed(decimals.fixed)) : parseFloat(config.segHigh);
 				var sectorwarn = isNaN(parseFloat(config.segWarn)) ? parseFloat((max *.7).toFixed(decimals.fixed)) : parseFloat(config.segWarn);				
 				var sectorupdate = []
 				var peakupdate = null
-				config.gradient = {warn:exactPosition(sectorwarn,min,max,reverse,directiontarget).p,high:exactPosition(sectorhigh,min,max,reverse,directiontarget).p};
 				
+				config.gradient = {warn:exactPosition(sectorwarn,min,max,reverse,directiontarget).p,high:exactPosition(sectorhigh,min,max,reverse,directiontarget).p};
+				//config.peaksteps = peaksteps()
 				var defaultFontOptions = {"sh":{normal:1,small:0.65,big:1.2,color:'currentColor'},
 											"sv":{normal:1,small:0.65,big:2.5,color:'currentColor'},
 											"ph":{normal:1,small:0.65,big:1.2,color:'currentColor'}};			
@@ -592,70 +611,31 @@ module.exports = function (RED) {
 				}
 
 				var configsent = false;				
-				var html = HTML(config);
-				
+				var html = HTML(config);				
 				done = ui.addWidget({
 					node: node,
 					order: config.order, 
 					group: config.group,
 					width: config.width,
-					height: config.height,
-					format: html,
+					height: config.height,									
+					format: html,					
 					templateScope: "local",
 					emitOnlyNewValues: false,
-					forwardInputMessages: false,
+					forwardInputMessages: true,
 					storeFrontEndInputAsState: true,
 					
-					beforeEmit: function (msg) {											
-						if(msg.ui_control){
-							updateControl(msg.ui_control);
+					convert: function(value, oldValue, msg) {
+						console.log('convert value: ',value)
+						console.log('convert oldValue: ',oldValue)
+						console.log('convert msg: ',msg)
+					},
+					
+					beforeEmit: function (msg) {
+						console.log(msg)																
+						if(msg.control){
+							updateControl(msg.control);
+							delete(msg.control)
 						}
-						if(msg.payload === undefined){
-							return
-						}						
-						msg = msgFormat(msg.payload)						
-						
-						if(config.layout === "ph"){
-							if(msg.payload[1] === null){
-								msg.payload[1] = min
-							}
-						}
-						
-						var pos = [exactPosition(msg.payload[0],min,max,reverse,directiontarget),null];
-						if(config.layout === "ph"){
-							pos[1] = exactPosition(msg.payload[1],min,max,reverse,directiontarget)
-						}
-						
-						msg.position = [pos[0].px,null];
-						if(config.layout === "ph"){							
-							msg.position[1] = pos[1].px													
-						}
-						
-						if(config.colorschema == 'valuedriven' || config.peakmode == true){
-							var peakpos
-							var col
-							col =  pos[0].p < config.gradient.warn ? opc[1] : (pos[0].p < config.gradient.high ? opc[2] : opc[3]);
-							if(config.colorschema == 'valuedriven'){
-								msg.color = [col,null]
-							}
-							if(config.peakmode == true){
-								peakpos = exactPosition(msg.payload[0],min,max,reverse,config.lastpos).px								
-								msg.peak = [{px:peakpos,c:col},null]
-							}
-							
-							
-							if(pos[1] != null){
-								col = pos[1].p < config.gradient.warn ? opc[1] : (pos[1].p < config.gradient.high ? opc[2] : opc[3]);
-								if(config.colorschema == 'valuedriven'){
-									msg.color[1] = col
-								}
-								if(config.peakmode == true){
-									peakpos = peakpos = exactPosition(msg.payload[1],min,max,reverse,config.lastpos).px																		
-									msg.peak[1] = {px:peakpos,c:col}
-								}
-							}														
-						}
-						
 						if(!configsent){
 							msg.config = {}
 							msg.config.min = reverse ? max : min;
@@ -667,7 +647,52 @@ module.exports = function (RED) {
 								msg.config.peakupdate = peakupdate;
 							}
 							configsent = true;
-						}																	
+						}		
+						if(msg.payload === undefined){
+							return { msg: msg }
+						}						
+						var msg = msgFormat(msg.payload)						
+						if(config.layout === "ph"){
+							if(msg.payload[1] === null){
+								msg.payload[1] = min
+							}
+						}						
+						var pos = [exactPosition(msg.payload[0],min,max,reverse,directiontarget),null];						
+						if(config.layout === "ph"){							
+							pos[1] = exactPosition(msg.payload[1],min,max,reverse,directiontarget)
+						}
+						
+						msg.position = [pos[0].px,null];
+						if(config.layout === "ph"){							
+							msg.position[1] = pos[1].px													
+						}
+						
+						if(config.colorschema == 'valuedriven' || config.peakmode == true){
+							var peakpos
+							var col
+							col =  pos[0].p <= config.gradient.warn ? opc[1] : (pos[0].p <= config.gradient.high ? opc[2] : opc[3]);
+							if(config.colorschema == 'valuedriven'){
+								msg.color = [col,null]
+							}
+							if(config.peakmode == true){								
+								peakpos = Math.floor((pos[0].px - config.stripe.width) / config.stripe.step) * config.stripe.step											
+								msg.peak = [{px:peakpos,c:col},null]
+							}
+							
+							
+							if(pos[1] != null){
+								col = pos[1].p <= config.gradient.warn ? opc[1] : (pos[1].p <= config.gradient.high ? opc[2] : opc[3]);
+								if(config.colorschema == 'valuedriven'){
+									msg.color[1] = col
+								}
+								if(config.peakmode == true){										
+									peakpos = Math.floor((pos[1].px - config.stripe.width) / config.stripe.step) * config.stripe.step																
+									msg.peak[1] = {px:peakpos,c:col}
+								}
+							}														
+						}
+						
+																					
 						return { msg: msg };
 					},
 					
@@ -675,50 +700,102 @@ module.exports = function (RED) {
 						$scope.unique = $scope.$eval('$id')					
 						$scope.lastvalue = [0,0]
 						$scope.peakreset = 'auto'
+						$scope.peaklock = [false,false];
+						$scope.peakup = [false,false];
+						$scope.hold = [null,null];
 						$scope.init = function(config){							
 							$scope.d = config.decimals;
 							$scope.prop = config.layout === "sv" ? {dir:'height',pos:'y'} : {dir:'width',pos:'x'}
 							$scope.len	 = 	config.layout === "ph"	? 2 : 1		
 							$scope.animate = {g:config.animations,t:config.textAnimations,peak:config.peaktime}
-							$scope.speed = $scope.animate.g == "rocket" ? {ms:100,s:0.1} : ($scope.animate.g == "reactive" ? {ms:300,s:0.3} : {ms:800,s:0.8});	
-						}
-						
-						var tom = [null,null];							
-						var peak;					
+							$scope.speed = $scope.animate.g == "rocket" ? {ms:100,s:0.1} : ($scope.animate.g == "reactive" ? {ms:300,s:0.3} : {ms:800,s:0.8});
+							$scope.lastpeak = [0,0]							
+						}					
+						var peakpixel;					
 						
 						var resetPeak = function(){
-							for(var j=0; j<$scope.len; j++){
-								peak = document.getElementById("level_peak_"+j+"_"+$scope.unique);
-								if(peak != null){								
-									peak.setAttribute($scope.prop.pos,'0')
-									peak.setAttribute('display','none')
-								}
-							}
+							
 						}
 						
-						var setPeak = function(data){
-							if(!data.peak){
+						var setPeak = function(j,data){							
+							if(!data){
 								return
-							}														 
-							for(var j=0; j<$scope.len; j++){								
-								peak = document.getElementById("level_peak_"+j+"_"+$scope.unique);																									
-								if(peak){	
-									if(peak.getAttribute($scope.prop.pos) < data.peak[j].px){
-										if(tom[j]){
-											clearInterval(tom[j])
-										}
-										if($scope.peakreset == 'auto'){
-											tom[j] = setInterval(resetPeak,$scope.animate.peak)
-										}										
-										peak.setAttribute($scope.prop.pos,data.peak[j].px)
-										peak.setAttribute('display','inline')
-										if(peak.getAttribute('fill') != data.peak[j].c){											
-											peak.setAttribute('fill',data.peak[j].c)	
-										}																																						
-									}										
+							}							
+							peakpixel = document.getElementById("level_peak_"+j+"_"+$scope.unique);
+							if(peakpixel){															
+								var pixel = $(peakpixel)														
+								if(data.px > $scope.lastpeak[j]){									 														
+									pixel.css('fill',data.c).css($scope.prop.pos,data.px).css('opacity',1)
+									$scope.lastpeak[j] = data.px																											
 								}
-							}			
+								else {																																	
+									if($scope.peaklock[j] == false){									
+										var cb = function(){
+											$scope.lastpeak[j] = data.px
+											$scope.peaklock[j] = false;	
+											pixel.css('fill',data.c).css($scope.prop.pos,data.px).css('opacity',0)																														
+										}
+										$scope.peaklock[j] = true;
+										
+										pixel.css($scope.prop.pos, $scope.lastpeak[j].px)
+										pixel.css('fill',$scope.lastpeak[j].c)																				
+										pixel.css('opacity',1)										
+										$scope.hold[j] = window.setInterval(function(){
+											window.clearInterval($scope.hold[j])
+											$scope.hold[j] = null
+											cb()											
+										},$scope.animate.peak)
+									}																									
+								}																
+							}									
 						}
+						
+						var animatePeak = function(j,data){							
+							if(!data){
+								return
+							}							
+							peakpixel = document.getElementById("level_peak_"+j+"_"+$scope.unique);
+							if(peakpixel){															
+								var pixel = $(peakpixel)														
+								if(data.px > $scope.lastpeak[j]){									
+									if($scope.hold[j] != null ){
+										window.clearInterval($scope.hold[j])
+										$scope.hold[j] = null
+									}	 														
+									pixel.stop(true,true).css('fill',data.c).css($scope.prop.pos,data.px).css('opacity',0)
+									$scope.lastpeak[j] = data.px
+									$scope.peaklock[j] = false;
+									$scope.peakup[j] = true;																	
+								}
+								else {																																	
+									if($scope.peaklock[j] == false){									
+										var cb = function(){
+											$scope.lastpeak[j] = data.px
+											$scope.peaklock[j] = false;	
+											$scope.peakup[j] = false;
+											pixel.css('fill',data.c).css($scope.prop.pos,data.px).css('opacity',0)																				
+										}
+										$scope.peaklock[j] = true;
+										if($scope.peakup[j] == false){
+											pixel.css($scope.prop.pos, data.px)
+											pixel.css('fill',data.c)											
+										}										
+										pixel.css('opacity',1)
+										pixel.stop(true,true).fadeIn(40)
+										$scope.hold[j] = window.setInterval(function(){
+											window.clearInterval($scope.hold[j])
+											$scope.hold[j] = null
+											pixel.stop().fadeOut($scope.animate.peak*.3 ,cb)											
+										},$scope.animate.peak*.7)
+									}
+									else{
+										$scope.peakup[j] = false;
+									}																		
+								}																
+							}									
+						}
+						
+						
 						
 						var updateConfig = function (config){							
 							var minval = document.getElementById("level_min_"+$scope.unique);
@@ -756,12 +833,17 @@ module.exports = function (RED) {
 								mask = document.getElementById("level_mask_"+j+"_"+$scope.unique);
 								if(mask){
 									if(parseInt(mask.style[$scope.prop.dir]) != data.position[j]){
-										if($scope.animate.g !== "off"){
-											$(mask).stop(true,true).animate({[$scope.prop.dir]: data.position[j]+'px' },$scope.speed.ms,'swing',function(){setPeak(data)});
+										if($scope.animate.g !== "off"){											
+											if(data.peak){
+												animatePeak(j,data.peak[j])
+											}
+											$(mask).stop().animate({[$scope.prop.dir]: data.position[j]+'px' },$scope.speed.ms);											
 										}
 										else{											
 											mask.style[$scope.prop.dir] = data.position[j]+'px'
-											setPeak(data)
+											if(data.peak){
+												setPeak(j,data.peak[j],0)
+											}
 										}	
 									}									
 								}																						
@@ -799,8 +881,8 @@ module.exports = function (RED) {
 									}
 								}								
 							}
-						}; 
-																		
+						};
+															
 						$scope.$watch('msg', function (msg) {
 							if (!msg) {								
 								return;
@@ -821,15 +903,15 @@ module.exports = function (RED) {
 							}						
 														
 						});
-						$scope.$on('$destroy', function() {
-							if(tom && Array.isArray(tom)) {
+						 $scope.$on('$destroy', function() {
+							if($scope.hold) {
 								for(var i= 0;i<2;i++){
-									if(tom[i]){
-										clearInterval(tom[i])
+									if($scope.hold[i] != null){
+										clearInterval($scope.hold[i])
 									}
 								}								
 							}
-						});
+						}); 
 					}
 				});
 			}
@@ -837,7 +919,6 @@ module.exports = function (RED) {
 		catch (e) {
 			console.log(e);
 		}
-
 		node.on("close", function () {
 			if (done) {
 				done();

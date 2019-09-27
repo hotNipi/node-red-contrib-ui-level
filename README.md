@@ -31,9 +31,9 @@ If you choose `Multiple segments` for your stripe colors, you can optionally use
 
 The node's `Unit` will be displayed near the current value. Exact position of the unit depends on choosed layout. The unit can be any `string`, for example: `lbs psi F°` Set the unit to empty string if you don't need to display it.
 
-The min and max values are customizable within the configuration or you can change them on fly by sending new values with `msg.ui_control` property.
+The min and max values are customizable within the configuration or you can change them on fly by sending new values with `msg.control` property.
 
-The segments's values are also customizable within the configuration and with `msg.ui_control`
+The segments's values are also customizable within the configuration and with `msg.control`
 
 You can choose anmations to be `Soft`, `Reactive` or `Rocket` represending speed of animations (800ms, 300ms and 100ms). Animations can be turned `off` completely.
 Animation of value text is turned off by default. You can turn it on but be aware, text animation affects
@@ -45,18 +45,18 @@ You can choose between 3 different stripe resolutions. `Superfine`, `Fine` and `
 
 Texts sizes and color in widget can be customized within the configuration only. Color applies for all texts in widget. There is 3 different sizes for text elements in use. Values represent font relative size with unit `"em"`
 
-## Examples of `msg.ui_control` usage
+## Examples of `msg.control` usage
 
-`msg.ui_control = {min:10, max:80}` _to change min and max values._
+`msg.control = {min:10, max:80}` _to change min and max values._
 
-`msg.ui_control = {min:10, max:80, seg1:30, seg2:60}` _to change min, max and segments all together._
+`msg.control = {min:10, max:80, seg1:30, seg2:60}` _to change min, max and segments all together._
 
-`msg.ui_control = {seg2:60}` _to change high segement value only._
+`msg.control = {seg2:60}` _to change high segement value only._
 
 If peak mode used, it can be turned to hold peak permanently and then reset peak manually. 
-`msg.ui_control = {peakreset:"reset"}` _to turn on permanent hold or if already in this mode, just reset peak._
+`msg.control = {peakreset:"reset"}` _to turn on permanent hold or if already in this mode, just reset peak._
 
-`msg.ui_control = {peakreset:"auto"}` _to change peak mode delay based._
+`msg.control = {peakreset:"auto"}` _to change peak mode delay based._
 
 ## Performance alert
 This widget is not perfect choice to display high-frequent data changes like audio or similar.  

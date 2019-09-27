@@ -70,6 +70,9 @@ SOFTWARE.
             peaktime:{value: 3000, required: false, validate:function(v) {
                     var mi = 800;
                     var ma = 10000;
+                    if(parseInt(v) === -1){
+                        return true
+                    }
                     return (v >= mi && v <= ma)
                 }},
         },
@@ -267,7 +270,7 @@ SOFTWARE.
         style="display:inline-block; width:auto; vertical-align:baseline; 
         margin-right:5px;margin-left:5px;">Hold peak 
         <span for='node-input-peaktime'  id='node-input-peaktimeSpan' style='margin-left:20px;'>time (ms)</span>
-        <input type='text' id='node-input-peaktime' style='width:120px' placeholder='800 ... 10000' dir=''>  
+        <input type='text' id='node-input-peaktime' style='width:120px' placeholder='800 ... 10000 or -1' dir=''>  
     </div>        
 </br>
     <div class='form-row'>
@@ -358,11 +361,11 @@ SOFTWARE.
         according to sector values. <code>'Single color bar'</code> - Single value based color for all active stripes. <code>'Interpolated colors'</code> - Colors intrpolated from normal to high color</p>
     <p>If you choose <code>Multiple segments</code> for your stripe colors, you can optionally use the <code>Peak mode</code>. By selecting the <code>Peak mode</code>, you can adjust <code>peak hold</code> time (in milliseconds, validated to be in between 800 ... 100000)
     <p>The node's <code>Unit</code> will be displayed near the current value. Exact position of the unit depends on choosed layout. The unit can be any <code>string</code>, for example: <code>lbs psi F°</code></p>    
-    <p>The min and max values are customizable within the configuration or you can change them on fly via <code>msg.ui_control = {min:10, max:80}</code></p>
-    <p>The segments's values also customizable within the configuration or by using <code>msg.ui_control = {seg1:30, seg2:60}</code>.</p>
+    <p>The min and max values are customizable within the configuration or you can change them on fly via <code>msg.control = {min:10, max:80}</code></p>
+    <p>The segments's values also customizable within the configuration or by using <code>msg.control = {seg1:30, seg2:60}</code>.</p>
     <p>If peak mode used, it can be turned to hold peak permanently and then reset peak manually. 
-    <p><code>msg.ui_control = {peakreset:"reset"}</code> to turn on permanent hold or if already in this mode, just reset peak.
-    <p><code>msg.ui_control = {peakreset:"auto"}</code> to change peak mode delay based. 
+    <p><code>msg.control = {peakreset:"reset"}</code> to turn on permanent hold or if already in this mode, just reset peak.
+    <p><code>msg.control = {peakreset:"auto"}</code> to change peak mode delay based. 
     <p>You can choose between 3 different stripe resolutions. <code>Normal</code>, <code>Fine</code> and <code>Superfine</code></p>   
     <p>You can choose anmations to be <code>Soft</code>, <code>Reactive</code> or <code>Rocket</code> represending speed of animations (800ms, 300ms and 100ms). Animations can be turned <code>off</code> completely.</p>
     <p>Animation of value text is turned off by default. You can turn it on but be aware, text animation affects performance significantly!</p>

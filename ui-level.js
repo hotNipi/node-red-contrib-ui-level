@@ -424,21 +424,10 @@ module.exports = function (RED) {
 				updateControl = function(uicontrol){					
 					reverse = false;
 					var applies = false;
-					var updatesectors = false
-					var updatepeak = false;
-					peakupdate = null;
+					var updatesectors = false					
 					sectorupdate = []
 					var mi = min
-					var ma = max
-					if(uicontrol.peakreset != undefined ){
-						if(config.peakmode == true){
-							if(uicontrol.peakreset == 'auto' || uicontrol.peakreset == 'reset'){
-								peakupdate = uicontrol.peakreset								
-								applies = true;
-							}													
-							
-						}
-					}
+					var ma = max					
 					if(uicontrol.min != undefined && !isNaN(parseFloat(uicontrol.min))){
 						mi =  parseFloat(uicontrol.min);
 						applies = true;						
@@ -577,8 +566,7 @@ module.exports = function (RED) {
 				var directiontarget = config.lastpos//config.layout === 'sv' ? config.exactheight : config.exactwidth
 				var sectorhigh = isNaN(parseFloat(config.segHigh)) ? parseFloat((max *.9).toFixed(decimals.fixed)) : parseFloat(config.segHigh);
 				var sectorwarn = isNaN(parseFloat(config.segWarn)) ? parseFloat((max *.7).toFixed(decimals.fixed)) : parseFloat(config.segWarn);				
-				var sectorupdate = []
-				var peakupdate = null
+				var sectorupdate = []				
 				
 				config.gradient = {warn:exactPosition(sectorwarn,min,max,reverse,directiontarget).p,high:exactPosition(sectorhigh,min,max,reverse,directiontarget).p};
 				//config.peaksteps = peaksteps()
@@ -634,10 +622,7 @@ module.exports = function (RED) {
 							msg.config.max = reverse ? min : max;
 							if(sectorupdate.length > 0){
 								msg.config.sectors = sectorupdate
-							}
-							if(peakupdate){
-								msg.config.peakupdate = peakupdate;
-							}
+							}							
 							configsent = true;
 						}		
 						if(msg.payload === undefined){
@@ -826,9 +811,7 @@ module.exports = function (RED) {
 						
 						
 						var updateLevel = function(data){							
-							if(data.config){								
-								updateConfig(data.config)								
-							}							
+													
 							var stripe;
 							var mask;												
 							var j;							
@@ -899,6 +882,9 @@ module.exports = function (RED) {
 									stripe = document.getElementById(id)									
 									if (stripe != null) {
 										clearInterval(stateCheck);
+										if(msg.config){								
+											updateConfig(msg.config)								
+										}	
 										if(msg.resetpeak){
 											resetPeak()
 										}
@@ -909,6 +895,9 @@ module.exports = function (RED) {
 								}, 40);
 							}
 							else{
+								if(msg.config){								
+									updateConfig(msg.config)								
+								}	
 								if(msg.resetpeak){
 									resetPeak()
 								}

@@ -558,9 +558,8 @@ module.exports = function (RED) {
 				
 				config.stripe = {step: parseInt(config.shape) * 2, width: parseInt(config.shape), height:Math.floor((site.sizes.sy/2)-12), y0:y_0,y1:y_1};
 				config.min = parseFloat(config.min);
-				config.max = parseFloat(config.max);
-				config.keepPeak = parseInt(config.peaktime) === -1;
-				config.peaktime = parseInt(config.peaktime) === -1 ? 3000 : parseInt(config.peaktime);				
+				config.max = parseFloat(config.max);				
+				config.peaktime = config.peaktime == 'infinity' ? -1 : isNaN(parseInt(config.peaktime)) ? 3000 : parseInt(config.peaktime);
 				config.count = stripecount();
 				config.hideValue = config.hideValue || false
 				config.lastpos = config.count * config.stripe.step - config.stripe.width;			
@@ -622,20 +621,13 @@ module.exports = function (RED) {
 					templateScope: "local",
 					emitOnlyNewValues: false,
 					forwardInputMessages: true,
-					storeFrontEndInputAsState: true,
+					storeFrontEndInputAsState: true,					
 					
-					convert: function(value, oldValue, msg) {
-						console.log('convert value: ',value)
-						console.log('convert oldValue: ',oldValue)
-						console.log('convert msg: ',msg)
-					},
-					
-					beforeEmit: function (msg) {
-						console.log(msg)																
+					beforeEmit: function (msg) {																						
 						if(msg.control){
 							updateControl(msg.control);
 							delete(msg.control)
-						}
+						}						
 						if(!configsent){
 							msg.config = {}
 							msg.config.min = reverse ? max : min;
@@ -698,8 +690,7 @@ module.exports = function (RED) {
 					
 					initController: function ($scope) {																		
 						$scope.unique = $scope.$eval('$id')					
-						$scope.lastvalue = [0,0]
-						$scope.peakreset = 'auto'
+						$scope.lastvalue = [0,0]					
 						$scope.peaklock = [false,false];
 						$scope.peakup = [false,false];
 						$scope.hold = [null,null];
@@ -714,7 +705,18 @@ module.exports = function (RED) {
 						var peakpixel;					
 						
 						var resetPeak = function(){
-							
+							if($scope.animate.peak != -1){
+								return
+							}
+							var j
+							for(j = 0; j<$scope.len; j++){
+								peakpixel = document.getElementById("level_peak_"+j+"_"+$scope.unique);
+								if(peakpixel){															
+									var pixel = $(peakpixel)
+									pixel.css('opacity',0)	
+									$scope.lastpeak[j] = 0										
+								}
+							}
 						}
 						
 						var setPeak = function(j,data){							
@@ -729,7 +731,7 @@ module.exports = function (RED) {
 									$scope.lastpeak[j] = data.px																											
 								}
 								else {																																	
-									if($scope.peaklock[j] == false){									
+									if($scope.peaklock[j] == false && $scope.animate.peak != -1){									
 										var cb = function(){
 											$scope.lastpeak[j] = data.px
 											$scope.peaklock[j] = false;	
@@ -761,7 +763,7 @@ module.exports = function (RED) {
 									if($scope.hold[j] != null ){
 										window.clearInterval($scope.hold[j])
 										$scope.hold[j] = null
-									}	 														
+									}									 														
 									pixel.stop(true,true).css('fill',data.c).css($scope.prop.pos,data.px).css('opacity',0)
 									$scope.lastpeak[j] = data.px
 									$scope.peaklock[j] = false;
@@ -782,10 +784,17 @@ module.exports = function (RED) {
 										}										
 										pixel.css('opacity',1)
 										pixel.stop(true,true).fadeIn(40)
+										if($scope.animate.peak != -1)
 										$scope.hold[j] = window.setInterval(function(){
 											window.clearInterval($scope.hold[j])
 											$scope.hold[j] = null
-											pixel.stop().fadeOut($scope.animate.peak*.3 ,cb)											
+											if($scope.animate.peak != -1){
+												pixel.stop().fadeOut($scope.animate.peak*.3 ,cb)
+											}
+											else{
+												cb()
+											}
+																						
 										},$scope.animate.peak*.7)
 									}
 									else{
@@ -812,11 +821,7 @@ module.exports = function (RED) {
 										}										
 									}								
 								}
-							}
-							if(config.peakupdate){
-								$scope.peakreset = config.peakupdate
-								resetPeak()
-							} 
+							}							
 						}
 						
 						
@@ -894,14 +899,23 @@ module.exports = function (RED) {
 									stripe = document.getElementById(id)									
 									if (stripe != null) {
 										clearInterval(stateCheck);
-										updateLevel(msg)										
+										if(msg.resetpeak){
+											resetPeak()
+										}
+										if(msg.payload){
+											updateLevel(msg)
+										}										
 									}
 								}, 40);
 							}
-							else{								
-								updateLevel(msg)
-							}						
-														
+							else{
+								if(msg.resetpeak){
+									resetPeak()
+								}
+								if(msg.payload){
+									updateLevel(msg)
+								}							
+							}														
 						});
 						 $scope.$on('$destroy', function() {
 							if($scope.hold) {

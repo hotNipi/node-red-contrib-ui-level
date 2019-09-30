@@ -27,7 +27,7 @@ The node's `Label` is displayed near the value. Leave the label field empty to s
 For Pair Horizontal layout the `Label` is not displayed but both `Channels` can be labelled independently.
 
 All four colors for stripes can be customized. In adition there is three options to show the colors. `Multiple segments` - Colors tied to stripes according to sector values. `Single color bar` - Single value based color for all active stripes. `Interpolated colors` - Colors interpolated from normal to high color.
-If you choose `Multiple segments` for your stripe colors, you can optionally use the `Peak mode`. By selecting the `Peak mode`, you can adjust `peak hold` time (in milliseconds, validated to be in between 800 ... 10000)
+If you choose `Multiple segments` for your stripe colors, you can optionally use the `Peak mode`. By selecting the `Peak mode`, you can adjust `peak hold` time (in milliseconds, validated to be in between 800 ... 10000) or `infinity` to hold peak until node receives `msg.peakreset = true`
 
 The node's `Unit` will be displayed near the current value. Exact position of the unit depends on choosed layout. The unit can be any `string`, for example: `lbs psi F°` Set the unit to empty string if you don't need to display it.
 

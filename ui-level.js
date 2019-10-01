@@ -510,24 +510,7 @@ module.exports = function (RED) {
 					return msg;			
 				}
 				
-				peaksteps = function(){
-					var pos = 0
-					var pr
-					var col
-					var ret = []
-					var ob
-					for(var i=0;i<config.count;i++){
-						pr = (pos + config.stripe.width) / config.lastpos * 100
-						col = pr <= config.gradient.warn ? opc[1] : (pr <= config.gradient.high ? opc[2] : opc[3]);
-						ob = {px:pos,c:col}
-						ret.push(ob)						
-						pos += config.stripe.step
-					}
-					
-					return ret
-					
-				}
-					 
+
 				
 				var group = RED.nodes.getNode(config.group);
 				var site = getSiteProperties();
@@ -570,7 +553,7 @@ module.exports = function (RED) {
 				var sectorupdate = []				
 				
 				config.gradient = {warn:exactPosition(sectorwarn,min,max,reverse,directiontarget).p,high:exactPosition(sectorhigh,min,max,reverse,directiontarget).p};
-				//config.peaksteps = peaksteps()
+				
 				var defaultFontOptions = {"sh":{normal:1,small:0.65,big:1.2,color:'currentColor'},
 											"sv":{normal:1,small:0.65,big:2.5,color:'currentColor'},
 											"ph":{normal:1,small:0.65,big:1.2,color:'currentColor'}};			

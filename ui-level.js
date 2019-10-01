@@ -741,7 +741,7 @@ module.exports = function (RED) {
 										$scope.peaklock[j] = true;									
 										var cb = function(){										
 											$scope.peaklock[j] = false;																																	
-											pixel.stop().animate({[$scope.prop.pos]: $scope.peaktoreset[j].px+'px' },$scope.speed.ms).css('fill',$scope.peaktoreset[j].c);
+											pixel.stop().animate({[$scope.prop.pos]: $scope.peaktoreset[j].px+'px' },$scope.speed.ms*2.5).css('fill',$scope.peaktoreset[j].c);
 											$scope.lastpeak[j] = $scope.peaktoreset[j]																				
 										}																												
 										$scope.hold[j] = window.setInterval(function(){											

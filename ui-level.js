@@ -679,17 +679,21 @@ module.exports = function (RED) {
 						$scope.peaklock = [false,false];
 						$scope.peakup = [false,false];
 						$scope.hold = [null,null];
+						$scope.peaktoreset = [null,null]
 						$scope.init = function(config){							
 							$scope.d = config.decimals;
 							$scope.prop = config.layout === "sv" ? {dir:'height',pos:'y'} : {dir:'width',pos:'x'}
 							$scope.len	 = 	config.layout === "ph"	? 2 : 1		
 							$scope.animate = {g:config.animations,t:config.textAnimations,peak:config.peaktime}
 							$scope.speed = $scope.animate.g == "rocket" ? {ms:100,s:0.1} : ($scope.animate.g == "reactive" ? {ms:300,s:0.3} : {ms:800,s:0.8});
-							$scope.lastpeak = [0,0]							
+							if($scope.animate.g == 'off'){
+								$scope.speed = {ms:20,s:0}
+							}
+							$scope.lastpeak = [{px:0,c:0},{px:0,c:0}]							
 						}					
 						var peakpixel;					
 						
-						var resetPeak = function(){
+						var resetPeak = function(){							
 							if($scope.animate.peak != -1){
 								return
 							}
@@ -698,98 +702,66 @@ module.exports = function (RED) {
 								peakpixel = document.getElementById("level_peak_"+j+"_"+$scope.unique);
 								if(peakpixel){															
 									var pixel = $(peakpixel)
-									pixel.css('opacity',0)	
-									$scope.lastpeak[j] = 0										
+									if($scope.peaktoreset[j] != null){										
+										pixel.stop(true,true).animate({[$scope.prop.pos]: $scope.peaktoreset[j].px+'px' },0).css('fill',$scope.peaktoreset[j].c);
+										$scope.lastpeak[j] = $scope.peaktoreset[j]		
+									}																	
 								}
 							}
 						}
 						
-						var setPeak = function(j,data){							
-							if(!data){
-								return
-							}							
-							peakpixel = document.getElementById("level_peak_"+j+"_"+$scope.unique);
-							if(peakpixel){															
-								var pixel = $(peakpixel)														
-								if(data.px > $scope.lastpeak[j]){									 														
-									pixel.css('fill',data.c).css($scope.prop.pos,data.px).css('opacity',1)
-									$scope.lastpeak[j] = data.px																											
-								}
-								else {																																	
-									if($scope.peaklock[j] == false && $scope.animate.peak != -1){									
-										var cb = function(){
-											$scope.lastpeak[j] = data.px
-											$scope.peaklock[j] = false;	
-											pixel.css('fill',data.c).css($scope.prop.pos,data.px).css('opacity',0)																														
-										}
-										$scope.peaklock[j] = true;
-										
-										pixel.css($scope.prop.pos, $scope.lastpeak[j].px)
-										pixel.css('fill',$scope.lastpeak[j].c)																				
-										pixel.css('opacity',1)										
-										$scope.hold[j] = window.setInterval(function(){
-											window.clearInterval($scope.hold[j])
-											$scope.hold[j] = null
-											cb()											
-										},$scope.animate.peak)
-									}																									
-								}																
-							}									
-						}
 						
 						var animatePeak = function(j,data){							
 							if(!data){
 								return
-							}							
+							}												
 							peakpixel = document.getElementById("level_peak_"+j+"_"+$scope.unique);
 							if(peakpixel){															
 								var pixel = $(peakpixel)														
-								if(data.px > $scope.lastpeak[j]){									
+								if(data.px > $scope.lastpeak[j].px){									
 									if($scope.hold[j] != null ){
 										window.clearInterval($scope.hold[j])
 										$scope.hold[j] = null
 									}									 														
-									pixel.stop(true,true).css('fill',data.c).css($scope.prop.pos,data.px).css('opacity',0)
-									$scope.lastpeak[j] = data.px
+									pixel.stop(true,true).animate({[$scope.prop.pos]: data.px+'px' },$scope.speed.ms).css('fill',data.c);
+									$scope.lastpeak[j] = data
 									$scope.peaklock[j] = false;
 									$scope.peakup[j] = true;																	
 								}
-								else {																																	
+								else {
+									if($scope.animate.peak == -1){
+										if($scope.peaktoreset[j] == null || $scope.peaktoreset[j].px > data.px){
+											$scope.peaktoreset[j] = data
+										}										
+										$scope.peakup[j] = false;
+										$scope.peaklock[j] = true;
+										return											
+									}									
 									if($scope.peaklock[j] == false){									
-										var cb = function(){
-											$scope.lastpeak[j] = data.px
+										var cb = function(){										
 											$scope.peaklock[j] = false;	
-											$scope.peakup[j] = false;
-											pixel.css('fill',data.c).css($scope.prop.pos,data.px).css('opacity',0)																				
+											$scope.peakup[j] = false;											
+											pixel.stop().animate({[$scope.prop.pos]: $scope.lastpeak[j].px+'px' },$scope.speed.ms).css('fill',$scope.lastpeak[j].c);																				
 										}
 										$scope.peaklock[j] = true;
+										
 										if($scope.peakup[j] == false){
-											pixel.css($scope.prop.pos, data.px)
-											pixel.css('fill',data.c)											
-										}										
-										pixel.css('opacity',1)
-										pixel.stop(true,true).fadeIn(40)
-										if($scope.animate.peak != -1)
+											pixel.stop().animate({[$scope.prop.pos]:data.px+'px' },$scope.speed.ms).css('fill',data.c);																						
+										}																			
 										$scope.hold[j] = window.setInterval(function(){
 											window.clearInterval($scope.hold[j])
 											$scope.hold[j] = null
-											if($scope.animate.peak != -1){
-												pixel.stop().fadeOut($scope.animate.peak*.3 ,cb)
-											}
-											else{
-												cb()
-											}
-																						
-										},$scope.animate.peak*.7)
+											cb()																						
+										},$scope.animate.peak)
+										
 									}
 									else{
+										$scope.lastpeak[j] = data
 										$scope.peakup[j] = false;
-									}																		
+									}															
 								}																
 							}									
 						}
-						
-						
 						
 						var updateConfig = function (config){							
 							var minval = document.getElementById("level_min_"+$scope.unique);
@@ -821,17 +793,14 @@ module.exports = function (RED) {
 								mask = document.getElementById("level_mask_"+j+"_"+$scope.unique);
 								if(mask){
 									if(parseInt(mask.style[$scope.prop.dir]) != data.position[j]){
-										if($scope.animate.g !== "off"){											
-											if(data.peak){
-												animatePeak(j,data.peak[j])
-											}
+										if(data.peak){
+											animatePeak(j,data.peak[j])
+										}
+										if($scope.animate.g !== "off"){										
 											$(mask).stop().animate({[$scope.prop.dir]: data.position[j]+'px' },$scope.speed.ms);											
 										}
 										else{											
-											mask.style[$scope.prop.dir] = data.position[j]+'px'
-											if(data.peak){
-												setPeak(j,data.peak[j],0)
-											}
+											mask.style[$scope.prop.dir] = data.position[j]+'px'											
 										}	
 									}									
 								}																						

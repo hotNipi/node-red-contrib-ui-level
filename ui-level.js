@@ -689,7 +689,7 @@ module.exports = function (RED) {
 							if($scope.animate.g == 'off'){
 								$scope.speed = {ms:20,s:0}
 							}
-							$scope.lastpeak = [{px:0,c:0},{px:0,c:0}]							
+							$scope.lastpeak = [{px:0,c:0},{px:0,c:0}]						
 						}					
 						var peakpixel;					
 						
@@ -725,40 +725,32 @@ module.exports = function (RED) {
 									}									 														
 									pixel.stop(true,true).animate({[$scope.prop.pos]: data.px+'px' },$scope.speed.ms).css('fill',data.c);
 									$scope.lastpeak[j] = data
-									$scope.peaklock[j] = false;
-									$scope.peakup[j] = true;																	
+									$scope.peaklock[j] = false;																								
 								}
-								else {
-									if($scope.animate.peak == -1){
-										if($scope.peaktoreset[j] == null || $scope.peaktoreset[j].px > data.px){
-											$scope.peaktoreset[j] = data
-										}										
-										$scope.peakup[j] = false;
+								else {									
+									if($scope.peaktoreset[j] == null || $scope.peaktoreset[j].px > data.px){
+										$scope.peaktoreset[j] = data
+									}										
+									if($scope.animate.peak == -1){	
 										$scope.peaklock[j] = true;
 										return											
 									}									
 									if($scope.peaklock[j] == false){									
+										$scope.peaklock[j] = true;									
 										var cb = function(){										
-											$scope.peaklock[j] = false;	
-											$scope.peakup[j] = false;											
-											pixel.stop().animate({[$scope.prop.pos]: $scope.lastpeak[j].px+'px' },$scope.speed.ms).css('fill',$scope.lastpeak[j].c);																				
-										}
-										$scope.peaklock[j] = true;
-										
-										if($scope.peakup[j] == false){
-											pixel.stop().animate({[$scope.prop.pos]:data.px+'px' },$scope.speed.ms).css('fill',data.c);																						
-										}																			
-										$scope.hold[j] = window.setInterval(function(){
+											$scope.peaklock[j] = false;																																	
+											pixel.stop().animate({[$scope.prop.pos]: $scope.peaktoreset[j].px+'px' },$scope.speed.ms).css('fill',$scope.peaktoreset[j].c);
+											$scope.lastpeak[j] = $scope.peaktoreset[j]																				
+										}																												
+										$scope.hold[j] = window.setInterval(function(){											
 											window.clearInterval($scope.hold[j])
 											$scope.hold[j] = null
 											cb()																						
-										},$scope.animate.peak)
-										
+										},$scope.animate.peak)										
 									}
 									else{
-										$scope.lastpeak[j] = data
-										$scope.peakup[j] = false;
-									}															
+										$scope.peaktoreset[j] = data
+									}														
 								}																
 							}									
 						}

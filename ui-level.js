@@ -676,11 +676,12 @@ module.exports = function (RED) {
 					initController: function ($scope) {																		
 						$scope.unique = $scope.$eval('$id')					
 						$scope.lastvalue = [0,0]					
-						$scope.peaklock = [false,false];
-						$scope.peakup = [false,false];
+						$scope.peaklock = [false,false];						
 						$scope.hold = [null,null];
-						$scope.peaktoreset = [null,null]
-						$scope.init = function(config){							
+						$scope.peaktoreset = [null,null];
+						
+						$scope.init = function(config){	
+							$scope.lastpeak = [{px:0,c:config.colorNormal},{px:0,c:config.colorNormal}];						
 							$scope.d = config.decimals;
 							$scope.prop = config.layout === "sv" ? {dir:'height',pos:'y'} : {dir:'width',pos:'x'}
 							$scope.len	 = 	config.layout === "ph"	? 2 : 1		
@@ -689,7 +690,7 @@ module.exports = function (RED) {
 							if($scope.animate.g == 'off'){
 								$scope.speed = {ms:20,s:0}
 							}
-							$scope.lastpeak = [{px:0,c:0},{px:0,c:0}]						
+													
 						}					
 						var peakpixel;					
 						

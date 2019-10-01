@@ -885,7 +885,7 @@ module.exports = function (RED) {
 										if(msg.config){								
 											updateConfig(msg.config)								
 										}	
-										if(msg.resetpeak){
+										if(msg.peakreset){
 											resetPeak()
 										}
 										if(msg.payload){
@@ -898,7 +898,7 @@ module.exports = function (RED) {
 								if(msg.config){								
 									updateConfig(msg.config)								
 								}	
-								if(msg.resetpeak){
+								if(msg.peakreset){
 									resetPeak()
 								}
 								if(msg.payload){

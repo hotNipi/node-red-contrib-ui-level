@@ -114,7 +114,8 @@ module.exports = function (RED) {
 				<rect ng-if="${config.peakmode == true}" id="level_peak_0_{{unique}}" x="`+config.lastpos+`" y=${config.stripe.y0} 
 					width="`+config.stripe.width+`" height="`+config.stripe.height+`"	
 					style="stroke:none; display:inline"
-					fill="`+config.colorOff+`"										
+					fill="`+config.colorOff+`"
+					mask="url(#level_bgr_{{unique}})"										
 				/>
 				<text id=level_title_{{unique}} class="txt-{{unique}}" text-anchor="middle" dominant-baseline="baseline" x=`+config.lastpos/2+` y=${config.exactheight-20}>`+config.label+
 				` <tspan ng-if="${config.hideValue == false}" id=level_value_channel_0_{{unique}} class="txt-{{unique}} val" dominant-baseline="baseline">
@@ -162,7 +163,8 @@ module.exports = function (RED) {
 				<rect ng-if="${config.peakmode == true}" id="level_peak_0_{{unique}}" x="0" y="`+config.lastpos+`" 
 					width="`+config.stripe.height+`" height="`+config.stripe.width+`"	
 					style="stroke:none"
-					fill="`+config.colorOff+`"					
+					fill="`+config.colorOff+`"
+					mask="url(#level_bgr_{{unique}})"
 					transform="scale(1,-1) translate(0,`+(config.lastpos*-1)+`)"					
 				/>
 				<text ng-if="${config.width > 1}" id=level_textgroup_{{unique}}>
@@ -237,14 +239,13 @@ module.exports = function (RED) {
 					width="`+config.stripe.width+`" height="`+config.stripe.height+`"	
 					style="stroke:none"
 					fill="`+config.colorOff+`"
-					
-										
+					mask="url(#level_bgr_0_{{unique}})"									
 				/>
 				<rect ng-if="${config.peakmode == true}" id="level_peak_1_{{unique}}" x="`+config.lastpos+`" y="`+config.stripe.y1+`" 
 					width="`+config.stripe.width+`" height="`+config.stripe.height+`"	
 					style="stroke:none"
 					fill="`+config.colorOff+`"
-								
+					mask="url(#level_bgr_1_{{unique}})"			
 				/>				
 				<text id=level_channel_0_{{unique}} class="txt-{{unique}}" text-anchor="start" dominant-baseline="hanging" x="0" y="0">`+config.channelA+`
 					<tspan ng-if="${config.unit != ''}" class="txt-{{unique}} small" dominant-baseline="hanging">
@@ -509,24 +510,7 @@ module.exports = function (RED) {
 					return msg;			
 				}
 				
-				peaksteps = function(){
-					var pos = 0
-					var pr
-					var col
-					var ret = []
-					var ob
-					for(var i=0;i<config.count;i++){
-						pr = (pos + config.stripe.width) / config.lastpos * 100
-						col = pr <= config.gradient.warn ? opc[1] : (pr <= config.gradient.high ? opc[2] : opc[3]);
-						ob = {px:pos,c:col}
-						ret.push(ob)						
-						pos += config.stripe.step
-					}
-					
-					return ret
-					
-				}
-					 
+
 				
 				var group = RED.nodes.getNode(config.group);
 				var site = getSiteProperties();
@@ -569,7 +553,7 @@ module.exports = function (RED) {
 				var sectorupdate = []				
 				
 				config.gradient = {warn:exactPosition(sectorwarn,min,max,reverse,directiontarget).p,high:exactPosition(sectorhigh,min,max,reverse,directiontarget).p};
-				//config.peaksteps = peaksteps()
+				
 				var defaultFontOptions = {"sh":{normal:1,small:0.65,big:1.2,color:'currentColor'},
 											"sv":{normal:1,small:0.65,big:2.5,color:'currentColor'},
 											"ph":{normal:1,small:0.65,big:1.2,color:'currentColor'}};			
@@ -740,7 +724,7 @@ module.exports = function (RED) {
 										$scope.peaklock[j] = true;									
 										var cb = function(){										
 											$scope.peaklock[j] = false;																																	
-											pixel.stop().animate({[$scope.prop.pos]: $scope.peaktoreset[j].px+'px' },$scope.speed.ms).css('fill',$scope.peaktoreset[j].c);
+											pixel.stop().animate({[$scope.prop.pos]: $scope.peaktoreset[j].px+'px' },$scope.speed.ms*2.5).css('fill',$scope.peaktoreset[j].c);
 											$scope.lastpeak[j] = $scope.peaktoreset[j]																				
 										}																												
 										$scope.hold[j] = window.setInterval(function(){											

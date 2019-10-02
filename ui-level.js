@@ -428,30 +428,42 @@ module.exports = function (RED) {
 					var updatesectors = false					
 					sectorupdate = []
 					var mi = min
-					var ma = max					
-					if(uicontrol.min != undefined && !isNaN(parseFloat(uicontrol.min))){
-						mi =  parseFloat(uicontrol.min);
-						applies = true;						
+					var ma = max
+					var input					
+					if(uicontrol.min != undefined ){
+						input = parseFloat(uicontrol.min)
+						if(!isNaN(input) && mi != input){
+							mi =  input
+							applies = true;	
+						}											
 					}
-					if(uicontrol.max != undefined && !isNaN(parseFloat(uicontrol.max))){
-						ma =  parseFloat(uicontrol.max);
-						applies = true;
+					if(uicontrol.max != undefined ){
+						input = parseFloat(uicontrol.max)
+						if(!isNaN(input) && ma != input){
+							ma =  input
+							applies = true;	
+						}											
 					}
-					if(uicontrol.seg1 != undefined && !isNaN(parseFloat(uicontrol.seg1))){
-						sectorwarn =  parseFloat(uicontrol.seg1);
-						applies = true;
-						updatesectors = true;
+					if(uicontrol.seg1 != undefined ){
+						input = parseFloat(uicontrol.seg1)
+						if(!isNaN(input) && sectorwarn != input){
+							sectorwarn =  input
+							applies = true;	
+							updatesectors = true;
+						}											
 					}
-					if(uicontrol.seg2 != undefined && !isNaN(parseFloat(uicontrol.seg2))){
-						sectorhigh =  parseFloat(uicontrol.seg2);
-						applies = true;
-						updatesectors = true;
-					}					
+					if(uicontrol.seg2 != undefined ){
+						input = parseFloat(uicontrol.seg2)
+						if(!isNaN(input) && sectorhigh != input){
+							sectorhigh =  input
+							applies = true;	
+							updatesectors = true;
+						}											
+					}									
 					min = mi > ma ? ma : mi;
 					max = ma < mi ? mi : ma;				
-					reverse = mi > ma;
-									
-					if(applies){
+					reverse = mi > ma;									
+					if(applies){						
 						 if(updatesectors && config.colorschema == 'fixed'){
 							var high = config.gradient.high = exactPosition(sectorhigh,min,max,reverse,directiontarget).p
 							var warn = config.gradient.warn = exactPosition(sectorwarn,min,max,reverse,directiontarget).p							
@@ -484,8 +496,7 @@ module.exports = function (RED) {
 					return {px:ep,p:ret * 100}
 				}
 				
-				msgFormat = function(value) {					
-					var msg = {}
+				msgFormat = function(m,value) {					
 					if(value === undefined){
 						value = min;
 					}																
@@ -494,20 +505,20 @@ module.exports = function (RED) {
 							value.push(null)
 						}
 						var v
-						msg.payload = []
+						m.payload = []
 						for(var i = 0;i < 2; i++){
 							v = value[i];
 							if(v !== null){
 								v = ensureNumber(v, decimals.fixed)
 							}
-							msg.payload.push(v)
+							m.payload.push(v)
 						}											
 					}
 					else{
 						value = ensureNumber(value, decimals.fixed)
-						msg.payload = [value,null];
+						m.payload = [value,null];
 					}						
-					return msg;			
+					return m;			
 				}
 				
 
@@ -595,37 +606,38 @@ module.exports = function (RED) {
 					forwardInputMessages: true,
 					storeFrontEndInputAsState: true,					
 					
-					beforeEmit: function (msg) {																						
+					beforeEmit: function (msg) {																											
 						if(msg.control){
 							updateControl(msg.control);
 							delete(msg.control)
-						}						
+						}
+						var fem = {}						
 						if(!configsent){
-							msg.config = {}
-							msg.config.min = reverse ? max : min;
-							msg.config.max = reverse ? min : max;
+							fem.config = {}
+							fem.config.min = reverse ? max : min;
+							fem.config.max = reverse ? min : max;
 							if(sectorupdate.length > 0){
-								msg.config.sectors = sectorupdate
+								fem.config.sectors = sectorupdate
 							}							
 							configsent = true;
 						}		
 						if(msg.payload === undefined){
-							return { msg: msg }
+							return { msg: fem }
 						}						
-						var msg = msgFormat(msg.payload)						
+						fem = msgFormat(fem,msg.payload)						
 						if(config.layout === "ph"){
-							if(msg.payload[1] === null){
-								msg.payload[1] = min
+							if(fem.payload[1] === null){
+								fem.payload[1] = min
 							}
 						}						
-						var pos = [exactPosition(msg.payload[0],min,max,reverse,directiontarget),null];						
+						var pos = [exactPosition(fem.payload[0],min,max,reverse,directiontarget),null];						
 						if(config.layout === "ph"){							
-							pos[1] = exactPosition(msg.payload[1],min,max,reverse,directiontarget)
+							pos[1] = exactPosition(fem.payload[1],min,max,reverse,directiontarget)
 						}
 						
-						msg.position = [pos[0].px,null];
+						fem.position = [pos[0].px,null];
 						if(config.layout === "ph"){							
-							msg.position[1] = pos[1].px													
+							fem.position[1] = pos[1].px													
 						}
 						
 						if(config.colorschema == 'valuedriven' || config.peakmode == true){
@@ -633,28 +645,28 @@ module.exports = function (RED) {
 							var col
 							col =  pos[0].p <= config.gradient.warn ? opc[1] : (pos[0].p <= config.gradient.high ? opc[2] : opc[3]);
 							if(config.colorschema == 'valuedriven'){
-								msg.color = [col,null]
+								fem.color = [col,null]
 							}
 							if(config.peakmode == true){								
 								peakpos = Math.floor((pos[0].px - config.stripe.width) / config.stripe.step) * config.stripe.step											
-								msg.peak = [{px:peakpos,c:col},null]
+								fem.peak = [{px:peakpos,c:col},null]
 							}
 							
 							
 							if(pos[1] != null){
 								col = pos[1].p <= config.gradient.warn ? opc[1] : (pos[1].p <= config.gradient.high ? opc[2] : opc[3]);
 								if(config.colorschema == 'valuedriven'){
-									msg.color[1] = col
+									fem.color[1] = col
 								}
 								if(config.peakmode == true){										
 									peakpos = Math.floor((pos[1].px - config.stripe.width) / config.stripe.step) * config.stripe.step																
-									msg.peak[1] = {px:peakpos,c:col}
+									fem.peak[1] = {px:peakpos,c:col}
 								}
 							}														
 						}
 						
 																					
-						return { msg: msg };
+						return { msg: fem };
 					},
 					
 					initController: function ($scope) {																		
@@ -740,7 +752,7 @@ module.exports = function (RED) {
 							}									
 						}
 						
-						var updateConfig = function (config){							
+						var updateConfig = function (config){													
 							var minval = document.getElementById("level_min_"+$scope.unique);
 							$(minval).text(config.min);
 							var maxval = document.getElementById("level_max_"+$scope.unique);
@@ -840,7 +852,7 @@ module.exports = function (RED) {
 									}
 								}, 40);
 							}
-							else{
+							else{								
 								if(msg.config){								
 									updateConfig(msg.config)								
 								}	

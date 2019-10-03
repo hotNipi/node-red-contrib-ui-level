@@ -619,7 +619,10 @@ module.exports = function (RED) {
 							updateControl(msg.control);
 							delete(msg.control)
 						}
-						var fem = {}						
+						var fem = {}
+						if(msg.peakreset){
+							fem.peakreset = msg.peakreset;
+						}						
 						if(!configsent){
 							fem.config = {}
 							fem.config.min = reverse ? max : min;
@@ -697,7 +700,7 @@ module.exports = function (RED) {
 						}					
 						var peakpixel;					
 						
-						var resetPeak = function(){							
+						var resetPeak = function(){														
 							if($scope.animate.peak != -1){
 								return
 							}
@@ -856,7 +859,7 @@ module.exports = function (RED) {
 								if(msg.config){								
 									updateConfig(msg.config)								
 								}	
-								if(msg.peakreset){
+								if(msg.peakreset){									
 									resetPeak()
 								}
 								if(msg.payload){

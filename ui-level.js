@@ -21,7 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-
+var path = require('path');
 module.exports = function (RED) {
 	function HTML(config) {
 		var configAsJson = JSON.stringify(config);
@@ -95,8 +95,8 @@ module.exports = function (RED) {
 					<mask id="level_bgr_{{unique}}">
 						<rect x="0" y="`+config.stripe.y0+`" width="`+config.lastpos+`" height="`+config.stripe.height+`" fill="url(#level_square_{{unique}})"/>
 					</mask>
-					<mask id="level_fgr_0_{{unique}}">
-						<rect id="level_mask_0_{{unique}}" x="0" y="`+config.stripe.y0+`" width="`+config.lastpos+`" height="`+config.stripe.height+`" fill="url(#level_square_{{unique}})"/>
+					<mask id="level_fgr_0_{{unique}}" maskUnits="userSpaceOnUse">
+						<rect  id="level_mask_0_{{unique}}" x="0" y="`+config.stripe.y0+`" width="`+config.lastpos+`" height="`+config.stripe.height+`" fill="url(#level_square_{{unique}})"/>
 					</mask>								
 				</defs>
 				<rect id="level_stripeoff_0_{{unique}}" x="0" y="`+config.stripe.y0+`"
@@ -105,18 +105,19 @@ module.exports = function (RED) {
 					fill="`+config.colorOff+`" 
 					mask="url(#level_bgr_{{unique}})"
 				/>
+				<g ng-if="${config.peakmode == true}" mask="url(#level_bgr_{{unique}})">
+					<rect ng-if="${config.peakmode == true}" id="level_peak_0_{{unique}}" x="0" y=${config.stripe.y0} 
+						width="`+config.stripe.width+`" height="`+config.stripe.height+`"	
+						style="stroke:none; display:inline"
+						fill="`+config.colorOff+`"															
+					/>
+				</g>
 				<rect id="level_stripe_0_{{unique}}" x="0" y="`+config.stripe.y0+`" 
 					width="`+config.lastpos+`" height="`+config.stripe.height+`"	
 					style="stroke:none";
 					${filltype}
 					mask="url(#level_fgr_0_{{unique}})"
-				/>
-				<rect ng-if="${config.peakmode == true}" id="level_peak_0_{{unique}}" x="`+config.lastpos+`" y=${config.stripe.y0} 
-					width="`+config.stripe.width+`" height="`+config.stripe.height+`"	
-					style="stroke:none; display:inline"
-					fill="`+config.colorOff+`"
-					mask="url(#level_bgr_{{unique}})"										
-				/>
+				/>			
 				<text id=level_title_{{unique}} class="txt-{{unique}}" text-anchor="middle" dominant-baseline="baseline" x=`+config.lastpos/2+` y=${config.exactheight-20}>`+config.label+
 				` <tspan ng-if="${config.hideValue == false}" id=level_value_channel_0_{{unique}} class="txt-{{unique}} val" dominant-baseline="baseline">
 						{{msg.payload[0]}}
@@ -154,19 +155,19 @@ module.exports = function (RED) {
 					mask="url(#level_bgr_{{unique}})"
 					
 				/>
+				<g ng-if="${config.peakmode == true}" mask="url(#level_bgr_{{unique}})" transform="scale(1,-1) translate(0,`+(config.lastpos*-1)+`)">
+					<rect ng-if="${config.peakmode == true}" id="level_peak_0_{{unique}}" x="0" y="0" 
+						width="`+config.stripe.height+`" height="`+config.stripe.width+`"	
+						style="stroke:none"
+						fill="`+config.colorOff+`"											
+					/>
+				</g>
 				<rect id="level_stripe_0_{{unique}}" x="0" y="0" 
 					width="`+config.stripe.height+`" height="`+config.lastpos+`"	
 					style="stroke:none";
 					${filltype}
 					mask="url(#level_fgr_0_{{unique}})"				
-				/>
-				<rect ng-if="${config.peakmode == true}" id="level_peak_0_{{unique}}" x="0" y="`+config.lastpos+`" 
-					width="`+config.stripe.height+`" height="`+config.stripe.width+`"	
-					style="stroke:none"
-					fill="`+config.colorOff+`"
-					mask="url(#level_bgr_{{unique}})"
-					transform="scale(1,-1) translate(0,`+(config.lastpos*-1)+`)"					
-				/>
+				/>				
 				<text ng-if="${config.width > 1}" id=level_textgroup_{{unique}}>
 					<tspan id=level_title_{{unique}} class="txt-{{unique}}" text-anchor="middle" dominant-baseline="hanging" x=`+config.exactwidth/2+` dx="12" y="0">
 						`+config.label+`
@@ -216,37 +217,38 @@ module.exports = function (RED) {
 					fill="`+config.colorOff+`" 
 					mask="url(#level_bgr_0_{{unique}})"
 				/>
+				<g ng-if="${config.peakmode == true}" mask="url(#level_bgr_0_{{unique}})">
+					<rect ng-if="${config.peakmode == true}" id="level_peak_0_{{unique}}" x="0" y="`+config.stripe.y0+`" 
+						width="`+config.stripe.width+`" height="`+config.stripe.height+`"	
+						style="stroke:none"
+						fill="`+config.colorOff+`"														
+					/>
+				</g>
 				<rect id="level_stripe_0_{{unique}}" x="0" y="`+config.stripe.y0+`" 
 					width="`+config.lastpos+`" height="`+config.stripe.height+`"	
 					style="stroke:none";
 					${filltype}
 					mask="url(#level_fgr_0_{{unique}})"
-				/>
-				
+				/>				
 				<rect id="level_stripeoff_1_{{unique}}" x="0" y="`+config.stripe.y1+`"
 					width="`+config.lastpos+`" height="`+config.stripe.height+`" 
 					style="stroke:none"; 
 					fill="`+config.colorOff+`" 
 					mask="url(#level_bgr_1_{{unique}})"
 				/>
+				<g ng-if="${config.peakmode == true}" mask="url(#level_bgr_1_{{unique}})">
+					<rect ng-if="${config.peakmode == true}" id="level_peak_1_{{unique}}" x="0" y="`+config.stripe.y1+`" 
+						width="`+config.stripe.width+`" height="`+config.stripe.height+`"	
+						style="stroke:none"
+						fill="`+config.colorOff+`"								
+					/>
+				</g>
 				<rect id="level_stripe_1_{{unique}}" x="0" y="`+config.stripe.y1+`" 
 					width="`+config.lastpos+`" height="`+config.stripe.height+`"	
 					style="stroke:none";
 					${filltype}
 					mask="url(#level_fgr_1_{{unique}})"
-				/>
-				<rect ng-if="${config.peakmode == true}" id="level_peak_0_{{unique}}" x="`+config.lastpos+`" y="`+config.stripe.y0+`" 
-					width="`+config.stripe.width+`" height="`+config.stripe.height+`"	
-					style="stroke:none"
-					fill="`+config.colorOff+`"
-					mask="url(#level_bgr_0_{{unique}})"									
-				/>
-				<rect ng-if="${config.peakmode == true}" id="level_peak_1_{{unique}}" x="`+config.lastpos+`" y="`+config.stripe.y1+`" 
-					width="`+config.stripe.width+`" height="`+config.stripe.height+`"	
-					style="stroke:none"
-					fill="`+config.colorOff+`"
-					mask="url(#level_bgr_1_{{unique}})"			
-				/>				
+				/>								
 				<text id=level_channel_0_{{unique}} class="txt-{{unique}}" text-anchor="start" dominant-baseline="hanging" x="0" y="0">`+config.channelA+`
 					<tspan ng-if="${config.unit != ''}" class="txt-{{unique}} small" dominant-baseline="hanging">
 					`+config.unit+`
@@ -282,8 +284,14 @@ module.exports = function (RED) {
 			layout = level_pair_h;
 		}
 		
+		var scripts = String.raw`<script src="ui-level/js/plugins/CSSPlugin.min.js"></script>		
+		<script src="ui-level/js/easing/EasePack.min.js"></script>
+		<script src="ui-level/js/TweenLite.min.js"></script> 
+		<script src="ui-level/js/jquery.gsap.min.js"></script>`
+		
 		var html = String.raw`
 		${styles}
+		${scripts}
 		${layout}`
 		return html;
 	}
@@ -670,8 +678,7 @@ module.exports = function (RED) {
 					},
 					
 					initController: function ($scope) {																		
-						$scope.unique = $scope.$eval('$id')					
-						$scope.lastvalue = [0,0]					
+						$scope.unique = $scope.$eval('$id')
 						$scope.peaklock = [false,false];						
 						$scope.hold = [null,null];
 						$scope.peaktoreset = [null,null];
@@ -721,6 +728,7 @@ module.exports = function (RED) {
 										$scope.hold[j] = null
 									}									 														
 									pixel.stop(true,true).animate({[$scope.prop.pos]: data.px+'px' },$scope.speed.ms).css('fill',data.c);
+									pixel.mask= document.getElementById("url(#level_bgr_"+$scope.unique+"")
 									$scope.lastpeak[j] = data
 									$scope.peaklock[j] = false;																								
 								}
@@ -736,7 +744,7 @@ module.exports = function (RED) {
 										$scope.peaklock[j] = true;									
 										var cb = function(){										
 											$scope.peaklock[j] = false;																																	
-											pixel.stop().animate({[$scope.prop.pos]: $scope.peaktoreset[j].px+'px' },$scope.speed.ms*2.5).css('fill',$scope.peaktoreset[j].c);
+											pixel.stop().animate({[$scope.prop.pos]: $scope.peaktoreset[j].px+'px' },$scope.speed.ms*2).css('fill',$scope.peaktoreset[j].c);
 											$scope.lastpeak[j] = $scope.peaktoreset[j]																				
 										}																												
 										$scope.hold[j] = window.setInterval(function(){											
@@ -771,12 +779,11 @@ module.exports = function (RED) {
 						}
 						
 						
-						var updateLevel = function(data){							
-													
+						var updateLevel = function(data){												
 							var stripe;
 							var mask;												
 							var j;							
-							var valfield;											
+							var valfield;									
 												
 							for(j = 0; j<$scope.len; j++){														
 								mask = document.getElementById("level_mask_"+j+"_"+$scope.unique);
@@ -809,24 +816,17 @@ module.exports = function (RED) {
 								valfield = document.getElementById("level_value_channel_"+j+"_"+$scope.unique);
 								if(valfield){
 									if($scope.animate.g !== "off" && $scope.animate.t == true){
-										$({ticker: $scope.lastvalue[j]}).stop().animate({ticker: data.payload[j]}, {
-											duration: $scope.speed.ms,
-											easing:'swing',
-											step: function() {										
-												$(valfield).text((Math.ceil(this.ticker * $scope.d.mult)/$scope.d.mult).toFixed($scope.d.fixed));
-											},
-											complete: function() {
-												$(valfield).text(data.payload[j].toFixed($scope.d.fixed));
-												$scope.lastvalue[j] = data.payload[j];										
-											}
-										}); 
+										var updateHandler = function(){										
+											$(this.target.field).text((Math.ceil(this.target.val * $scope.d.mult)/$scope.d.mult).toFixed($scope.d.fixed));											
+										}										
+										var nob = {val:0,field:valfield,from:parseFloat($(valfield).text())}										
+										TweenLite.fromTo(nob, $scope.speed.s, {val:nob.from},{val:data.payload[j], onUpdate:updateHandler});										
 									}
 									else{
 										$(valfield).text(data.payload[j].toFixed($scope.d.fixed));
-										$scope.lastvalue[j] = data.payload[j];
 									}
-								}								
-							}
+								}															
+							}							
 						};
 															
 						$scope.$watch('msg', function (msg) {
@@ -887,4 +887,15 @@ module.exports = function (RED) {
 		});
 	}
 	RED.nodes.registerType("ui_level", LevelNode);
+	
+	var uipath = 'ui';
+    if (RED.settings.ui) { uipath = RED.settings.ui.path; }
+    var fullPath = path.join(RED.settings.httpNodeRoot, uipath, '/ui-level/*').replace(/\\/g, '/');
+    RED.httpNode.get(fullPath, function (req, res) {
+        var options = {
+            root: __dirname + '/lib/',
+            dotfiles: 'deny'
+        };
+        res.sendFile(req.params[0], options)
+    });
 };

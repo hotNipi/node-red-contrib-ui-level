@@ -50,7 +50,7 @@ SOFTWARE.
             max: {value: 100, required: true, validate: RED.validators.number()},
             segWarn: {value: ''},
             segHigh: {value: ''},
-            unit: {value:'units'},
+            unit: {value:''},
             layout: {value:'sh'},
             channelA: {value: ''},
             channelB: {value: ''},
@@ -66,6 +66,7 @@ SOFTWARE.
             colorFromTheme:{value:true},
             textAnimations:{value:false},
             hideValue:{value:false},
+            tickmode:{value:'off'},
             peakmode:{value:false},
             peaktime:{value: 3000, required: false, validate:function(v) {
                     if($("#node-input-peakmode").prop('checked') == false){
@@ -109,6 +110,14 @@ SOFTWARE.
             if (this.shape === undefined) {
                 this.shape = 2;
                 $('#node-input-shape').val('Fine');
+            }
+            if (this.unit === undefined) {
+                this.unit = '';
+                $('#node-input-unit').val('');
+            }
+            if (this.tickmode === undefined) {
+                this.tickmode = 'off';
+                $('#node-input-tickmode').val('off');
             }
             if (this.colorschema === undefined) {
                 this.colorschema = fixed;
@@ -189,7 +198,7 @@ SOFTWARE.
                     $('#node-input-el-label').show();
                     $('#node-input-el-channels').hide();
                     $('#node-input-fontLabel').attr('placeholder','1');
-                    $('#node-input-fontValue').attr('placeholder','1.2');
+                    $('#node-input-fontValue').attr('placeholder','1');
                     $('#node-input-fontSmall').attr('placeholder','0.65');                   
                 }
                 else if($(this).val() === 'sv'){
@@ -290,7 +299,7 @@ SOFTWARE.
         <span for='node-input-fontLabel'>Label</span>
         <input type='text' id='node-input-fontLabel' style='width:50px' dir='' placeholder='1'>
         <span for='node-input-fontValue' style='margin-left:20px;'>Value</span>
-        <input type='text' id='node-input-fontValue' style='width:50px' dir='' placeholder='1.2' >
+        <input type='text' id='node-input-fontValue' style='width:50px' dir='' placeholder='1' >
         <span for='node-input-fontSmall' style='margin-left:20px;'>Small</span>
         <input type='text' id='node-input-fontSmall' style='width:50px' dir='' placeholder='0.65'>
     </div>
@@ -320,7 +329,7 @@ SOFTWARE.
     <div class='form-row'>
         <label for='node-input-unit'><i class='fa fa-gear'></i> Format</label>
         <span for='node-input-unit'>Unit</span>
-        <input type='text' id='node-input-unit' style='width:80px' dir=''>
+        <input type='text' id='node-input-unit' style='width:80px' placeholder='units' dir=''>
         <span for='node-input-decimals' style='margin-left:20px;'>decimals</span>
         <input type='text' id='node-input-decimals' style='width:80px' placeholder='0' dir=''>
     </div>
@@ -328,7 +337,23 @@ SOFTWARE.
         <label for='node-input-valuefield'><i class='fa fa-eye-slash'></i> Value field</span></label>
         <input type="checkbox" id="node-input-hideValue" style="display:inline-block; width:auto; vertical-align:baseline; margin-right:5px;">Hide value field        
     </div>
-</br>
+</br>    
+    <div class='form-row'>
+        <label for='node-input-shape'><i class='fa fa-list'></i> Stripe shape</label>
+        <select id='node-input-shape' style='width:200px !important'>
+            <option value=1>Superfine</option>
+            <option value=2>Fine</option>
+            <option value=3>Normal</option>
+        </select>
+    </div>
+    <div class='form-row'>
+        <label for='node-input-tickmode'><i class='fa fa-list'></i> Tick values</label>
+        <select id='node-input-tickmode' style='width:200px !important'>
+            <option value='off'>Off</option>
+            <option value='segments'>Segments</option>
+            <option value='auto'>Auto</option>
+        </select>
+    </div>
     <div class='form-row'>
         <label for='node-input-animations'><i class='fa fa-list'></i> Animations</label>
         <select id='node-input-animations' style='width:200px !important'>
@@ -340,14 +365,6 @@ SOFTWARE.
         <input type="checkbox" id="node-input-textAnimations" 
             style="display:inline-block; width:auto; vertical-align:baseline; 
             margin-right:5px;margin-left:5px;">Animate value
-    </div>
-    <div class='form-row'>
-        <label for='node-input-shape'><i class='fa fa-list'></i> Stripe shape</label>
-        <select id='node-input-shape' style='width:200px !important'>
-            <option value=1>Superfine</option>
-            <option value=2>Fine</option>
-            <option value=3>Normal</option>
-        </select>
     </div>
 </br>
     <div class='form-row'>

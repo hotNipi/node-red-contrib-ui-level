@@ -25,6 +25,7 @@ var path = require('path');
 module.exports = function (RED) {
 	function HTML(config) {
 		var configAsJson = JSON.stringify(config);
+		debugger
 		var styles = String.raw`
 		<style>
 			.txt-{{unique}} {	
@@ -118,7 +119,7 @@ module.exports = function (RED) {
 					${filltype}
 					mask="url(#level_fgr_0_{{unique}})"
 				/>			
-				<text id=level_title_{{unique}} class="txt-{{unique}}" text-anchor="middle" dominant-baseline="baseline" x=`+config.lastpos/2+` y=${config.exactheight-20}>`+config.label+
+				<text id=level_title_{{unique}} class="txt-{{unique}}" text-anchor="middle" dominant-baseline="baseline" x=`+config.lastpos/2+` y=${config.exactheight-config.stripe.height*2}>`+config.label+
 				` <tspan ng-if="${config.hideValue == false}" id=level_value_channel_0_{{unique}} class="txt-{{unique}} val" dominant-baseline="baseline">
 						{{msg.payload[0]}}
 						</tspan>
@@ -126,8 +127,11 @@ module.exports = function (RED) {
 						`+config.unit+`
 						</tspan>					
 				</text>
-				<text id=level_min_{{unique}} class="txt-{{unique}} small" text-anchor="start" dominant-baseline="baseline" x="0" y=${config.exactheight-16}>`+config.min+`</text>	
-				<text id=level_max_{{unique}} class="txt-{{unique}} small" text-anchor="end" dominant-baseline="baseline" ng-attr-x=`+config.lastpos+`px y=${config.exactheight-16}>`+config.max+`</text>			
+				<text id=level_min_{{unique}} class="txt-{{unique}} small" text-anchor="start" dominant-baseline="baseline" x="0" y=${config.exactheight-config.stripe.height-2}>`+config.min+`</text>
+				<text ng-if="${config.tickmode != 'off'}" ng-repeat="x in [].constructor(${config.interticks.length}) track by $index" id=level_tick_{{unique}}_{{$index}} 
+				class="txt-{{unique}} small" text-anchor="middle" dominant-baseline="baseline"
+				 y=${config.exactheight-config.stripe.height-2}></text>	
+				<text id=level_max_{{unique}} class="txt-{{unique}} small" text-anchor="end" dominant-baseline="baseline" ng-attr-x=`+config.lastpos+`px y=${config.exactheight-config.stripe.height-2}>`+config.max+`</text>			
 			</svg>`
 		
 		var level_single_v = String.raw`		
@@ -187,7 +191,10 @@ module.exports = function (RED) {
 						`+config.unit+`
 						</tspan>					
 				</text>				
-				<text id=level_max_{{unique}} class="txt-{{unique}} small" text-anchor="start" dominant-baseline="hanging" x="15" y="0">`+config.max+`</text>	
+				<text id=level_max_{{unique}} class="txt-{{unique}} small" text-anchor="start" dominant-baseline="hanging" x="15" y="0">`+config.max+`</text>
+				<text ng-if="${config.tickmode != 'off'}" ng-repeat="x in [].constructor(${config.interticks.length}) track by $index" id=level_tick_{{unique}}_{{$index}} 
+				class="txt-{{unique}} small" text-anchor="start" dominant-baseline="middle"
+				x="15"></text>		
 				<text id=level_min_{{unique}} class="txt-{{unique}} small" text-anchor="start" dominant-baseline="baseline" x="15" ng-attr-y=`+config.lastpos+`px>`+config.min+`</text>			
 			</svg>`
 		
@@ -269,7 +276,10 @@ module.exports = function (RED) {
 						{{msg.payload[1]}}											
 				</text>
 
-				<text id=level_min_{{unique}} class="txt-{{unique}} small" text-anchor="start" dominant-baseline="middle" x="0" y="50%">`+config.min+`</text>	
+				<text id=level_min_{{unique}} class="txt-{{unique}} small" text-anchor="start" dominant-baseline="middle" x="0" y="50%">`+config.min+`</text>
+				<text ng-if="${config.tickmode != 'off'}" ng-repeat="x in [].constructor(${config.interticks.length}) track by $index" id=level_tick_{{unique}}_{{$index}} 
+				class="txt-{{unique}} small" text-anchor="middle" dominant-baseline="middle"
+				y="50%"></text>		
 				<text id=level_max_{{unique}} class="txt-{{unique}} small" text-anchor="end" dominant-baseline="middle" ng-attr-x=`+config.lastpos+`px y="50%">`+config.max+`</text>
 				
 			</svg>`
@@ -327,6 +337,9 @@ module.exports = function (RED) {
 			var ensureNumber = null;
 			var getSiteProperties = null;
 			var msgFormat = null;
+			var difference = null;
+			var interTicks = null;
+			var evenly = null;
 
 			if (checkConfig(node, config)) {	
 				
@@ -433,10 +446,12 @@ module.exports = function (RED) {
 				updateControl = function(uicontrol){					
 					reverse = false;
 					var applies = false;
-					var updatesectors = false					
+					var updatesectors = false;
+					var updatetics = false				
 					sectorupdate = []
+					tickupdate = []
 					var mi = min
-					var ma = max
+					var ma = max				
 					var input					
 					if(uicontrol.min != undefined ){
 						input = parseFloat(uicontrol.min)
@@ -455,52 +470,147 @@ module.exports = function (RED) {
 					if(uicontrol.seg1 != undefined ){
 						input = parseFloat(uicontrol.seg1)
 						if(!isNaN(input) && sectorwarn != input){
-							sectorwarn =  input
+							sectorwarn = input
 							applies = true;	
 							updatesectors = true;
+							if(config.tickmode == "segments"){
+								updatetics = true
+							}
 						}											
 					}
 					if(uicontrol.seg2 != undefined ){
 						input = parseFloat(uicontrol.seg2)
 						if(!isNaN(input) && sectorhigh != input){
-							sectorhigh =  input
+							sectorhigh = input
 							applies = true;	
 							updatesectors = true;
+							if(config.tickmode == "segments"){
+								updatetics = true
+							}
 						}											
 					}									
 					min = mi > ma ? ma : mi;
 					max = ma < mi ? mi : ma;				
 					reverse = mi > ma;									
 					if(applies){						
-						 if(updatesectors && config.colorschema == 'fixed'){
-							var high = config.gradient.high = exactPosition(sectorhigh,min,max,reverse,directiontarget).p
-							var warn = config.gradient.warn = exactPosition(sectorwarn,min,max,reverse,directiontarget).p							
-							if(config.layout == 'sv'){
-								warn = 100-warn;
-								high = 100-high;
-								sectorupdate = [high,high,warn,warn]
+						 if(updatesectors){
+							if(config.colorschema == 'fixed'){
+								var high = config.gradient.high = exactPosition(sectorhigh,min,max,reverse,config.lastpos).p
+								var warn = config.gradient.warn = exactPosition(sectorwarn,min,max,reverse,config.lastpos).p							
+								if(config.layout == 'sv'){
+									warn = 100-warn;
+									high = 100-high;
+									sectorupdate = [high,high,warn,warn]
+								}
+								else{
+									sectorupdate = [warn,warn,high,high]
+								}
 							}
-							else{
-								sectorupdate = [warn,warn,high,high]
+							if(updatetics){
+								tickupdate = interTicks()														
 							}
+							
 						} 
 						configsent = false;
 					} 
 				}
+				difference = function (a, b) {
+					return Math.abs(a - b);
+				}
+				evenly = function(len,fixed){
+					var a = Math.abs(max - min)/(len+1)
+					var b = min
+					var ret = []
+					var check = []
+					var legal = true
+					var j
+					for(j=0;j<len;j++){
+						b = b + a
+						ret.push(parseFloat(b.toFixed(fixed)))
+					}					
+					for(j=1;j<ret.length;j++){
+						check.push(difference(ret[j],ret[j-1]))
+					}
+					for(j=1;j<check.length;j++){
+						if(difference(check[j],check[j-1]) > 0.2){
+							legal = false
+							break
+						}
+					}
+					if(legal == false){						
+						return evenly(len,fixed+1)
+					}					
+					return ret
+				}
+				
+				interTicks = function(segmentupdate){
+					var ret = []
+					if(config.tickmode == 'off'){
+						return ret							
+					}	
+					var vert = config.layout.indexOf("v") != -1
+					var count = vert ? config.height-1 : config.width-1									
+					if(count <= 0){
+						return ret							
+					}
+					var fixed = decimals.fixed > 0 ? 1 : 0
+					if(Math.abs(max - min) > 10){
+						fixed = 0
+					}
+					var pos					
+					var calc					
+					if(config.tickmode == "segments"){
+						var w = parseFloat(sectorwarn.toFixed(1))
+						var h = parseFloat(sectorhigh.toFixed(1))
+						if(count == 1){
+							calc = [w]
+						}
+						else{																				
+							if(difference(h,max) <= 1){
+								calc = [w]
+							}
+							else{
+								calc = [w,h]
+							}
+						}								
+					}
+					else{
+						calc = evenly(count,fixed)
+					}					
+					for(var i=0;i<calc.length;i++){													
+						if(vert || reverse){
+							pos = exactPosition(calc[i],min,max,true,config.lastpos,true)
+						}else{
+							pos = exactPosition(calc[i],min,max,false,config.lastpos,true)
+						}							
+						ret.push({val:calc[i] ,pos:pos.px+"px"})
+					}					
+					return ret
+				}
 				
 
 				
-			 	exactPosition = function(target,mi,ma,r,dir) {
+			 	exactPosition = function(target,mi,ma,r,dir,noround) {
 					var p = r ? {minin:mi, maxin:ma+0.00001, minout:100, maxout:1} : {minin:mi, maxin:ma+0.00001, minout:1, maxout:100}									
-					var c = Math.round(dir * range(target,p) / 100 / config.stripe.step) * config.stripe.step;				
+					var c				
+					if(noround == true){
+						c = (dir * range(target,p,true) / 100 / config.stripe.step) * config.stripe.step;
+					}else{
+						c = Math.round(dir * range(target,p) / 100 / config.stripe.step) * config.stripe.step;
+					}
 					var ret = c / dir
+					var ep
 					if(ret > 1){
 						ret = 1
 					}
 					if(ret < 0){
 						ret = 0
 					}
-					var ep = Math.round(ret * dir / config.stripe.step) * config.stripe.step
+					if(noround == true){
+						ep = (ret * dir / config.stripe.step) * config.stripe.step
+					}else{
+						ep = Math.round(ret * dir / config.stripe.step) * config.stripe.step
+					}				
 					return {px:ep,p:ret * 100}
 				}
 				
@@ -545,9 +655,8 @@ module.exports = function (RED) {
 				var y_1 = 0
 				if(config.layout === "ph"){
 					y_0 = config.exactheight/3 - 6 //config.exactheight - Math.floor((site.sizes.sy/1.2)) + 12;
-					y_1 = config.exactheight/3*2  // - Math.floor((site.sizes.sy/1.8)) + 12;
-				}
-				
+					y_1 = -1 + config.exactheight/3*2  // - Math.floor((site.sizes.sy/1.8)) + 12;
+				}				
 				config.stripe = {step: parseInt(config.shape) * 2, width: parseInt(config.shape), height:Math.floor((site.sizes.sy/2)-12), y0:y_0,y1:y_1};
 				config.min = parseFloat(config.min);
 				config.max = parseFloat(config.max);				
@@ -566,14 +675,12 @@ module.exports = function (RED) {
 				var max = config.max < config.min ? config.min : config.max;				
 				var reverse = config.min > config.max;
 				var decimals = config.decimals = isNaN(parseFloat(config.decimals)) ? {fixed:1,mult:0} : {fixed:parseInt(config.decimals),mult:Math.pow(10,parseInt(config.decimals))};
-				var directiontarget = config.lastpos//config.layout === 'sv' ? config.exactheight : config.exactwidth
-				var sectorhigh = isNaN(parseFloat(config.segHigh)) ? parseFloat((max *.9).toFixed(decimals.fixed)) : parseFloat(config.segHigh);
+				var sectorhigh = isNaN(parseFloat(config.segHigh)) ? parseFloat((max *.85).toFixed(decimals.fixed)) : parseFloat(config.segHigh);
 				var sectorwarn = isNaN(parseFloat(config.segWarn)) ? parseFloat((max *.7).toFixed(decimals.fixed)) : parseFloat(config.segWarn);				
-				var sectorupdate = []				
-				
-				config.gradient = {warn:exactPosition(sectorwarn,min,max,reverse,directiontarget).p,high:exactPosition(sectorhigh,min,max,reverse,directiontarget).p};
-				
-				var defaultFontOptions = {"sh":{normal:1,small:0.65,big:1.2,color:'currentColor'},
+				config.gradient = {warn:exactPosition(sectorwarn,min,max,reverse,config.lastpos).p,high:exactPosition(sectorhigh,min,max,reverse,config.lastpos).p};							
+				config.interticks = interTicks()
+					
+				var defaultFontOptions = {"sh":{normal:1,small:0.65,big:1.03,color:'currentColor'},
 											"sv":{normal:1,small:0.65,big:2.5,color:'currentColor'},
 											"ph":{normal:1,small:0.65,big:1.2,color:'currentColor'}};			
 				
@@ -599,9 +706,12 @@ module.exports = function (RED) {
 						}
 					}					
 				}
-
+				
+				var tickupdate = []
+				var sectorupdate = []
 				var configsent = false;				
 				var html = HTML(config);				
+				
 				done = ui.addWidget({
 					node: node,
 					order: config.order, 
@@ -614,7 +724,7 @@ module.exports = function (RED) {
 					forwardInputMessages: true,
 					storeFrontEndInputAsState: true,					
 					
-					beforeEmit: function (msg) {																											
+					beforeEmit: function (msg) {																																							
 						if(msg.control){
 							updateControl(msg.control);
 							delete(msg.control)
@@ -623,12 +733,15 @@ module.exports = function (RED) {
 						if(msg.peakreset){
 							fem.peakreset = msg.peakreset;
 						}						
-						if(!configsent){
+						if(!configsent){							
 							fem.config = {}
 							fem.config.min = reverse ? max : min;
 							fem.config.max = reverse ? min : max;
 							if(sectorupdate.length > 0){
 								fem.config.sectors = sectorupdate
+							}
+							if(tickupdate.length > 0){
+								fem.config.ticks = tickupdate
 							}							
 							configsent = true;
 						}		
@@ -641,9 +754,9 @@ module.exports = function (RED) {
 								fem.payload[1] = min
 							}
 						}						
-						var pos = [exactPosition(fem.payload[0],min,max,reverse,directiontarget),null];						
+						var pos = [exactPosition(fem.payload[0],min,max,reverse,config.lastpos),null];						
 						if(config.layout === "ph"){							
-							pos[1] = exactPosition(fem.payload[1],min,max,reverse,directiontarget)
+							pos[1] = exactPosition(fem.payload[1],min,max,reverse,config.lastpos)
 						}
 						
 						fem.position = [pos[0].px,null];
@@ -674,19 +787,21 @@ module.exports = function (RED) {
 									fem.peak[1] = {px:peakpos,c:col}
 								}
 							}														
-						}
-						
-																					
+						}														
 						return { msg: fem };
 					},
 					
 					initController: function ($scope) {																		
 						$scope.unique = $scope.$eval('$id')
+						$scope.inited = false;
 						$scope.peaklock = [false,false];						
 						$scope.hold = [null,null];
 						$scope.peaktoreset = [null,null];
+						$scope.tickmode = false
+						$scope.interticks = null
 						
-						$scope.init = function(config){	
+						$scope.init = function(config){
+								
 							$scope.lastpeak = [{px:0,c:config.colorNormal},{px:0,c:config.colorNormal}];						
 							$scope.d = config.decimals;
 							$scope.prop = config.layout === "sv" ? {dir:'height',pos:'y'} : {dir:'width',pos:'x'}
@@ -696,8 +811,30 @@ module.exports = function (RED) {
 							if($scope.animate.g == 'off'){
 								$scope.speed = {ms:20,s:0}
 							}
-													
-						}					
+							
+							if(config.tickmode != 'off'){
+								$scope.interticks = config.interticks																
+							}
+							if($scope.inited == false){
+								$scope.send({init:'init-'+$scope.unique})
+							}
+						}
+						
+						var setTicks = function(){														
+							var j
+							var tick
+							$("[id*='level_tick_"+$scope.unique+"']").text('') 
+							for(j = 0; j<$scope.interticks.length; j++){
+								tick = document.getElementById("level_tick_"+$scope.unique+"_"+j);								
+								if(tick){								
+									$(tick).text($scope.interticks[j].val);
+									$(tick).attr($scope.prop.pos,$scope.interticks[j].pos);									
+								}
+							}
+							$scope.tickmode = true							
+						}
+						
+						
 						var peakpixel;					
 						
 						var resetPeak = function(){														
@@ -778,6 +915,10 @@ module.exports = function (RED) {
 										}										
 									}								
 								}
+							}
+							if(config.ticks){							
+								$scope.interticks = config.ticks							
+								setTicks()
 							}							
 						}
 						
@@ -851,12 +992,19 @@ module.exports = function (RED) {
 										}
 										if(msg.payload){
 											updateLevel(msg)
-										}										
+										}
+										if(msg.init){
+											if($scope.interticks != null && $scope.tickmode == false){
+												setTicks()
+											}
+											$scope.inited = true	
+										}
+																													
 									}
 								}, 40);
 							}
 							else{								
-								if(msg.config){								
+								if(msg.config){																
 									updateConfig(msg.config)								
 								}	
 								if(msg.peakreset){									
@@ -864,6 +1012,12 @@ module.exports = function (RED) {
 								}
 								if(msg.payload){
 									updateLevel(msg)
+								}
+								if(msg.init){
+									if($scope.interticks != null && $scope.tickmode == false){
+										setTicks()
+									}
+									$scope.inited = true	
 								}							
 							}														
 						});

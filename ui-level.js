@@ -25,7 +25,6 @@ var path = require('path');
 module.exports = function (RED) {
 	function HTML(config) {
 		var configAsJson = JSON.stringify(config);
-		debugger
 		var styles = String.raw`
 		<style>
 			.txt-{{unique}} {	
@@ -340,6 +339,7 @@ module.exports = function (RED) {
 			var difference = null;
 			var interTicks = null;
 			var evenly = null;
+			var validateEdges = null;
 
 			if (checkConfig(node, config)) {	
 				
@@ -542,14 +542,41 @@ module.exports = function (RED) {
 					}					
 					return ret
 				}
-				
-				interTicks = function(segmentupdate){
+				validateEdges = function(arr,vert){
+					if(arr.length == 0){
+						return arr
+					}
+					var mi = min.toString().length * config.stripe.step
+					var ma = config.lastpos - max.toString().length * config.stripe.step
+
+					if(vert){
+						mi = config.lastpos - 10
+						ma = 10
+						if(mi < parseFloat(arr[0].pos) || difference(mi,parseFloat(arr[0].pos)) < 10){
+							arr[0].val = ""
+						}					
+						if(ma > parseFloat(arr[arr.length -1].pos) || difference(ma,parseFloat(arr[arr.length -1].pos)) < 10){
+							arr[arr.length -1].val = ""
+						}
+					}else{
+						if(mi > parseFloat(arr[0].pos) || difference(mi,parseFloat(arr[0].pos)) < 10){
+							arr[0].val = ""
+						}					
+						if(ma < parseFloat(arr[arr.length -1].pos) || difference(ma,parseFloat(arr[arr.length -1].pos)) < 10){
+							arr[arr.length -1].val = ""
+						}
+					}
+					return arr
+
+				}
+
+				interTicks = function(){
 					var ret = []
 					if(config.tickmode == 'off'){
 						return ret							
 					}	
 					var vert = config.layout.indexOf("v") != -1
-					var count = vert ? config.height-1 : config.width-1									
+					var count = vert ? config.height : config.width-1									
 					if(count <= 0){
 						return ret							
 					}
@@ -564,15 +591,10 @@ module.exports = function (RED) {
 						var h = parseFloat(sectorhigh.toFixed(1))
 						if(count == 1){
 							calc = [w]
-						}
-						else{																				
-							if(difference(h,max) <= 1){
-								calc = [w]
-							}
-							else{
-								calc = [w,h]
-							}
-						}								
+						}						
+						else{
+							calc = [w,h]
+						}														
 					}
 					else{
 						calc = evenly(count,fixed)
@@ -584,7 +606,8 @@ module.exports = function (RED) {
 							pos = exactPosition(calc[i],min,max,false,config.lastpos,true)
 						}							
 						ret.push({val:calc[i] ,pos:pos.px+"px"})
-					}					
+					}
+					ret = validateEdges(ret,vert)					
 					return ret
 				}
 				

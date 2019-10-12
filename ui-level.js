@@ -340,19 +340,20 @@ module.exports = function (RED) {
 			var interTicks = null;
 			var evenly = null;
 			var validateEdges = null;
+			var initSectorValues = null;
 
 			if (checkConfig(node, config)) {	
 				
 				ensureNumber = function (input,dets) {
 					if (input === undefined) {
-						return min;
+						return config.min;
 					}
 					if (typeof input !== "number") {
 						var inputString = input.toString();
 						input = dets !== 0 ? parseFloat(inputString) : parseInt(inputString);
 						if(isNaN(input)){
 							node.warn("msg.payload does not contain numeric value")
-							return min
+							return config.min
 						}						
 					}
 					if (dets > 0) { 
@@ -363,7 +364,7 @@ module.exports = function (RED) {
 					}
 					if(isNaN(input)){
 						node.warn("msg.payload does not contain numeric value")
-						input = min;
+						input = config.min;
 					}					
 					return input;
 				}
@@ -443,15 +444,14 @@ module.exports = function (RED) {
 					return ret;
 				}
 				
-				updateControl = function(uicontrol){					
-					reverse = false;
+				updateControl = function(uicontrol){
 					var applies = false;
 					var updatesectors = false;
-					var updatetics = false				
+					var updatetics = config.tickmode != 'off'				
 					sectorupdate = []
 					tickupdate = []
-					var mi = min
-					var ma = max				
+					var mi = config.min
+					var ma = config.max				
 					var input					
 					if(uicontrol.min != undefined ){
 						input = parseFloat(uicontrol.min)
@@ -469,34 +469,29 @@ module.exports = function (RED) {
 					}
 					if(uicontrol.seg1 != undefined ){
 						input = parseFloat(uicontrol.seg1)
-						if(!isNaN(input) && sectorwarn != input){
-							sectorwarn = input
+						if(!isNaN(input) && config.sectorwarn != input){
+							config.sectorwarn = input
 							applies = true;	
 							updatesectors = true;
-							if(config.tickmode == "segments"){
-								updatetics = true
-							}
 						}											
 					}
 					if(uicontrol.seg2 != undefined ){
 						input = parseFloat(uicontrol.seg2)
-						if(!isNaN(input) && sectorhigh != input){
-							sectorhigh = input
+						if(!isNaN(input) && config.sectorhigh != input){
+							config.sectorhigh = input
 							applies = true;	
-							updatesectors = true;
-							if(config.tickmode == "segments"){
-								updatetics = true
-							}
+							updatesectors = true;							
 						}											
-					}									
-					min = mi > ma ? ma : mi;
-					max = ma < mi ? mi : ma;				
-					reverse = mi > ma;									
+					}
+													
+					config.min = mi //> ma ? ma : mi;
+					config.max = ma // < mi ? mi : ma;				
+					config.reverse = mi > ma;									
 					if(applies){						
 						 if(updatesectors){
 							if(config.colorschema == 'fixed'){
-								var high = config.gradient.high = exactPosition(sectorhigh,min,max,reverse,config.lastpos).p
-								var warn = config.gradient.warn = exactPosition(sectorwarn,min,max,reverse,config.lastpos).p							
+								var high = config.gradient.high = exactPosition(config.sectorhigh,config.min,config.max,config.reverse,config.lastpos).p
+								var warn = config.gradient.warn = exactPosition(config.sectorwarn,config.min,config.max,config.reverse,config.lastpos).p							
 								if(config.layout == 'sv'){
 									warn = 100-warn;
 									high = 100-high;
@@ -518,8 +513,8 @@ module.exports = function (RED) {
 					return Math.abs(a - b);
 				}
 				evenly = function(len,fixed){
-					var a = Math.abs(max - min)/(len+1)
-					var b = min
+					var a = Math.abs(config.max - config.min)/(len+1)
+					var b = config.reverse ? config.max : config.min
 					var ret = []
 					var check = []
 					var legal = true
@@ -546,8 +541,8 @@ module.exports = function (RED) {
 					if(arr.length == 0){
 						return arr
 					}
-					var mi = min.toString().length * config.stripe.step
-					var ma = config.lastpos - max.toString().length * config.stripe.step
+					var mi = config.min.toString().length * config.stripe.step
+					var ma = config.lastpos - config.max.toString().length * config.stripe.step
 
 					if(vert){
 						mi = config.lastpos - 10
@@ -581,14 +576,14 @@ module.exports = function (RED) {
 						return ret							
 					}
 					var fixed = decimals.fixed > 0 ? 1 : 0
-					if(Math.abs(max - min) > 10){
+					if(Math.abs(config.max - config.min) > 10){
 						fixed = 0
 					}
 					var pos					
 					var calc					
 					if(config.tickmode == "segments"){
-						var w = parseFloat(sectorwarn.toFixed(1))
-						var h = parseFloat(sectorhigh.toFixed(1))
+						var w = parseFloat(config.sectorwarn.toFixed(1))
+						var h = parseFloat(config.sectorhigh.toFixed(1))
 						if(count == 1){
 							calc = [w]
 						}						
@@ -598,12 +593,14 @@ module.exports = function (RED) {
 					}
 					else{
 						calc = evenly(count,fixed)
-					}					
+					}
+										
 					for(var i=0;i<calc.length;i++){													
-						if(vert || reverse){
-							pos = exactPosition(calc[i],min,max,true,config.lastpos,true)
-						}else{
-							pos = exactPosition(calc[i],min,max,false,config.lastpos,true)
+						if(vert){
+							pos = exactPosition(calc[i],config.max,config.min,!config.reverse,config.lastpos+config.stripe.width,true)
+						}
+						else{
+							pos = exactPosition(calc[i],config.min,config.max,config.reverse,config.lastpos,true)
 						}							
 						ret.push({val:calc[i] ,pos:pos.px+"px"})
 					}
@@ -614,12 +611,14 @@ module.exports = function (RED) {
 
 				
 			 	exactPosition = function(target,mi,ma,r,dir,noround) {
-					var p = r ? {minin:mi, maxin:ma+0.00001, minout:100, maxout:1} : {minin:mi, maxin:ma+0.00001, minout:1, maxout:100}									
+					var min = r ? ma : mi
+					var max = r ? mi : ma
+					var p = r ? {minin:min, maxin:max+0.00001, minout:100, maxout:1} : {minin:min, maxin:max+0.00001, minout:1, maxout:100}									
 					var c				
 					if(noround == true){
-						c = (dir * range(target,p,true) / 100 / config.stripe.step) * config.stripe.step;
+						c = (dir * range(target,p,true) / 100 / config.stripe.width) * config.stripe.width;
 					}else{
-						c = Math.round(dir * range(target,p) / 100 / config.stripe.step) * config.stripe.step;
+						c = Math.round(dir * range(target,p) / 100 / config.stripe.width) * config.stripe.width;
 					}
 					var ret = c / dir
 					var ep
@@ -630,16 +629,23 @@ module.exports = function (RED) {
 						ret = 0
 					}
 					if(noround == true){
-						ep = (ret * dir / config.stripe.step) * config.stripe.step
+						ep = (ret * dir / config.stripe.width) * config.stripe.width
 					}else{
-						ep = Math.round(ret * dir / config.stripe.step) * config.stripe.step
+						ep = Math.round(ret * dir / config.stripe.width) * config.stripe.width
 					}				
 					return {px:ep,p:ret * 100}
+				}
+
+				initSectorValues = function (){					
+					var max = config.reverse ? config.min : config.max
+					var def = config.reverse ? {sh:.7,sw:.85} : {sh:.85,sw:.7}
+					config.sectorhigh = isNaN(parseFloat(config.segHigh)) ? parseFloat((max * def.sh).toFixed(decimals.fixed)) : parseFloat(config.segHigh);
+					config.sectorwarn = isNaN(parseFloat(config.segWarn)) ? parseFloat((max *def.sw).toFixed(decimals.fixed)) : parseFloat(config.segWarn);
 				}
 				
 				msgFormat = function(m,value) {					
 					if(value === undefined){
-						value = min;
+						value = config.min;
 					}																
 					if(Array.isArray(value) === true){
 						if(value.length < 2){
@@ -681,8 +687,9 @@ module.exports = function (RED) {
 					y_1 = -1 + config.exactheight/3*2  // - Math.floor((site.sizes.sy/1.8)) + 12;
 				}				
 				config.stripe = {step: parseInt(config.shape) * 2, width: parseInt(config.shape), height:Math.floor((site.sizes.sy/2)-12), y0:y_0,y1:y_1};
-				config.min = parseFloat(config.min);
-				config.max = parseFloat(config.max);				
+				config.reverse = parseFloat(config.min) > parseFloat(config.max) ? true : false
+				config.min = parseFloat(config.min)//Math.min(parseFloat(config.min), parseFloat(config.max))
+				config.max = parseFloat(config.max)//Math.max(parseFloat(config.min), parseFloat(config.max))				
 				config.peaktime = config.peaktime == 'infinity' ? -1 : isNaN(parseInt(config.peaktime)) ? 3000 : parseInt(config.peaktime);
 				config.count = stripecount();
 				config.hideValue = config.hideValue || false
@@ -693,22 +700,22 @@ module.exports = function (RED) {
 				config.colorHi = config.colorHi || "red";				
 				config.colorschema = config.colorschema || 'fixed';
 				var opc = [config.colorOff,config.colorNormal,config.colorWarn,config.colorHi];
-								
-				var min = config.min > config.max ? config.max : config.min;
-				var max = config.max < config.min ? config.min : config.max;				
-				var reverse = config.min > config.max;
+				
+				
+
 				var decimals = config.decimals = isNaN(parseFloat(config.decimals)) ? {fixed:1,mult:0} : {fixed:parseInt(config.decimals),mult:Math.pow(10,parseInt(config.decimals))};
-				var sectorhigh = isNaN(parseFloat(config.segHigh)) ? parseFloat((max *.85).toFixed(decimals.fixed)) : parseFloat(config.segHigh);
-				var sectorwarn = isNaN(parseFloat(config.segWarn)) ? parseFloat((max *.7).toFixed(decimals.fixed)) : parseFloat(config.segWarn);				
-				config.gradient = {warn:exactPosition(sectorwarn,min,max,reverse,config.lastpos).p,high:exactPosition(sectorhigh,min,max,reverse,config.lastpos).p};							
-				config.interticks = interTicks()
-					
+				
+				initSectorValues()				
+				config.gradient = {
+					warn:exactPosition(config.sectorwarn,config.min,config.max,config.reverse,config.lastpos).p,
+					high:exactPosition(config.sectorhigh,config.min,config.max,config.reverse,config.lastpos).p
+				};							
+				config.interticks = interTicks()				
 				var defaultFontOptions = {"sh":{normal:1,small:0.65,big:1.03,color:'currentColor'},
 											"sv":{normal:1,small:0.65,big:2.5,color:'currentColor'},
 											"ph":{normal:1,small:0.65,big:1.2,color:'currentColor'}};			
 				
-				config.fontoptions = defaultFontOptions[config.layout]		
-				
+				config.fontoptions = defaultFontOptions[config.layout]				
 				if(config.textoptions !== 'default'){
 					var opt = parseFloat(config.fontLabel);
 					if(!isNaN(opt)){
@@ -749,8 +756,7 @@ module.exports = function (RED) {
 					
 					beforeEmit: function (msg) {																																							
 						if(msg.control){
-							updateControl(msg.control);
-							delete(msg.control)
+							updateControl(msg.control);							
 						}
 						var fem = {}
 						if(msg.peakreset){
@@ -758,8 +764,8 @@ module.exports = function (RED) {
 						}						
 						if(!configsent){							
 							fem.config = {}
-							fem.config.min = reverse ? max : min;
-							fem.config.max = reverse ? min : max;
+							fem.config.min = config.min;
+							fem.config.max = config.max;
 							if(sectorupdate.length > 0){
 								fem.config.sectors = sectorupdate
 							}
@@ -774,12 +780,12 @@ module.exports = function (RED) {
 						fem = msgFormat(fem,msg.payload)						
 						if(config.layout === "ph"){
 							if(fem.payload[1] === null){
-								fem.payload[1] = min
+								fem.payload[1] = config.min
 							}
 						}						
-						var pos = [exactPosition(fem.payload[0],min,max,reverse,config.lastpos),null];						
+						var pos = [exactPosition(fem.payload[0],config.min,config.max,config.reverse,config.lastpos,false),null];						
 						if(config.layout === "ph"){							
-							pos[1] = exactPosition(fem.payload[1],min,max,reverse,config.lastpos)
+							pos[1] = exactPosition(fem.payload[1],config.min,config.max,config.reverse,config.lastpos,false)
 						}
 						
 						fem.position = [pos[0].px,null];

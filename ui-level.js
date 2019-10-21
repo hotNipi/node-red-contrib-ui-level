@@ -118,7 +118,7 @@ module.exports = function (RED) {
 					${filltype}
 					mask="url(#level_fgr_0_{{unique}})"
 				/>			
-				<text id=level_title_{{unique}} class="txt-{{unique}}" text-anchor="middle" dominant-baseline="baseline" x=`+config.lastpos/2+` y=${config.exactheight-config.stripe.height*2}>`+config.label+
+				<text id=level_title_{{unique}} class="txt-{{unique}}" text-anchor="middle" dominant-baseline="baseline" x=`+config.lastpos/2+` y=${config.textpos}>`+config.label+
 				` <tspan ng-if="${config.hideValue == false}" id=level_value_channel_0_{{unique}} class="txt-{{unique}} val" dominant-baseline="baseline">
 						{{msg.payload[0]}}
 						</tspan>
@@ -126,11 +126,11 @@ module.exports = function (RED) {
 						`+config.unit+`
 						</tspan>					
 				</text>
-				<text id=level_min_{{unique}} class="txt-{{unique}} small" text-anchor="start" dominant-baseline="baseline" x="0" y=${config.exactheight-config.stripe.height-2}>`+config.min+`</text>
+				<text id=level_min_{{unique}} class="txt-{{unique}} small" text-anchor="start" dominant-baseline="baseline" x="0" y=${config.stripe.y0 - 2}>`+config.min+`</text>
 				<text ng-if="${config.tickmode != 'off'}" ng-repeat="x in [].constructor(${config.interticks.length}) track by $index" id=level_tick_{{unique}}_{{$index}} 
 				class="txt-{{unique}} small" text-anchor="middle" dominant-baseline="baseline"
-				 y=${config.exactheight-config.stripe.height-2}></text>	
-				<text id=level_max_{{unique}} class="txt-{{unique}} small" text-anchor="end" dominant-baseline="baseline" ng-attr-x=`+config.lastpos+`px y=${config.exactheight-config.stripe.height-2}>`+config.max+`</text>			
+				 y=${config.stripe.y0 - 2}></text>	
+				<text id=level_max_{{unique}} class="txt-{{unique}} small" text-anchor="end" dominant-baseline="baseline" ng-attr-x=`+config.lastpos+`px y=${config.stripe.y0 - 2}>`+config.max+`</text>			
 			</svg>`
 		
 		var level_single_v = String.raw`		
@@ -671,25 +671,30 @@ module.exports = function (RED) {
 
 				
 				var group = RED.nodes.getNode(config.group);
-				var site = getSiteProperties();
-				
+				var site = getSiteProperties();				
 				if(config.width == 0){ config.width = parseInt(group.config.width) || dimensions("w")}
 				if(config.height == 0) {config.height = parseInt(group.config.height) || dimensions("h")}
 				config.width = parseInt(config.width)
 				config.height = parseInt(config.height)
 				config.exactwidth = parseInt(site.sizes.sx * config.width + site.sizes.cx * (config.width-1)) - 12;		
 				config.exactheight = parseInt(site.sizes.sy * config.height + site.sizes.cy * (config.height-1)) - 12;
-				
-				var y_0 = config.exactheight - Math.floor((site.sizes.sy/2)) + 12;
+				var strh =  Math.floor(config.exactheight/3)
+				if(strh > 12){
+					strh = 12
+				}
+				if(strh < 4){
+					strh = 4
+				}				
+				var y_0 = config.exactheight - strh + (12 - strh)
 				var y_1 = 0
 				if(config.layout === "ph"){
-					y_0 = config.exactheight/3 - 6 //config.exactheight - Math.floor((site.sizes.sy/1.2)) + 12;
-					y_1 = -1 + config.exactheight/3*2  // - Math.floor((site.sizes.sy/1.8)) + 12;
-				}				
-				config.stripe = {step: parseInt(config.shape) * 2, width: parseInt(config.shape), height:Math.floor((site.sizes.sy/2)-12), y0:y_0,y1:y_1};
+					y_0 = config.exactheight/3 - 6 
+					y_1 = -1 + config.exactheight/3*2 
+				}		
+				config.stripe = {step: parseInt(config.shape) * 2, width: parseInt(config.shape), height:strh, y0:y_0,y1:y_1};
 				config.reverse = parseFloat(config.min) > parseFloat(config.max) ? true : false
-				config.min = parseFloat(config.min)//Math.min(parseFloat(config.min), parseFloat(config.max))
-				config.max = parseFloat(config.max)//Math.max(parseFloat(config.min), parseFloat(config.max))				
+				config.min = parseFloat(config.min)
+				config.max = parseFloat(config.max)			
 				config.peaktime = config.peaktime == 'infinity' ? -1 : isNaN(parseInt(config.peaktime)) ? 3000 : parseInt(config.peaktime);
 				config.count = stripecount();
 				config.hideValue = config.hideValue || false
@@ -700,11 +705,7 @@ module.exports = function (RED) {
 				config.colorHi = config.colorHi || "red";				
 				config.colorschema = config.colorschema || 'fixed';
 				var opc = [config.colorOff,config.colorNormal,config.colorWarn,config.colorHi];
-				
-				
-
-				var decimals = config.decimals = isNaN(parseFloat(config.decimals)) ? {fixed:1,mult:0} : {fixed:parseInt(config.decimals),mult:Math.pow(10,parseInt(config.decimals))};
-				
+				var decimals = config.decimals = isNaN(parseFloat(config.decimals)) ? {fixed:1,mult:0} : {fixed:parseInt(config.decimals),mult:Math.pow(10,parseInt(config.decimals))};				
 				initSectorValues()				
 				config.gradient = {
 					warn:exactPosition(config.sectorwarn,config.min,config.max,config.reverse,config.lastpos).p,
@@ -735,6 +736,10 @@ module.exports = function (RED) {
 							config.fontoptions.color = opt;
 						}
 					}					
+				}
+				config.textpos = config.stripe.y0 - 2
+				if(config.layout == 'sh' && config.tickmode != 'off'){				
+					config.textpos -= (16 * config.fontoptions.small)
 				}
 				
 				var tickupdate = []
@@ -1076,7 +1081,7 @@ module.exports = function (RED) {
 	
 	var uipath = 'ui';
     if (RED.settings.ui) { uipath = RED.settings.ui.path; }
-    var fullPath = path.join(RED.settings.httpNodeRoot, uipath, '/ui-level/*').replace(/\\/g, '/');
+	var fullPath = path.join(RED.settings.httpNodeRoot, uipath, '/ui-level/*').replace(/\\/g, '/');
     RED.httpNode.get(fullPath, function (req, res) {
         var options = {
             root: __dirname + '/lib/',

@@ -35,15 +35,19 @@ The min and max values are customizable within the configuration or you can chan
 
 The segments's values are also customizable within the configuration and with `msg.control`
 
+You can choose between 3 different stripe resolutions. `Superfine`, `Fine` and `Normal`
+
+You have option to show intermediate tick values. By choosing `Segments`, tick values placed at segment positions, with `Auto` the tick values will be spread evenly. 
+
 You can choose anmations to be `Soft`, `Reactive` or `Rocket` represending speed of animations (800ms, 300ms and 100ms). Animations can be turned `off` completely.
 Animation of value text is turned off by default. You can turn it on but be aware, text animation affects
 performance significantly!
 
-
-
-You can choose between 3 different stripe resolutions. `Superfine`, `Fine` and `Normal`
-
 Texts sizes and color in widget can be customized within the configuration only. Color applies for all texts in widget. There is 3 different sizes for text elements in use. Values represent font relative size with unit `"em"`
+
+## Limitations 
+Widget layout is optimized to look best with default 1x1 unit size (48px x 48px). However this is not a restriction. Smallest possible 1x1 unit size what is supported by dashboard (24px x 24px) is suppported by widget also. But you can not have intermediate tick values together with value field. Playing with text size options you can finetune the layout to fit better into your dashboard design.
+  
 
 ## Examples of `msg.control` usage
 

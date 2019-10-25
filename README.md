@@ -3,6 +3,7 @@
 [![NodeRed](https://img.shields.io/badge/Node--Red-0.19.4+-red.svg)](http://nodered.org)
 [![NPM version][npm-image]][npm-url]
 [![CodeFactor](https://www.codefactor.io/repository/github/hotnipi/node-red-contrib-ui-level/badge)](https://www.codefactor.io/repository/github/hotnipi/node-red-contrib-ui-level)
+![npm](https://img.shields.io/npm/dm/node-red-contrib-ui-level)
 
 [npm-image]: http://img.shields.io/npm/v/node-red-contrib-ui-level.svg
 [npm-url]: https://npmjs.org/package/node-red-contrib-ui-level

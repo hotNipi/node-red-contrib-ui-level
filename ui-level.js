@@ -826,8 +826,7 @@ module.exports = function (RED) {
 					},
 					
 					initController: function ($scope) {																		
-						$scope.unique = $scope.$eval('$id')
-						$scope.inited = false;
+						$scope.unique = $scope.$eval('$id')						
 						$scope.peaklock = [false,false];						
 						$scope.hold = [null,null];
 						$scope.peaktoreset = [null,null];
@@ -847,14 +846,16 @@ module.exports = function (RED) {
 							}
 							
 							if(config.tickmode != 'off'){
-								$scope.interticks = config.interticks																
-							}
-							if($scope.inited == false){
-								$scope.send({init:'init-'+$scope.unique})
+								$scope.interticks = config.interticks
+								$scope.tickmode = config.tickmode
+								setTicks()																
 							}
 						}
 						
-						var setTicks = function(){														
+						var setTicks = function(){	
+							if($scope.tickmode == false){
+								return
+							}													
 							var j
 							var tick
 							$("[id*='level_tick_"+$scope.unique+"']").text('') 
@@ -864,8 +865,7 @@ module.exports = function (RED) {
 									$(tick).text($scope.interticks[j].val);
 									$(tick).attr($scope.prop.pos,$scope.interticks[j].pos);									
 								}
-							}
-							$scope.tickmode = true							
+							}													
 						}
 						
 						
@@ -1010,7 +1010,8 @@ module.exports = function (RED) {
 						$scope.$watch('msg', function (msg) {
 							if (!msg) {								
 								return;
-							}							
+							}	
+							console.log('[ui-level]: msg', msg)						
 							var id = "level_stripe_0_"+$scope.unique
 							var stripe = document.getElementById(id);						
 							if(stripe == null){
@@ -1026,14 +1027,8 @@ module.exports = function (RED) {
 										}
 										if(msg.payload){
 											updateLevel(msg)
-										}
-										if(msg.init){
-											if($scope.interticks != null && $scope.tickmode == false){
-												setTicks()
-											}
-											$scope.inited = true	
-										}
-																													
+											setTicks()
+										}																		
 									}
 								}, 40);
 							}
@@ -1046,13 +1041,8 @@ module.exports = function (RED) {
 								}
 								if(msg.payload){
 									updateLevel(msg)
-								}
-								if(msg.init){
-									if($scope.interticks != null && $scope.tickmode == false){
-										setTicks()
-									}
-									$scope.inited = true	
-								}							
+									setTicks()
+								}														
 							}														
 						});
 						 $scope.$on('$destroy', function() {

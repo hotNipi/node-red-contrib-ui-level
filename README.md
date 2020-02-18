@@ -10,7 +10,7 @@
 
 Adds a linear Level type widget to the user interface
 
-![node-red-dashboard-ui-level.JPG](img/node-red-dashboard-ui-level.JPG)
+![Node-RED dashboard widget node-red-contrib-ui-level](img/node-red-dashboard-ui-level.JPG)
 
 
 # Requirements

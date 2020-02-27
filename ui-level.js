@@ -455,21 +455,21 @@ module.exports = function (RED) {
 					var input					
 					if(uicontrol.min != undefined ){
 						input = parseFloat(uicontrol.min)
-						if(!isNaN(input) && mi != input){
+						if(!isNaN(input)/*  && mi != input */){
 							mi =  input
 							applies = true;	
 						}											
 					}
 					if(uicontrol.max != undefined ){
 						input = parseFloat(uicontrol.max)
-						if(!isNaN(input) && ma != input){
+						if(!isNaN(input)/*  && ma != input */){
 							ma =  input
 							applies = true;	
 						}											
 					}
 					if(uicontrol.seg1 != undefined ){
 						input = parseFloat(uicontrol.seg1)
-						if(!isNaN(input) && config.sectorwarn != input){
+						if(!isNaN(input) /* && config.sectorwarn != input */){
 							config.sectorwarn = input
 							applies = true;	
 							updatesectors = true;
@@ -477,7 +477,7 @@ module.exports = function (RED) {
 					}
 					if(uicontrol.seg2 != undefined ){
 						input = parseFloat(uicontrol.seg2)
-						if(!isNaN(input) && config.sectorhigh != input){
+						if(!isNaN(input)/*  && config.sectorhigh != input */){
 							config.sectorhigh = input
 							applies = true;	
 							updatesectors = true;							
@@ -1011,7 +1011,7 @@ module.exports = function (RED) {
 							if (!msg) {								
 								return;
 							}	
-							console.log('[ui-level]: msg', msg)						
+							//console.log('[ui-level]: msg', msg)						
 							var id = "level_stripe_0_"+$scope.unique
 							var stripe = document.getElementById(id);						
 							if(stripe == null){

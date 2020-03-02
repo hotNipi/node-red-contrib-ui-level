@@ -21,8 +21,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-var path = require('path');
+
 module.exports = function (RED) {
+	var path = require("path")
 	function HTML(config) {
 		var configAsJson = JSON.stringify(config);
 		var styles = String.raw`
@@ -293,10 +294,7 @@ module.exports = function (RED) {
 			layout = level_pair_h;
 		}
 		
-		var scripts = String.raw`<script src="ui-level/js/plugins/CSSPlugin.min.js"></script>		
-		<script src="ui-level/js/easing/EasePack.min.js"></script>
-		<script src="ui-level/js/TweenLite.min.js"></script> 
-		<script src="ui-level/js/jquery.gsap.min.js"></script>`
+		var scripts = String.raw`<script src="ui-level/js/gsap.min.js"></script>`
 		
 		var html = String.raw`
 		${styles}
@@ -306,7 +304,7 @@ module.exports = function (RED) {
 	}
 
 
-	function checkConfig(node, conf) {
+	function checkConfig(node, conf) {		
 		if (!conf || !conf.hasOwnProperty("group")) {
 			node.error(RED._("ui_level.error.no-group"));
 			return false;
@@ -455,21 +453,21 @@ module.exports = function (RED) {
 					var input					
 					if(uicontrol.min != undefined ){
 						input = parseFloat(uicontrol.min)
-						if(!isNaN(input)/*  && mi != input */){
+						if(!isNaN(input)){
 							mi =  input
 							applies = true;	
 						}											
 					}
 					if(uicontrol.max != undefined ){
 						input = parseFloat(uicontrol.max)
-						if(!isNaN(input)/*  && ma != input */){
+						if(!isNaN(input)){
 							ma =  input
 							applies = true;	
 						}											
 					}
 					if(uicontrol.seg1 != undefined ){
 						input = parseFloat(uicontrol.seg1)
-						if(!isNaN(input) /* && config.sectorwarn != input */){
+						if(!isNaN(input)){
 							config.sectorwarn = input
 							applies = true;	
 							updatesectors = true;
@@ -477,15 +475,15 @@ module.exports = function (RED) {
 					}
 					if(uicontrol.seg2 != undefined ){
 						input = parseFloat(uicontrol.seg2)
-						if(!isNaN(input)/*  && config.sectorhigh != input */){
+						if(!isNaN(input)){
 							config.sectorhigh = input
 							applies = true;	
 							updatesectors = true;							
 						}											
 					}
 													
-					config.min = mi //> ma ? ma : mi;
-					config.max = ma // < mi ? mi : ma;				
+					config.min = mi
+					config.max = ma 				
 					config.reverse = mi > ma;									
 					if(applies){						
 						 if(updatesectors){
@@ -881,7 +879,10 @@ module.exports = function (RED) {
 								if(peakpixel){															
 									var pixel = $(peakpixel)
 									if($scope.peaktoreset[j] != null){										
-										pixel.stop(true,true).animate({[$scope.prop.pos]: $scope.peaktoreset[j].px+'px' },0).css('fill',$scope.peaktoreset[j].c);
+										//pixel.stop(true,true).animate({[$scope.prop.pos]: $scope.peaktoreset[j].px+'px' },0).css('fill',$scope.peaktoreset[j].c);
+										//{rotation: 27, x: 100, duration: 1}
+										gsap.to(pixel,{[$scope.prop.pos]:$scope.peaktoreset[j].px,duration:0})
+										gsap.to(pixel,{'fill':$scope.peaktoreset[j].c,duration:0})
 										$scope.lastpeak[j] = $scope.peaktoreset[j]		
 									}																	
 								}
@@ -900,8 +901,9 @@ module.exports = function (RED) {
 									if($scope.hold[j] != null ){
 										window.clearInterval($scope.hold[j])
 										$scope.hold[j] = null
-									}									 														
-									pixel.stop(true,true).animate({[$scope.prop.pos]: data.px+'px' },$scope.speed.ms).css('fill',data.c);
+									}
+									gsap.to(pixel,{[$scope.prop.pos]:data.px,duration:$scope.speed.s})
+									gsap.to(pixel,{'fill':data.c,duration:$scope.speed.s})
 									pixel.mask= document.getElementById("url(#level_bgr_"+$scope.unique+"")
 									$scope.lastpeak[j] = data
 									$scope.peaklock[j] = false;																								
@@ -917,8 +919,9 @@ module.exports = function (RED) {
 									if($scope.peaklock[j] == false){									
 										$scope.peaklock[j] = true;									
 										var cb = function(){										
-											$scope.peaklock[j] = false;																																	
-											pixel.stop().animate({[$scope.prop.pos]: $scope.peaktoreset[j].px+'px' },$scope.speed.ms*2).css('fill',$scope.peaktoreset[j].c);
+											$scope.peaklock[j] = false;	
+											gsap.to(pixel,{[$scope.prop.pos]:$scope.peaktoreset[j].px,duration:$scope.speed.s*2})
+											gsap.to(pixel,{'fill':$scope.peaktoreset[j].c,duration:$scope.speed.s*2})
 											$scope.lastpeak[j] = $scope.peaktoreset[j]																				
 										}																												
 										$scope.hold[j] = window.setInterval(function(){											
@@ -970,8 +973,8 @@ module.exports = function (RED) {
 										if(data.peak){
 											animatePeak(j,data.peak[j])
 										}
-										if($scope.animate.g !== "off"){										
-											$(mask).stop().animate({[$scope.prop.dir]: data.position[j]+'px' },$scope.speed.ms);											
+										if($scope.animate.g !== "off"){	
+											gsap.to(mask,{[$scope.prop.dir]: data.position[j],duration:$scope.speed.s})											
 										}
 										else{											
 											mask.style[$scope.prop.dir] = data.position[j]+'px'											
@@ -983,7 +986,7 @@ module.exports = function (RED) {
 									if(stripe && data.color[j] != null){
 										if($scope.animate.g !== "off"){
 											if(stripe.style.fill != data.color[j]){
-												$(stripe).stop().animate().css({'fill': data.color[j] ,'transition': 'fill '+$scope.speed.s+'s'});
+												gsap.to(stripe,{'fill':data.color[j],duration:$scope.speed.s})
 											}										
 										}
 										else{
@@ -994,11 +997,11 @@ module.exports = function (RED) {
 								valfield = document.getElementById("level_value_channel_"+j+"_"+$scope.unique);
 								if(valfield){
 									if($scope.animate.g !== "off" && $scope.animate.t == true){
-										var updateHandler = function(){										
-											$(this.target.field).text((Math.ceil(this.target.val * $scope.d.mult)/$scope.d.mult).toFixed($scope.d.fixed));											
+										var updateHandler = function(t){										
+											$(t.field).text((Math.ceil(t.val * $scope.d.mult)/$scope.d.mult).toFixed($scope.d.fixed));											
 										}										
 										var nob = {val:0,field:valfield,from:parseFloat($(valfield).text())}										
-										TweenLite.fromTo(nob, $scope.speed.s, {val:nob.from},{val:data.payload[j], onUpdate:updateHandler});										
+										gsap.fromTo(nob,  {val:nob.from},{val:data.payload[j], duration:$scope.speed.s, onUpdate:updateHandler,onUpdateParams:[nob]});										
 									}
 									else{
 										$(valfield).text(data.payload[j].toFixed($scope.d.fixed));
@@ -1010,8 +1013,7 @@ module.exports = function (RED) {
 						$scope.$watch('msg', function (msg) {
 							if (!msg) {								
 								return;
-							}	
-							//console.log('[ui-level]: msg', msg)						
+							}			
 							var id = "level_stripe_0_"+$scope.unique
 							var stripe = document.getElementById(id);						
 							if(stripe == null){
@@ -1078,5 +1080,5 @@ module.exports = function (RED) {
             dotfiles: 'deny'
         };
         res.sendFile(req.params[0], options)
-    });
+    }); 
 };

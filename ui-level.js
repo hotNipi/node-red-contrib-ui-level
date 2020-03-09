@@ -739,6 +739,11 @@ module.exports = function (RED) {
 				if(config.layout == 'sh' && config.tickmode != 'off'){				
 					config.textpos -= (16 * config.fontoptions.small)
 				}
+
+				config.padding = {
+					hor:'6px',
+					vert:(site.sizes.sy/16)+'px'
+				}
 				
 				var tickupdate = []
 				var sectorupdate = []
@@ -830,9 +835,10 @@ module.exports = function (RED) {
 						$scope.peaktoreset = [null,null];
 						$scope.tickmode = false
 						$scope.interticks = null
+						$scope.padding = null
 						
 						$scope.init = function(config){
-								
+							$scope.padding = config.padding								
 							$scope.lastpeak = [{px:0,c:config.colorNormal},{px:0,c:config.colorNormal}];						
 							$scope.d = config.decimals;
 							$scope.prop = config.layout === "sv" ? {dir:'height',pos:'y'} : {dir:'width',pos:'x'}
@@ -848,6 +854,7 @@ module.exports = function (RED) {
 								$scope.tickmode = config.tickmode
 								setTicks()																
 							}
+							updateContainerStyle()
 						}
 						
 						var setTicks = function(){	
@@ -1009,6 +1016,21 @@ module.exports = function (RED) {
 								}															
 							}							
 						};
+
+						var updateContainerStyle = function(){
+							var el = document.getElementById("level_svg_"+$scope.unique)
+							if(!el){
+								setTimeout(updateContainerStyle,40)
+								return
+							}	
+							el = el.parentElement					
+							if(el && el.classList.contains('nr-dashboard-template')){
+								if($(el).css('paddingLeft') == '0px'){
+									el.style.paddingLeft = el.style.paddingRight = $scope.padding.hor
+									el.style.paddingTop = el.style.paddingBottom = $scope.padding.vert
+								}
+							}							
+						}
 															
 						$scope.$watch('msg', function (msg) {
 							if (!msg) {								
@@ -1020,7 +1042,8 @@ module.exports = function (RED) {
 								var stateCheck = setInterval(function() {									
 									stripe = document.getElementById(id)									
 									if (stripe != null) {
-										clearInterval(stateCheck);
+										clearInterval(stateCheck);	
+
 										if(msg.config){								
 											updateConfig(msg.config)								
 										}	

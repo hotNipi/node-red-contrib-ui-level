@@ -50,3 +50,7 @@ Widget layout is optimized to look best with default `1x1` unit size `(48px x 48
 ## Performance alert
 This widget is not perfect choice to display high-frequent data changes like audio or similar.
 If you are using a lot of Level widgets on your dashboard and you are feeling performance loss, consider turning off animations of value text (if used) or turn off all animations.
+
+### Licence
+
+This node uses GreenSock animation library GSAP licenced with Standard GreenSock License for non-commercial use https://greensock.com/standard-license/

@@ -22,81 +22,84 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 -->
 <script type='text/javascript'>
-    RED.nodes.registerType('ui_level',{
+    RED.nodes.registerType('ui_level', {
         category: 'dashboard',
         color: 'rgb( 63, 173, 181)',
         defaults: {
-            group: {type: 'ui_group', required:true},
-            order: {value: 0},
+            group: { type: 'ui_group', required: true },
+            order: { value: 0 },
             width: {
                 value: 0,
-                validate: function(v) {
+                validate: function (v) {
                     var valid = true
-                    var width = v||0;
-                    var currentGroup = $('#node-input-group').val()|| this.group;
+                    var width = v || 0;
+                    var currentGroup = $('#node-input-group').val() || this.group;
                     var groupNode = RED.nodes.node(currentGroup);
                     valid = !groupNode || +width <= +groupNode.width;
-                    $('#node-input-size').toggleClass('input-error',!valid);
+                    $('#node-input-size').toggleClass('input-error', !valid);
                     return valid;
-                }},
-            height: {value: 0},
-            name: {value: ''},
-            label:{value: ''},
-            colorHi: {value: '#e60000'},
-            colorWarn: {value: '#ff9900'},
-            colorNormal: {value: '#00b33c'},
-            colorOff: {value: '#595959'},            
-            min: {value: 0, required: true, validate: RED.validators.number()},
-            max: {value: 100, required: true, validate: RED.validators.number()},
-            segWarn: {value: ''},
-            segHigh: {value: ''},
-            unit: {value:''},
-            layout: {value:'sh'},
-            channelA: {value: ''},
-            channelB: {value: ''},
-            decimals: {value: 0, required: false, validate: RED.validators.number()},
-            animations: {value:'soft'},
-            shape: {value: 2},
-            colorschema: {value: 'fixed'},
-            textoptions:{value:'default'},
-            colorText: {value:'#eeeeee'},
-            fontLabel:{value:''},
-            fontValue:{value:''},
-            fontSmall:{value:''},
-            colorFromTheme:{value:true},
-            textAnimations:{value:false},
-            hideValue:{value:false},
-            tickmode:{value:'off'},
-            peakmode:{value:false},
-            peaktime:{value: 3000, required: false, validate:function(v) {
-                    if($("#node-input-peakmode").prop('checked') == false){
-                        return true     
+                }
+            },
+            height: { value: 0 },
+            name: { value: '' },
+            label: { value: '' },
+            colorHi: { value: '#e60000' },
+            colorWarn: { value: '#ff9900' },
+            colorNormal: { value: '#00b33c' },
+            colorOff: { value: '#595959' },
+            min: { value: 0, required: true, validate: RED.validators.number() },
+            max: { value: 100, required: true, validate: RED.validators.number() },
+            segWarn: { value: '' },
+            segHigh: { value: '' },
+            unit: { value: '' },
+            layout: { value: 'sh' },
+            channelA: { value: '' },
+            channelB: { value: '' },
+            decimals: { value: 0, required: false, validate: RED.validators.number() },
+            animations: { value: 'soft' },
+            shape: { value: 2 },
+            colorschema: { value: 'fixed' },
+            textoptions: { value: 'default' },
+            colorText: { value: '#eeeeee' },
+            fontLabel: { value: '' },
+            fontValue: { value: '' },
+            fontSmall: { value: '' },
+            colorFromTheme: { value: true },
+            textAnimations: { value: false },
+            hideValue: { value: false },
+            tickmode: { value: 'off' },
+            peakmode: { value: false },
+            peaktime: {
+                value: 3000, required: false, validate: function (v) {
+                    if ($("#node-input-peakmode").prop('checked') == false) {
+                        return true
                     }
                     var mi = 800;
                     var ma = 10000;
-                    if(v === 'infinity'){
+                    if (v === 'infinity') {
                         return true
                     }
                     return (parseInt(v) >= mi && parseInt(v) <= ma)
-                }},
+                }
+            },
         },
-        inputs:1,
-        outputs:0,
+        inputs: 1,
+        outputs: 0,
         icon: 'uilevel.png',
         paletteLabel: 'level',
-        label: function() {
-            return this.name||'Level';
+        label: function () {
+            return this.name || 'Level';
         },
-        oneditprepare: function() {
+        oneditprepare: function () {
             $('#node-input-size').elementSizer({
                 width: '#node-input-width',
                 height: '#node-input-height',
                 group: '#node-input-group'
             });
-            $('#node-input-min').change(function() {
+            $('#node-input-min').change(function () {
                 $('#seg-min').text($(this).val());
             });
-            $('#node-input-max').change(function() {
+            $('#node-input-max').change(function () {
                 $('#seg-max').text($(this).val());
             });
             if (this.layout === undefined) {
@@ -131,93 +134,93 @@ SOFTWARE.
             }
             if (this.hideValue === undefined) {
                 $("#node-input-hideValue").prop('checked', false);
-            } 
+            }
             if (this.peakmode === undefined) {
                 $("#node-input-peakmode").prop('checked', false);
             }
             if (this.peaktime === undefined) {
                 $("#node-input-peaktime").val(3000);
             }
-            $('#node-input-peakmode').change(function() {                
-                if (this.checked == true) {                                 
+            $('#node-input-peakmode').change(function () {
+                if (this.checked == true) {
                     $('#node-input-peaktime').show();
                     $('#node-input-peaktimeSpan').show();
                 }
-                else {                   
+                else {
                     $('#node-input-peaktime').hide();
                     $('#node-input-peaktimeSpan').hide();
-                   
+
                 }
-            });            
-            $('#node-input-textoptions').change(function() {
+            });
+            $('#node-input-textoptions').change(function () {
                 if ($(this).val() === 'default') {
                     $('#node-input-fontsizes').hide();
-                    $('#node-input-fontcolor').hide();                   
+                    $('#node-input-fontcolor').hide();
                 }
                 else {
-                    $('#node-input-fontsizes').show();   
-                    $('#node-input-fontcolor').show(); 
-                    if( $('#node-input-colorFromTheme').is(':checked')){                       
+                    $('#node-input-fontsizes').show();
+                    $('#node-input-fontcolor').show();
+                    if ($('#node-input-colorFromTheme').is(':checked')) {
                         $('#node-input-colorText').hide();
                         $('#node-input-colorTextSpan').hide();
                     }
-                    else{                        
+                    else {
                         $('#node-input-colorText').show();
                         $('#node-input-colorTextSpan').show();
                     }
                 }
             });
-            
-            $('#node-input-colorschema').change(function() {
-                if ($(this).val() === 'fixed') {                   
-                    $('#peakOptions').show();                               
+
+            $('#node-input-colorschema').change(function () {
+                if ($(this).val() === 'fixed') {
+                    $('#peakOptions').show();
                 }
                 else {
-                    if($("#node-input-peakmode").prop('checked') == true){
+                    if ($("#node-input-peakmode").prop('checked') == true) {
                         $("#node-input-peakmode").prop('checked', false);
-                        $('#node-input-peaktime').hide();                        
+                        $('#node-input-peaktime').hide();
                         $('#node-input-peaktimeSpan').hide();
-                      
+
                     };
-                    $('#peakOptions').hide();                    
+                    $('#peakOptions').hide();
                 }
-            });      
-            
-            $('#node-input-colorFromTheme').change(function() {                
-                if (this.checked == true) {                                 
-                    $('#node-input-colorText').hide();                  
-                    $('#node-input-colorTextSpan').hide();                  
+            });
+
+            $('#node-input-colorFromTheme').change(function () {
+                if (this.checked == true) {
+                    $('#node-input-colorText').hide();
+                    $('#node-input-colorTextSpan').hide();
                 }
-                else {                   
+                else {
                     $('#node-input-colorText').show();
                     $('#node-input-colorTextSpan').show();
                 }
             });
-            $('#node-input-layout').change(function() {
+            $('#node-input-layout').change(function () {
                 if ($(this).val() === 'sh') {
                     $('#node-input-el-label').show();
                     $('#node-input-el-channels').hide();
-                    $('#node-input-fontLabel').attr('placeholder','1');
-                    $('#node-input-fontValue').attr('placeholder','1');
-                    $('#node-input-fontSmall').attr('placeholder','0.65');                   
+                    $('#node-input-fontLabel').attr('placeholder', '1');
+                    $('#node-input-fontValue').attr('placeholder', '1');
+                    $('#node-input-fontSmall').attr('placeholder', '0.65');
                 }
-                else if($(this).val() === 'sv'){
+                else if ($(this).val() === 'sv') {
                     $('#node-input-el-label').show();
                     $('#node-input-el-channels').hide();
-                    $('#node-input-fontLabel').attr('placeholder','1');
-                    $('#node-input-fontValue').attr('placeholder','2.5');
-                    $('#node-input-fontSmall').attr('placeholder','0.65');
+                    $('#node-input-fontLabel').attr('placeholder', '1');
+                    $('#node-input-fontValue').attr('placeholder', '2.5');
+                    $('#node-input-fontSmall').attr('placeholder', '0.65');
                 }
                 else {
                     $('#node-input-el-label').hide();
                     $('#node-input-el-channels').show();
-                    $('#node-input-fontLabel').attr('placeholder','1');
-                    $('#node-input-fontValue').attr('placeholder','1.2');
-                    $('#node-input-fontSmall').attr('placeholder','0.65');
+                    $('#node-input-fontLabel').attr('placeholder', '1');
+                    $('#node-input-fontValue').attr('placeholder', '1.2');
+                    $('#node-input-fontSmall').attr('placeholder', '0.65');
                 }
             });
         },
-        oneditsave: function (){
+        oneditsave: function () {
             $('input[name=foo]').attr('checked', this.colorFromTheme);
         }
     });
@@ -390,4 +393,8 @@ SOFTWARE.
     <p>Animation of value text is turned off by default. You can turn it on but be aware, text animation affects performance significantly!</p>
     <p>You have option to show intermediate tick values. By choosing <code>Segments</code>, tick values placed at segment positions, with <code>Auto</code> the tick values will be spread evenly.
     <p>Texts sizes and color in widget can be customized within the configuration only. Color applies for all texts in widget. There is 3 different sizes for text elements in use. Values represent font relative size with unit <code>"em"</code></p>
+
+    <h2> Licence</h2>
+This node uses GreenSock animation library GSAP licenced with Standard GreenSock License for non-commercial use <a href="https://greensock.com/standard-license/"">https://greensock.com/standard-license</a>
+   
 </script>

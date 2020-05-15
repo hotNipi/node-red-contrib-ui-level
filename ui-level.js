@@ -982,8 +982,12 @@ module.exports = function (RED) {
 										if (data.peak) {
 											animatePeak(j, data.peak[j])
 										}
+										var stripeUpdate = function(){
+											
+											$(mask).attr('width',parseInt(mask.style.width))  
+										}
 										if ($scope.animate.g !== "off") {
-											gsap.to(mask, { [$scope.prop.dir]: data.position[j], duration: $scope.speed.s })
+											gsap.to(mask, { [$scope.prop.dir]: data.position[j], duration: $scope.speed.s, onUpdate: stripeUpdate})
 										}
 										else {
 											mask.style[$scope.prop.dir] = data.position[j] + 'px'

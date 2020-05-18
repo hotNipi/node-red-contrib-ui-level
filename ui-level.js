@@ -294,11 +294,10 @@ module.exports = function (RED) {
 			layout = level_pair_h;
 		}
 
-		var scripts = String.raw`<script src="ui-level/js/gsap.min.js"></script>`
+		//var scripts = String.raw`<script src="ui-level/js/gsap.min.js"></script>`
 
 		var html = String.raw`
-		${styles}
-		${scripts}
+		${styles}		
 		${layout}`
 		return html;
 	}
@@ -838,8 +837,14 @@ module.exports = function (RED) {
 						$scope.tickmode = false
 						$scope.interticks = null
 						$scope.padding = null
+						$scope.gsaploaded = false
 
 						$scope.init = function (config) {
+							if(!document.getElementById('greensock-gsap-3')){
+								loadScript('greensock-gsap-3','ui-level/js/gsap.min.js')
+							}else{
+								$scope.gsaploaded = true
+							}	
 							$scope.padding = config.padding
 							$scope.lastpeak = [{ px: 0, c: config.colorNormal }, { px: 0, c: config.colorNormal }];
 							$scope.d = config.decimals;
@@ -857,6 +862,19 @@ module.exports = function (RED) {
 								setTicks()
 							}
 							updateContainerStyle()
+						}
+
+						var loadScript = function (id,path) {
+							//console.log('loadscript',path)
+							var head = document.getElementsByTagName('head')[0];
+							var script = document.createElement('script');
+							script.type = 'text/javascript';
+							script.id = id
+							script.src = path;
+							head.appendChild(script);
+							script.onload = () => {								
+								$scope.gsaploaded = true							
+							}      
 						}
 
 						var setTicks = function () {
@@ -882,20 +900,23 @@ module.exports = function (RED) {
 							if ($scope.animate.peak != -1) {
 								return
 							}
-							var j
-							for (j = 0; j < $scope.len; j++) {
-								peakpixel = document.getElementById("level_peak_" + j + "_" + $scope.unique);
-								if (peakpixel) {
-									var pixel = $(peakpixel)
-									if ($scope.peaktoreset[j] != null) {
-										//pixel.stop(true,true).animate({[$scope.prop.pos]: $scope.peaktoreset[j].px+'px' },0).css('fill',$scope.peaktoreset[j].c);
-										//{rotation: 27, x: 100, duration: 1}
-										gsap.to(pixel, { [$scope.prop.pos]: $scope.peaktoreset[j].px, duration: 0 })
-										gsap.to(pixel, { 'fill': $scope.peaktoreset[j].c, duration: 0 })
-										$scope.lastpeak[j] = $scope.peaktoreset[j]
+							try {
+								var j
+								for (j = 0; j < $scope.len; j++) {
+									peakpixel = document.getElementById("level_peak_" + j + "_" + $scope.unique);
+									if (peakpixel) {
+										var pixel = $(peakpixel)
+										if ($scope.peaktoreset[j] != null) {
+											gsap.to(pixel, { [$scope.prop.pos]: $scope.peaktoreset[j].px, duration: 0 })
+											gsap.to(pixel, { 'fill': $scope.peaktoreset[j].c, duration: 0 })
+											$scope.lastpeak[j] = $scope.peaktoreset[j]
+										}
 									}
 								}
-							}
+								
+							} catch (error) {
+								// do nothing
+							}							
 						}
 
 
@@ -903,47 +924,51 @@ module.exports = function (RED) {
 							if (!data) {
 								return
 							}
-							peakpixel = document.getElementById("level_peak_" + j + "_" + $scope.unique);
-							if (peakpixel) {
-								var pixel = $(peakpixel)
-								if (data.px > $scope.lastpeak[j].px) {
-									if ($scope.hold[j] != null) {
-										window.clearInterval($scope.hold[j])
-										$scope.hold[j] = null
-									}
-									gsap.to(pixel, { [$scope.prop.pos]: data.px, duration: $scope.speed.s })
-									gsap.to(pixel, { 'fill': data.c, duration: $scope.speed.s })
-									pixel.mask = document.getElementById("url(#level_bgr_" + $scope.unique + "")
-									$scope.lastpeak[j] = data
-									$scope.peaklock[j] = false;
-								}
-								else {
-									if ($scope.peaktoreset[j] == null || $scope.peaktoreset[j].px > data.px) {
-										$scope.peaktoreset[j] = data
-									}
-									if ($scope.animate.peak == -1) {
-										$scope.peaklock[j] = true;
-										return
-									}
-									if ($scope.peaklock[j] == false) {
-										$scope.peaklock[j] = true;
-										var cb = function () {
-											$scope.peaklock[j] = false;
-											gsap.to(pixel, { [$scope.prop.pos]: $scope.peaktoreset[j].px, duration: $scope.speed.s * 2 })
-											gsap.to(pixel, { 'fill': $scope.peaktoreset[j].c, duration: $scope.speed.s * 2 })
-											$scope.lastpeak[j] = $scope.peaktoreset[j]
-										}
-										$scope.hold[j] = window.setInterval(function () {
+							try {
+								peakpixel = document.getElementById("level_peak_" + j + "_" + $scope.unique);
+								if (peakpixel) {
+									var pixel = $(peakpixel)
+									if (data.px > $scope.lastpeak[j].px) {
+										if ($scope.hold[j] != null) {
 											window.clearInterval($scope.hold[j])
 											$scope.hold[j] = null
-											cb()
-										}, $scope.animate.peak)
+										}
+										gsap.to(pixel, { [$scope.prop.pos]: data.px, duration: $scope.speed.s })
+										gsap.to(pixel, { 'fill': data.c, duration: $scope.speed.s })
+										pixel.mask = document.getElementById("url(#level_bgr_" + $scope.unique + "")
+										$scope.lastpeak[j] = data
+										$scope.peaklock[j] = false;
 									}
 									else {
-										$scope.peaktoreset[j] = data
+										if ($scope.peaktoreset[j] == null || $scope.peaktoreset[j].px > data.px) {
+											$scope.peaktoreset[j] = data
+										}
+										if ($scope.animate.peak == -1) {
+											$scope.peaklock[j] = true;
+											return
+										}
+										if ($scope.peaklock[j] == false) {
+											$scope.peaklock[j] = true;
+											var cb = function () {
+												$scope.peaklock[j] = false;
+												gsap.to(pixel, { [$scope.prop.pos]: $scope.peaktoreset[j].px, duration: $scope.speed.s * 2 })
+												gsap.to(pixel, { 'fill': $scope.peaktoreset[j].c, duration: $scope.speed.s * 2 })
+												$scope.lastpeak[j] = $scope.peaktoreset[j]
+											}
+											$scope.hold[j] = window.setInterval(function () {
+												window.clearInterval($scope.hold[j])
+												$scope.hold[j] = null
+												cb()
+											}, $scope.animate.peak)
+										}
+										else {
+											$scope.peaktoreset[j] = data
+										}
 									}
-								}
-							}
+								}								
+							} catch (error) {
+								//do nothing
+							}							
 						}
 
 						var updateConfig = function (config) {
@@ -974,7 +999,7 @@ module.exports = function (RED) {
 							var mask;
 							var j;
 							var valfield;
-
+							
 							for (j = 0; j < $scope.len; j++) {
 								mask = document.getElementById("level_mask_" + j + "_" + $scope.unique);
 								if (mask) {
@@ -987,41 +1012,55 @@ module.exports = function (RED) {
 												$(mask).attr([$scope.prop.dir],parseInt(mask.style[$scope.prop.dir]))
 											}											  
 										}
-										if ($scope.animate.g !== "off") {
-											gsap.to(mask, { [$scope.prop.dir]: data.position[j], duration: $scope.speed.s, onUpdate: stripeUpdate})
-										}
-										else {
+										try {
+											if ($scope.animate.g !== "off") {
+												gsap.to(mask, { [$scope.prop.dir]: data.position[j], duration: $scope.speed.s, onUpdate: stripeUpdate})
+											}
+											else {
+												mask.style[$scope.prop.dir] = data.position[j] + 'px'
+											}												
+										} catch (error) {
 											mask.style[$scope.prop.dir] = data.position[j] + 'px'
-										}
+										}										
 									}
 								}
 								if (data.color) {
 									stripe = document.getElementById("level_stripe_" + j + "_" + $scope.unique);
 									if (stripe && data.color[j] != null) {
-										if ($scope.animate.g !== "off") {
-											if (stripe.style.fill != data.color[j]) {
-												gsap.to(stripe, { 'fill': data.color[j], duration: $scope.speed.s })
+										try {
+											if ($scope.animate.g !== "off") {
+												if (stripe.style.fill != data.color[j]) {
+													gsap.to(stripe, { 'fill': data.color[j], duration: $scope.speed.s })
+												}
 											}
-										}
-										else {
+											else {
+												stripe.style.fill = data.color[j]
+											}
+										} catch (error) {
 											stripe.style.fill = data.color[j]
-										}
+										}										
 									}
 								}
 								valfield = document.getElementById("level_value_channel_" + j + "_" + $scope.unique);
 								if (valfield) {
-									if ($scope.animate.g !== "off" && $scope.animate.t == true) {
-										var updateHandler = function (t) {
-											$(t.field).text((Math.ceil(t.val * $scope.d.mult) / $scope.d.mult).toFixed($scope.d.fixed));
+									try {
+										if ($scope.animate.g !== "off" && $scope.animate.t == true) {
+											var updateHandler = function (t) {
+												$(t.field).text((Math.ceil(t.val * $scope.d.mult) / $scope.d.mult).toFixed($scope.d.fixed));
+											}
+											var nob = { val: 0, field: valfield, from: parseFloat($(valfield).text()) }
+											gsap.fromTo(nob, { val: nob.from }, { val: data.payload[j], duration: $scope.speed.s, onUpdate: updateHandler, onUpdateParams: [nob] });
 										}
-										var nob = { val: 0, field: valfield, from: parseFloat($(valfield).text()) }
-										gsap.fromTo(nob, { val: nob.from }, { val: data.payload[j], duration: $scope.speed.s, onUpdate: updateHandler, onUpdateParams: [nob] });
-									}
-									else {
+										else {
+											$(valfield).text(data.payload[j].toFixed($scope.d.fixed));
+										}
+										
+									} catch (error) {
 										$(valfield).text(data.payload[j].toFixed($scope.d.fixed));
 									}
+									
 								}
-							}
+							}							
 						};
 
 						var updateContainerStyle = function () {
@@ -1045,7 +1084,7 @@ module.exports = function (RED) {
 							}
 							var id = "level_stripe_0_" + $scope.unique
 							var stripe = document.getElementById(id);
-							if (stripe == null) {
+							if (stripe == null || $scope.gsaploaded == false) {
 								var stateCheck = setInterval(function () {
 									stripe = document.getElementById(id)
 									if (stripe != null) {

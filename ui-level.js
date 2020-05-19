@@ -837,14 +837,11 @@ module.exports = function (RED) {
 						$scope.tickmode = false
 						$scope.interticks = null
 						$scope.padding = null
-						$scope.gsaploaded = false
-
+						
 						$scope.init = function (config) {
 							if(!document.getElementById('greensock-gsap-3')){
 								loadScript('greensock-gsap-3','ui-level/js/gsap.min.js')
-							}else{
-								$scope.gsaploaded = true
-							}	
+							}
 							$scope.padding = config.padding
 							$scope.lastpeak = [{ px: 0, c: config.colorNormal }, { px: 0, c: config.colorNormal }];
 							$scope.d = config.decimals;
@@ -871,10 +868,7 @@ module.exports = function (RED) {
 							script.type = 'text/javascript';
 							script.id = id
 							script.src = path;
-							head.appendChild(script);
-							script.onload = () => {								
-								$scope.gsaploaded = true							
-							}      
+							head.appendChild(script);							    
 						}
 
 						var setTicks = function () {
@@ -1084,7 +1078,7 @@ module.exports = function (RED) {
 							}
 							var id = "level_stripe_0_" + $scope.unique
 							var stripe = document.getElementById(id);
-							if (stripe == null || $scope.gsaploaded == false) {
+							if (stripe == null) {
 								var stateCheck = setInterval(function () {
 									stripe = document.getElementById(id)
 									if (stripe != null) {

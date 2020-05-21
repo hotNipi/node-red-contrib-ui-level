@@ -868,7 +868,16 @@ module.exports = function (RED) {
 							script.type = 'text/javascript';
 							script.id = id
 							script.src = path;
-							head.appendChild(script);							    
+							head.appendChild(script);
+							script.onload = function(){
+								try {									
+									gsap.config({
+										nullTargetWarn: false										
+									  });
+								} catch (error) {
+									//console.log('gsap configuration not changed')
+								}								
+							}							    
 						}
 
 						var setTicks = function () {

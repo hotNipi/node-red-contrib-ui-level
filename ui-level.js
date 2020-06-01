@@ -366,19 +366,17 @@ module.exports = function (RED) {
 					return input;
 				}
 				getSiteProperties = function () {
-					var opts = null;
-					if (typeof ui.getSizes === "function") {
-						opts = {};
-						opts.sizes = ui.getSizes();
-						opts.theme = ui.getTheme();
-					}
-					if (opts === null) {
-						// fallback to hardcoded defaults					
-						node.log("Couldn't reach to the site parameters. Using hardcoded default parameters!")
-						opts = {}
-						opts.sizes = { sx: 48, sy: 48, gx: 4, gy: 4, cx: 4, cy: 4, px: 4, py: 4 }
-						opts.theme = { "widget-textColor": { value: "#eeeeee" } }
-					}
+					var opts = {}					
+					opts.sizes = { sx: 48, sy: 48, gx: 4, gy: 4, cx: 4, cy: 4, px: 4, py: 4 }
+					opts.theme = { "widget-textColor": { value: "#eeeeee" } }
+					if (typeof ui.getSizes === "function") {						
+						if(ui.getSizes()){
+							opts.sizes = ui.getSizes();
+						}
+						if(ui.getTheme()){
+							opts.theme = ui.getTheme();
+						}						
+					}					
 					return opts
 				}
 				range = function (n, p, r) {

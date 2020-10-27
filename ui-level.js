@@ -191,11 +191,11 @@ module.exports = function (RED) {
 						`+ config.unit + `
 						</tspan>					
 				</text>				
-				<text id=level_max_{{unique}} class="txt-{{unique}} small" text-anchor="start" dominant-baseline="hanging" x="15" y="0">`+ config.max + `</text>
+				<text ng-if="${config.minmaxticks != 'hide'}" id=level_max_{{unique}} class="txt-{{unique}} small" text-anchor="start" dominant-baseline="hanging" x="15" y="0">`+ config.max + `</text>
 				<text ng-if="${config.tickmode != 'off'}" ng-repeat="x in [].constructor(${config.interticks.length}) track by $index" id=level_tick_{{unique}}_{{$index}} 
 				class="txt-{{unique}} small" text-anchor="start" dominant-baseline="middle"
 				x="15"></text>		
-				<text id=level_min_{{unique}} class="txt-{{unique}} small" text-anchor="start" dominant-baseline="baseline" x="15" ng-attr-y=`+ config.lastpos + `px>` + config.min + `</text>			
+				<text ng-if="${config.minmaxticks != 'hide'}" id=level_min_{{unique}} class="txt-{{unique}} small" text-anchor="start" dominant-baseline="baseline" x="15" ng-attr-y=`+ config.lastpos + `px>` + config.min + `</text>			
 			</svg>`
 
 		var level_pair_h = String.raw`		
@@ -276,11 +276,11 @@ module.exports = function (RED) {
 						{{msg.payload[1]}}											
 				</text>
 
-				<text id=level_min_{{unique}} class="txt-{{unique}} small" text-anchor="start" dominant-baseline="middle" x="0" y="50%">`+ config.min + `</text>
+				<text ng-if="${config.minmaxticks != 'hide'}" id=level_min_{{unique}} class="txt-{{unique}} small" text-anchor="start" dominant-baseline="middle" x="0" y="50%">`+ config.min + `</text>
 				<text ng-if="${config.tickmode != 'off'}" ng-repeat="x in [].constructor(${config.interticks.length}) track by $index" id=level_tick_{{unique}}_{{$index}} 
 				class="txt-{{unique}} small" text-anchor="middle" dominant-baseline="middle"
 				y="50%"></text>		
-				<text id=level_max_{{unique}} class="txt-{{unique}} small" text-anchor="end" dominant-baseline="middle" ng-attr-x=`+ config.lastpos + `px y="50%">` + config.max + `</text>
+				<text ng-if="${config.minmaxticks == 'hide'}" id=level_max_{{unique}} class="txt-{{unique}} small" text-anchor="end" dominant-baseline="middle" ng-attr-x=`+ config.lastpos + `px y="50%">` + config.max + `</text>
 				
 			</svg>`
 		var layout;

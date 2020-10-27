@@ -68,6 +68,7 @@ SOFTWARE.
             textAnimations: { value: false },
             hideValue: { value: false },
             tickmode: { value: 'off' },
+            minmaxticks: { value: 'show' },
             peakmode: { value: false },
             property: { value: "payload", required: true },
             peaktime: {
@@ -126,6 +127,10 @@ SOFTWARE.
             if (this.tickmode === undefined) {
                 this.tickmode = 'off';
                 $('#node-input-tickmode').val('off');
+            }
+            if (this.minmaxticks === undefined) {
+                this.minmaxticks = 'show';
+                $('#node-input-minmaxticks').val('show');
             }
             if (this.colorschema === undefined) {
                 this.colorschema = fixed;
@@ -364,6 +369,13 @@ SOFTWARE.
             <option value='off'>Off</option>
             <option value='segments'>Segments</option>
             <option value='auto'>Auto</option>
+        </select>
+    </div>
+    <div class='form-row'>
+        <label for='node-input-minmaxticks'><i class='fa fa-list'></i> MinMaxTicks </label>
+        <select id='node-input-minmaxticks' style='width:200px !important'>
+            <option value='show'>Show</option>
+            <option value='hide'>Hide</option>
         </select>
     </div>
     <div class='form-row'>

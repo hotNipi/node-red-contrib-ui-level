@@ -746,6 +746,7 @@ module.exports = function (RED) {
 
 				var tickupdate = []
 				var sectorupdate = []
+				config.property = config.property || "payload";
 				var configsent = false;
 				var html = HTML(config);
 
@@ -781,10 +782,13 @@ module.exports = function (RED) {
 							}
 							configsent = true;
 						}
-						if (msg.payload === undefined) {
+						var val = RED.util.getMessageProperty(msg, config.property);
+
+						if (val === undefined || val === null) {
 							return { msg: fem }
 						}
-						fem = msgFormat(fem, msg.payload)
+						
+						fem = msgFormat(fem, val)
 						if (config.layout === "ph") {
 							if (fem.payload[1] === null) {
 								fem.payload[1] = config.min

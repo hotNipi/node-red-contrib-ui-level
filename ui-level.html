@@ -69,6 +69,7 @@ SOFTWARE.
             hideValue: { value: false },
             tickmode: { value: 'off' },
             peakmode: { value: false },
+            property: { value: "payload", required: true },
             peaktime: {
                 value: 3000, required: false, validate: function (v) {
                     if ($("#node-input-peakmode").prop('checked') == false) {
@@ -96,6 +97,10 @@ SOFTWARE.
                 height: '#node-input-height',
                 group: '#node-input-group'
             });
+            if (this.property === undefined) {
+                $("#node-input-property").val("payload");
+            }
+            $("#node-input-property").typedInput({ default: 'msg', types: ['msg'] });
             $('#node-input-min').change(function () {
                 $('#seg-min').text($(this).val());
             });
@@ -235,6 +240,10 @@ SOFTWARE.
         <input type='hidden' id='node-input-width'>
         <input type='hidden' id='node-input-height'>
         <button class='editor-button' id='node-input-size'></button>
+    </div>
+    <div class="form-row">
+        <label for="node-input-property"><i class="fa fa-arrow-right"></i> Input</label>
+        <input type="text" id="node-input-property" style="width:70%;"/>
     </div>
     </br>
     <div class='form-row'>
@@ -376,10 +385,11 @@ SOFTWARE.
     </div>
 </script>
 <script type='text/x-red' data-help-name='ui_level'>
-    <p>Adds a linear Level type widget to the user interface</p>
-    <p>Widget has 3 different layouts: Single Horizontal, Pair Horizontal and Single Vertical</p>
-    <p>Takes the <code>msg.payload</code> and displays the value near the level graphics.</p>
-    <p>For Pair Horizontal layout the <code>msg.payload</code> is expected to be an <code>array</code></p>
+    <p>Adds a linear Level type widget to the user interface</p>    
+    <p>Configured input property (default is msg.payload) should carry single numeric value. 
+    <p>For Pair Horizontal layout the <code>msg.payload</code> is expected to be an <code>array</code></p>   
+    <p>Widget takes the value of configured input property and displays that value near the level graphics.</p>
+    <p>Widget has 3 different layouts: Single Horizontal, Pair Horizontal and Single Vertical</p>    
     <p>The node's <code>Label</code> is displayed near the value. Leave the label field empty to show value only</p>
     <p>For Pair Horizontal layout the <code>Label</code> is not displayed but both <code>Channels</code> can be labelled independently</p>
     <p>All four colors for stripes can be customized. In adition there is three options to show the colors. <code>'Multiple segments'</code> - Colors tied to stripes 

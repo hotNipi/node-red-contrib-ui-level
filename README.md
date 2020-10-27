@@ -18,7 +18,7 @@ Node-Red v0.20.5 or greater. Node-Red-dashboard v2.15.0 or greater.
 # Configuration and behavior
 Widget has 3 different layouts: `Single Horizontal`, `Pair Horizontal` and `Single Vertical`.
 
-Takes the `msg.payload` and displays the value at the top of the level graphics. For `Pair Horizontal` layout the msg.payload is expected to be an `array`. The `msg.payload` is validated to find a numeric value. So you can send number `msg.payload = 15` or string `msg.payload = "15"`
+Widget takes the configured input property and displays it's value at the top of the level graphics. For `Pair Horizontal` layout the input is expected to be an `array`. The value of input is validated to find a numeric value. So you can send number `msg.payload = 15` or string `msg.payload = "15"`
 
 The node's `Label` is displayed near the value. Leave the label field empty to show value only. For `Pair Horizontal` layout the `Label` is not displayed but both `Channels` can be labelled independently.
 

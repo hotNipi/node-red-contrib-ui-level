@@ -835,6 +835,10 @@ module.exports = function (RED) {
 						$scope.tickmode = false
 						$scope.interticks = null
 						$scope.padding = null
+						$scope.waitingmessage = null
+						$scope.inited = false
+						$scope.timeout = null
+						$scope.retried = false
 						
 						$scope.init = function (config) {
 							if(!document.getElementById('greensock-gsap-3')){
@@ -857,6 +861,7 @@ module.exports = function (RED) {
 								setTicks()
 							}
 							updateContainerStyle()
+							update(config)
 						}
 
 						var loadScript = function (id,path) {
@@ -993,8 +998,6 @@ module.exports = function (RED) {
 								setTicks()
 							}
 						}
-
-
 						var updateLevel = function (data) {
 							var stripe;
 							var mask;
@@ -1021,10 +1024,16 @@ module.exports = function (RED) {
 												mask.style[$scope.prop.dir] = data.position[j] + 'px'
 											}												
 										} catch (error) {
-											mask.style[$scope.prop.dir] = data.position[j] + 'px'
+											//console.log('gsap fails to mask ',$scope.unique,mask, $scope.prop.dir,j,data)
+											$scope.waitingmessage = data
+											update(null)
 										}										
 									}
 								}
+								else{
+									//console.log('no mask found ',$scope.unique)
+								}
+								
 								if (data.color) {
 									stripe = document.getElementById("level_stripe_" + j + "_" + $scope.unique);
 									if (stripe && data.color[j] != null) {
@@ -1061,8 +1070,9 @@ module.exports = function (RED) {
 									}
 									
 								}
-							}							
+							}												
 						};
+						
 
 						var updateContainerStyle = function () {
 							var el = document.getElementById("level_svg_" + $scope.unique)
@@ -1079,43 +1089,51 @@ module.exports = function (RED) {
 							}
 						}
 
+						var update = function(data){
+							if(data === null){
+								if($scope.retried){
+									$scope.waitingmessage = null
+									return
+								}
+								$scope.retried = true
+							}							
+							$scope.inited = true
+							$scope.timeout = null
+							if($scope.waitingmessage != null){	
+								var d = {}
+								Object.assign(d, $scope.waitingmessage)
+								$scope.waitingmessage = null
+								//console.log('ui-level ',$scope.unique,': reinit for waiting msg ')
+								$scope.timeout =setTimeout(() => {update(d)},50);
+								return
+							}
+							if(data === null){
+								return
+							}							
+							if (data.config) {
+								updateConfig(data.config)
+							}
+							if (data.peakreset) {
+								resetPeak()
+							}
+							if (data.payload) {
+								updateLevel(data)
+								setTicks()
+							}
+						}
+
 						$scope.$watch('msg', function (msg) {
 							if (!msg) {
 								return;
 							}
-							var id = "level_stripe_0_" + $scope.unique
+							var id = "level_mask_0_" + $scope.unique
 							var stripe = document.getElementById(id);
-							if (stripe == null) {
-								var stateCheck = setInterval(function () {
-									stripe = document.getElementById(id)
-									if (stripe != null) {
-										clearInterval(stateCheck);
-
-										if (msg.config) {
-											updateConfig(msg.config)
-										}
-										if (msg.peakreset) {
-											resetPeak()
-										}
-										if (msg.payload) {
-											updateLevel(msg)
-											setTicks()
-										}
-									}
-								}, 40);
+												
+							if (!$scope.inited || stripe == null) {
+								$scope.waitingmessage = msg
+								return
 							}
-							else {
-								if (msg.config) {
-									updateConfig(msg.config)
-								}
-								if (msg.peakreset) {
-									resetPeak()
-								}
-								if (msg.payload) {
-									updateLevel(msg)
-									setTicks()
-								}
-							}
+							update(msg)
 						});
 						$scope.$on('$destroy', function () {
 							if ($scope.hold) {

@@ -1238,7 +1238,6 @@ module.exports = function (RED) {
 							var stripe = document.getElementById(id)
 							if (!$scope.inited || stripe == null) {
 								$scope.waitingmessage = msg
-								return
 							}
 							update(msg)
 						})

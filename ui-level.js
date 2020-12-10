@@ -498,7 +498,7 @@ module.exports = function (RED) {
 					config.reverse = mi > ma
 					if (applies) {
 						if (updatesectors) {
-							if (config.colorschema == 'fixed') {
+							if (config.colorschema == 'fixed' || config.colorschema == 'valuedriven') {								
 								var high = (config.gradient.high = exactPosition(config.sectorhigh, config.min, config.max, config.reverse, config.lastpos).p)
 								var warn = (config.gradient.warn = exactPosition(config.sectorwarn, config.min, config.max, config.reverse, config.lastpos).p)
 								if (config.layout == 'sv') {

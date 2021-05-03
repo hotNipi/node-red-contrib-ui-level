@@ -859,6 +859,7 @@ module.exports = function (RED) {
 							var col
 							col = pos[0].p <= config.gradient.warn ? opc[1] : pos[0].p <= config.gradient.high ? opc[2] : opc[3]
 							if (config.colorschema == 'valuedriven') {
+								col = fem.payload[0] <= config.sectorwarn ? opc[1] : fem.payload[0] <= config.sectorhigh ? opc[2] : opc[3]
 								fem.color = [col, null]
 							}
 							if (config.peakmode == true) {
@@ -872,6 +873,7 @@ module.exports = function (RED) {
 							if (pos[1] != null) {
 								col = pos[1].p <= config.gradient.warn ? opc[1] : pos[1].p <= config.gradient.high ? opc[2] : opc[3]
 								if (config.colorschema == 'valuedriven') {
+									col = fem.payload[1] <= config.sectorwarn ? opc[1] : fem.payload[1] <= config.sectorhigh ? opc[2] : opc[3]
 									fem.color[1] = col
 								}
 								if (config.peakmode == true) {

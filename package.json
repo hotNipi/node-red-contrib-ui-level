@@ -1,6 +1,6 @@
 {
     "name": "node-red-contrib-ui-level",
-    "version": "0.1.41",
+    "version": "0.1.42",
     "description": "A Node Red dashboard ui node. Linear level indicator",
     "main": "ui-level.js",
     "node-red": {
@@ -26,7 +26,5 @@
     "author": "hotNipi <nipnippel@gmail.com>",
     "license": "MIT",
     "dependencies": {},
-    "devDependencies": {
-        
-    }
+    "devDependencies": {}
 }

@@ -343,6 +343,7 @@ module.exports = function (RED) {
 			var evenly = null
 			var validateEdges = null
 			var initSectorValues = null
+			var showStatus = null
 			if (checkConfig(node, config)) {
 				ensureNumber = function (input, dets) {
 					if (input === undefined) {
@@ -404,6 +405,18 @@ module.exports = function (RED) {
 						return Math.round(n)
 					}
 					return n
+				}
+				showStatus = function (v) {
+					var status = config.label+': '+v[0]+config.unit
+
+					if (config.layout == 'ph') {
+						status = config.channelA+': '+v[0]+' | '+config.channelB+': '+v[1]
+					}
+					node.status({
+						fill: 'green',
+						shape: 'dot',
+						text: status
+					});
 				}
 				stripecount = function () {
 					var w = config.layout.indexOf('v') != -1 ? config.exactheight : config.exactwidth
@@ -843,6 +856,7 @@ module.exports = function (RED) {
 								fem.payload[1] = config.min
 							}
 						}
+						showStatus(fem.payload)
 						var pos = [
 							exactPosition(fem.payload[0], config.min, config.max, config.reverse, config.lastpos, false),
 							null

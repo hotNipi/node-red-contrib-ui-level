@@ -116,7 +116,7 @@ module.exports = function (RED) {
 					${filltype}
 					mask="url(#level_fgr_0_{{unique}})"
 				/>			
-				<text id=level_title_{{unique}} class="txt-{{unique}}" text-anchor="middle" dominant-baseline="baseline" x=` + config.lastpos / 2 + ` y=${config.textpos}>` + config.label + ` <tspan ng-if="${config.hideValue ==
+				<text class="txt-{{unique}}" text-anchor="middle" dominant-baseline="baseline" x=` + config.lastpos / 2 + ` y=${config.textpos}><tspan id=level_title_{{unique}}>` + config.label + `</tspan> <tspan ng-if="${config.hideValue ==
 			false}" id=level_value_channel_0_{{unique}} class="txt-{{unique}} val" dominant-baseline="baseline">
 						{{msg.payload[0]}}
 						</tspan>
@@ -476,6 +476,10 @@ module.exports = function (RED) {
 					var mi = config.min
 					var ma = config.max
 					var input
+					if (uicontrol.label != undefined) {
+						config.label = uicontrol.label						
+						applies = true						
+					}
 					if (uicontrol.min != undefined) {
 						input = parseFloat(uicontrol.min)
 						if (!isNaN(input)) {
@@ -842,6 +846,7 @@ module.exports = function (RED) {
 							if (tickupdate.length > 0) {
 								fem.config.ticks = tickupdate
 							}
+							fem.config.label = config.label
 							configsent = true
 						}
 						var val = RED.util.getMessageProperty(msg, config.property)
@@ -1088,10 +1093,12 @@ module.exports = function (RED) {
 							}
 						}
 						var updateConfig = function (config) {
-							var minval = document.getElementById('level_min_' + $scope.unique)
-							$(minval).text(config.min)
-							var maxval = document.getElementById('level_max_' + $scope.unique)
-							$(maxval).text(config.max)
+							var txt = document.getElementById('level_min_' + $scope.unique)
+							$(txt).text(config.min)
+							txt = document.getElementById('level_max_' + $scope.unique)
+							$(txt).text(config.max)
+							txt = document.getElementById('level_title_' + $scope.unique)
+							$(txt).text(config.label)
 							if (config.sectors) {
 								var gradient = document.getElementById('level_gradi_' + $scope.unique)
 								if (gradient) {
@@ -1109,6 +1116,7 @@ module.exports = function (RED) {
 								$scope.interticks = config.ticks
 								setTicks()
 							}
+							
 						}
 						var updateLevel = function (data) {
 							var stripe

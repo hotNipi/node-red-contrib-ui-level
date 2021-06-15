@@ -384,13 +384,14 @@ SOFTWARE.
         <input type='text' id='node-input-name' placeholder='Name'>
     </div>
 </script>
-<script type='text/x-red' data-help-name='ui_level'>
+<script type='text/html' data-help-name='ui_level'>
     <p>Adds a linear Level type widget to the user interface</p>    
     <p>Configured input property (default is msg.payload) should carry single numeric value. 
     <p>For Pair Horizontal layout the <code>msg.payload</code> is expected to be an <code>array</code></p>   
     <p>Widget takes the value of configured input property and displays that value near the level graphics.</p>
     <p>Widget has 3 different layouts: Single Horizontal, Pair Horizontal and Single Vertical</p>    
     <p>The node's <code>Label</code> is displayed near the value. Leave the label field empty to show value only</p>
+    <p>The Label can be changed on fly by using <code>msg.control = {label:"New Label"}</code>.</p>
     <p>For Pair Horizontal layout the <code>Label</code> is not displayed but both <code>Channels</code> can be labelled independently</p>
     <p>All four colors for stripes can be customized. In adition there is three options to show the colors. <code>'Multiple segments'</code> - Colors tied to stripes 
         according to sector values. <code>'Single color bar'</code> - Single value based color for all active stripes. <code>'Interpolated colors'</code> - Colors intrpolated from normal to high color</p>

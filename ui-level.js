@@ -526,9 +526,10 @@ module.exports = function (RED) {
 									sectorupdate = [warn, warn, high, high]
 								}
 							}
-							if (updatetics) {
-								tickupdate = interTicks()
-							}
+							
+						}
+						if (updatetics) {
+							tickupdate = interTicks()
 						}
 						configsent = false
 					}

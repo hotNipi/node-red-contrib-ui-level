@@ -116,7 +116,7 @@ module.exports = function (RED) {
 					${filltype}
 					mask="url(#level_fgr_0_{{unique}})"
 				/>			
-				<text class="txt-{{unique}}" text-anchor="middle" dominant-baseline="baseline" x=` + config.lastpos / 2 + ` y=${config.textpos}><tspan id=level_title_{{unique}}>` + config.label + `</tspan> <tspan ng-if="${config.hideValue ==
+				<text class="txt-{{unique}} ui-level-text" text-anchor="middle" dominant-baseline="baseline" x=` + config.lastpos / 2 + ` y=${config.textpos}><tspan id=level_title_{{unique}}>` + config.label + `</tspan> <tspan ng-if="${config.hideValue ==
 			false}" id=level_value_channel_0_{{unique}} class="txt-{{unique}} val" dominant-baseline="baseline">
 						{{msg.payload[0]}}
 						</tspan>
